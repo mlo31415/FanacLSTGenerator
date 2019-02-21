@@ -42,16 +42,21 @@ class MainWindow(wx.Frame):
         grid.SetColLabelValue(2, "New name")
         grid.AutoSizeColumns()
 
-        # Let's lay out the space.  We fill the panel with a vertical sizer so things in it are stcked vertically.
-        # Inside that we have a top sizer for small controls and a secon sizer below it for the grid.
-        gbs=wx.GridBagSizer(4,2)
+        # Let's lay out the space.  We fill the panel with a vertical sizer so things in it are stacked vertically.
+        # Inside that we have a top sizer for small controls and a second sizer below it for the grid.
+        gbs=wx.GridBagSizer(4,3)
 
         # The top gridbag row gets buttons
+        self.buttonLoad=wx.Button(panel, id=wx.ID_ANY, label="LoadLST")
+        gbs.Add(self.buttonLoad, (0, 0))
+        self.buttonLoad.Bind(wx.EVT_BUTTON, self.OnLoadLSTButtonClicked)
+
         self.buttonLoad=wx.Button(panel, id=wx.ID_ANY, label="Load")
-        gbs.Add(self.buttonLoad, (0,0))
+        gbs.Add(self.buttonLoad, (0,1))
         self.buttonLoad.Bind(wx.EVT_BUTTON, self.OnLoadButtonClicked)
+
         self.buttonGenerate=wx.Button(panel, id=wx.ID_ANY, label="Rename")
-        gbs.Add(self.buttonGenerate, (0,1))
+        gbs.Add(self.buttonGenerate, (0,2))
 
         # Now put a pair of buttons with labels above them in the middle two gridbag rows
         gbs.Add(wx.StaticText(panel, label=" Fanzine name"), (1,0))
@@ -72,6 +77,16 @@ class MainWindow(wx.Frame):
         self.Show(True)
 
 
+    def OnLoadLSTButtonClicked(self, event):
+        if event.EventObject.Label == "LoadLST":
+            self.dirname=''
+            dlg=wx.FileDialog(self, "Select LST file to load", self.dirname, "", "*.LST", wx.FD_OPEN)
+            if dlg.ShowModal() == wx.ID_OK:
+                self.LSTfile=dlg.GetFilenames()
+                self.dirname=dlg.GetDirectory()
+            dlg.Destroy()
+
+
     def OnLoadButtonClicked(self, event):
         if event.EventObject.Label == "Load":
             self.dirname=''
@@ -80,7 +95,7 @@ class MainWindow(wx.Frame):
                 self.selectedfiles=dlg.GetFilenames()
                 self.dirname=dlg.GetDirectory()
             dlg.Destroy()
-            if len(self.selectedfiles) == 0:
+            if self.selectedfiles is None or len(self.selectedfiles) == 0:
                 return
 
             # Add rows to the grid if needed.
