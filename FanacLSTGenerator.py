@@ -37,8 +37,7 @@ class MainWindow(wx.Frame):
 
         # Create a wxGrid object
         self.grid=grid=wx.grid.Grid()
-        # Then we call CreateGrid to set the dimensions of the grid
-        # (100 rows and 10 columns in this example)
+        # Call CreateGrid to set the dimensions of the grid
         grid.Create(panel)
         grid.CreateGrid(1, 1+len(self.lstData.ColumnHeaders))
         grid.SetDefaultColSize(50, True)
@@ -47,12 +46,20 @@ class MainWindow(wx.Frame):
         grid.HideRowLabels()
         grid.EnableGridLines(False)
 
-        grid.AppendRows(grid.GetNumberCols())
-        grid.SetColLabelValue(0, "")
-
+        # Add the column headers
         i=1
         for colhead in self.lstData.ColumnHeaders:
             grid.SetColLabelValue(i, colhead)
+            i+=1
+
+        # Now insert the row data
+        grid.AppendRows(len(self.lstData.Rows))
+        i=0
+        for row in self.lstData.Rows:
+            j=1
+            for cell in row:
+                grid.SetCellValue(i, j, cell)
+                j+=1
             i+=1
 
         grid.AutoSizeColumns()
