@@ -1,7 +1,7 @@
-# Pubs1 Main.
 import os
 import wx
 import wx.grid
+from LSTFile import *
 
 class MainWindow(wx.Frame):
     def __init__(self, parent, title):
@@ -82,9 +82,10 @@ class MainWindow(wx.Frame):
             self.dirname=''
             dlg=wx.FileDialog(self, "Select LST file to load", self.dirname, "", "*.LST", wx.FD_OPEN)
             if dlg.ShowModal() == wx.ID_OK:
-                self.LSTfile=dlg.GetFilenames()
+                self.lstFile=dlg.GetFilename()
                 self.dirname=dlg.GetDirectory()
             dlg.Destroy()
+            self.lstData=ReadLstFile(self.lstFile)
 
 
     def OnLoadButtonClicked(self, event):
