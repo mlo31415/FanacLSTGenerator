@@ -1,0 +1,49 @@
+from dataclasses import dataclass
+
+@dataclass(order=False)
+class LSTFile:
+    FirstLine: str=None
+    NextStuff: str=None
+    ColumnHeaders: list=None
+    Rows: list=None
+
+
+# Read an LST file, returning its contents as an LSTFile
+def ReadLstFile(filename):
+    contents=None
+    # Open the file, read the lines in it and strip leading and trailing whilespace (including '\n')
+    with open(filename, "r") as f:
+        contents=f.readlines()
+        contents=[l.strip() for l in contents]
+
+    if contents is None or len(contents) == 0:
+        return None
+
+    # The structure of an LST file is
+    #   Header line
+    #   (blank line)
+    #   Repeated 0 or more times:
+    #       <P>line...</P>
+    #       (blank line)
+    #   Index table headers
+    #   (blank line)
+    #   Repeated 0 or more times:
+    #       Index table line
+    # I will not enforce the blank lines unless forced to. So for now, remove all empty lines
+    contents=[l for l in contents if len(l)>0]
+
+    firstLine=contents[0]
+    contents=contents[1:]
+    topTextLines=[]
+    while contents[0].startswith("<P>"):
+        topTextLines.append(contents[0])
+        contents=contents[1:]
+    headerLine=contents[0]
+    contents=contents[1:]
+    rowLines=[]
+    while len(contents)>0:
+        rowLines.append(contents[0])
+        contents=contents[1:]
+
+
+    i=0
