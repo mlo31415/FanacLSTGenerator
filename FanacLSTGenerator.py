@@ -22,12 +22,25 @@ class MainWindow(wx.Frame):
         self.SetMenuBar(menuBar)  # Adding the MenuBar to the Frame content.
         panel=wx.Panel(self)
 
+        # Call the File Open dialog to get an LST file
+        self.dirname=''
+        dlg=wx.FileDialog(self, "Select LST file to load", self.dirname, "", "*.LST", wx.FD_OPEN)
+        if dlg.ShowModal() != wx.ID_OK:
+            dlg.Destroy()
+            return
+
+        self.lstFile=dlg.GetFilename()
+        self.dirname=dlg.GetDirectory()
+        dlg.Destroy()
+
+        self.lstData=ReadLstFile(self.lstFile)
+
         # Create a wxGrid object
         self.grid=grid=wx.grid.Grid()
         # Then we call CreateGrid to set the dimensions of the grid
         # (100 rows and 10 columns in this example)
         grid.Create(panel)
-        grid.CreateGrid(1, 10)
+        grid.CreateGrid(1, 1+len(self.lstData.ColumnHeaders))
         grid.SetDefaultColSize(50, True)
         grid.SetDefaultRowSize(20, True)
 
@@ -35,11 +48,13 @@ class MainWindow(wx.Frame):
         grid.EnableGridLines(False)
 
         grid.AppendRows(grid.GetNumberCols())
-        for i in range(1, grid.GetNumberCols()):
-            grid.SetColLabelValue(i, "")
-        grid.SetColLabelValue(0, "Filename")
-        grid.SetColLabelValue(1, "Page")
-        grid.SetColLabelValue(2, "New name")
+        grid.SetColLabelValue(0, "")
+
+        i=1
+        for colhead in self.lstData.ColumnHeaders:
+            grid.SetColLabelValue(i, colhead)
+            i+=1
+
         grid.AutoSizeColumns()
 
         # Let's lay out the space.  We fill the panel with a vertical sizer so things in it are stacked vertically.
@@ -47,9 +62,9 @@ class MainWindow(wx.Frame):
         gbs=wx.GridBagSizer(4,3)
 
         # The top gridbag row gets buttons
-        self.buttonLoad=wx.Button(panel, id=wx.ID_ANY, label="LoadLST")
-        gbs.Add(self.buttonLoad, (0, 0))
-        self.buttonLoad.Bind(wx.EVT_BUTTON, self.OnLoadLSTButtonClicked)
+        #self.buttonLoad=wx.Button(panel, id=wx.ID_ANY, label="LoadLST")
+        #gbs.Add(self.buttonLoad, (0, 0))
+        #self.buttonLoad.Bind(wx.EVT_BUTTON, self.OnLoadLSTButtonClicked)
 
         self.buttonLoad=wx.Button(panel, id=wx.ID_ANY, label="Load")
         gbs.Add(self.buttonLoad, (0,1))
@@ -75,17 +90,6 @@ class MainWindow(wx.Frame):
         panel.SetSizerAndFit(gbs)
 
         self.Show(True)
-
-
-    def OnLoadLSTButtonClicked(self, event):
-        if event.EventObject.Label == "LoadLST":
-            self.dirname=''
-            dlg=wx.FileDialog(self, "Select LST file to load", self.dirname, "", "*.LST", wx.FD_OPEN)
-            if dlg.ShowModal() == wx.ID_OK:
-                self.lstFile=dlg.GetFilename()
-                self.dirname=dlg.GetDirectory()
-            dlg.Destroy()
-            self.lstData=ReadLstFile(self.lstFile)
 
 
     def OnLoadButtonClicked(self, event):
