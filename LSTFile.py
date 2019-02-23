@@ -3,7 +3,7 @@ from dataclasses import dataclass
 @dataclass(order=False)
 class LSTFile:
     FirstLine: str=None
-    NextStuff: str=None
+    TopTextLines: str=None
     ColumnHeaders: list=None
     Rows: list=None
 
@@ -38,12 +38,29 @@ def ReadLstFile(filename):
     while contents[0].startswith("<P>"):
         topTextLines.append(contents[0])
         contents=contents[1:]
-    headerLine=contents[0]
+    colHeaderLine=contents[0]
     contents=contents[1:]
     rowLines=[]
     while len(contents)>0:
         rowLines.append(contents[0])
         contents=contents[1:]
 
+    # Now parse the lines and put them into the LSTFile class structure
+    lstFile=LSTFile()
 
-    i=0
+    # The firstLine and the topTestLines are usable as-is, so we just store them
+    lstFile.FirstLine=firstLine
+    lstFile.TopTextLines=topTextLines
+
+    # We need to parse the column headers
+    lstFile.ColumnHeaders=[h.strip() for h in colHeaderLine.split(";")]
+
+    # And likewise the rows
+    # Note that we have the funny structure (filename>displayname) of the first column. We split that off
+    lstFile.Rows=[]
+    for row in rowLines:
+        lstFile.Rows.append([h.strip() for h in row.split(";")])
+
+    return lstFile
+
+
