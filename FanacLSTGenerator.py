@@ -62,6 +62,12 @@ class MainWindow(wx.Frame):
                 j+=1
             i+=1
 
+        # We need to split the contents of col 1 into two parts, one for col 0 and the rest for col 1
+        for i in range(0, len(self.lstData.Rows)):
+            val=grid.GetCellValue(i, 1).split(">")
+            grid.SetCellValue(i, 0, val[0])
+            grid.SetCellValue(i, 1, val[1])
+
         grid.AutoSizeColumns()
 
         # Let's lay out the space.  We fill the panel with a vertical sizer so things in it are stacked vertically.
