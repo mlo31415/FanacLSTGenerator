@@ -29,11 +29,11 @@ class MainWindow(wx.Frame):
             dlg.Destroy()
             return
 
-        self.lstFile=dlg.GetFilename()
+        self.lstFilename=dlg.GetFilename()
         self.dirname=dlg.GetDirectory()
         dlg.Destroy()
 
-        self.lstData=ReadLstFile(self.lstFile)
+        self.lstData=ReadLstFile(self.lstFilename)
 
         # Create a wxGrid object
         self.grid=grid=wx.grid.Grid()
@@ -75,9 +75,9 @@ class MainWindow(wx.Frame):
         gbs=wx.GridBagSizer(4,2)
 
         # The top gridbag row gets buttons
-        self.buttonLoad=wx.Button(panel, id=wx.ID_ANY, label="Load")
+        self.buttonLoad=wx.Button(panel, id=wx.ID_ANY, label="Save LST file")
         gbs.Add(self.buttonLoad, (0,0))
-        self.buttonLoad.Bind(wx.EVT_BUTTON, self.OnLoadButtonClicked)
+        self.buttonLoad.Bind(wx.EVT_BUTTON, self.OnSaveLSTButtonClicked)
 
         self.buttonGenerate=wx.Button(panel, id=wx.ID_ANY, label="Rename")
         gbs.Add(self.buttonGenerate, (0,1))
@@ -103,73 +103,25 @@ class MainWindow(wx.Frame):
         self.Show(True)
 
 
-    def OnLoadButtonClicked(self, event):
-        if event.EventObject.Label == "Load":
-            self.dirname=''
-            dlg=wx.FileDialog(self, "Select pages", self.dirname, "", "*.*", wx.FD_OPEN|wx.FD_MULTIPLE)
-            if dlg.ShowModal() == wx.ID_OK:
-                self.selectedfiles=dlg.GetFilenames()
-                self.dirname=dlg.GetDirectory()
-            dlg.Destroy()
-            if self.selectedfiles is None or len(self.selectedfiles) == 0:
-                return
+    def OnSaveLSTButtonClicked(self, event):
+        if event.EventObject.Label != "Save LST file":
+            return
+        content=[]
+        content.append(self.lstData.FirstLine)
+        content.append("")
+        if len(self.lstData.TopTextLines) > 0:
+            for line in self.lstData.TopTextLines:
+                content.append(line)
+            content.append("")
+        content.append("; ".join(self.lstData.ColumnHeaders))
+        content.append("")
+        for row in self.lstData.Rows:
+            content.append("; ".join(row))
+        newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-1.LST")
+        with open(newname, "w+") as f:
+            f.writelines([c+"\n" for c in content])
 
-            # Add rows to the grid if needed.
-            self.grid.AppendRows(len(self.selectedfiles))
 
-            # Fill in the grid with the filenames
-            i=0
-            for name in self.selectedfiles:
-                self.grid.SetCellValue(i, 0, name)
-                i+=1
-                self.grid.AutoSizeColumns()
-
-            # We expect that filename will be in three sections:
-            #   A prefix common to all which is the fanzine name
-            #   Followed by an issue designation
-            #   Followed by a page which is either pnnn or fc or bc or ifc, or ibc (no internal spaces, though)
-            # Divide up the name into its components and display them
-            # Start by looking for the last token in each name
-            self.pageNum=[]
-            rest=[]
-            for name in self.selectedfiles:
-                self.pageNum.append(name.split()[-1:][0])
-                rest.append(" ".join(name.split()[:-1]))
-            for i, val in enumerate(self.pageNum):
-                val=os.path.splitext(val)[0]        # Drop the extension
-                if val[0] == 'p': val=val[1:]       # Drop any leading 'p'
-                self.grid.SetCellValue(i, 1, val)
-            self.grid.AutoSizeColumns()
-
-            # Find the leading string common to all of the files.  It is probably the fanzine's name followed by the fanzine's issue number
-            # The page number will be different from one scan to the next.
-            # We will break each filename up into whitespace-delimited tokens, and first determine the common set of leading tokens.  This will drop the page numbers.
-            list=[]
-            for name in self.selectedfiles:
-                list.append(name.split())
-            leadingTokens=[]
-            for i in range(0, len(list[0])):
-                t=list[0][i]
-                failed=False
-                for tokens in list:
-                    if tokens[i] != t:
-                        failed=True
-                        break
-                if failed:
-                    break
-                leadingTokens.append(t)
-
-            if len(leadingTokens) < 1:
-                return
-
-            # Normally, the last token is the issue number
-            self.fanzineNameTextbox.SetValue(" ".join(leadingTokens[:-1]))
-            fn=leadingTokens[-1:][0]
-            if fn[0] == "#":
-                fn=fn[1:]
-            self.fanzineIssuenumber.SetValue(fn)
-            self.UpdateNewFilenames()
-            self.grid.AutoSizeColumns()
 
     def OnGridCellChanged(self, evt):
         row=evt.GetRow()
