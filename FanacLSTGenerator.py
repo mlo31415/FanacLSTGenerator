@@ -5,7 +5,7 @@ from LSTFile import *
 
 class MainWindow(wx.Frame):
     def __init__(self, parent, title):
-        wx.Frame.__init__(self, parent, title=title, size=(400,300))
+        wx.Frame.__init__(self, parent, title=title, size=(600,600))
         #self.control = wx.TextCtrl(self, style=wx.TE_MULTILINE)
         self.statusbar=self.CreateStatusBar() # A Statusbar in the bottom of the window
 
@@ -44,7 +44,7 @@ class MainWindow(wx.Frame):
         grid.SetDefaultRowSize(20, True)
 
         grid.HideRowLabels()
-        grid.EnableGridLines(False)
+        #grid.EnableGridLines(False)
 
         # Add the column headers
         i=1
@@ -72,19 +72,15 @@ class MainWindow(wx.Frame):
 
         # Let's lay out the space.  We fill the panel with a vertical sizer so things in it are stacked vertically.
         # Inside that we have a top sizer for small controls and a second sizer below it for the grid.
-        gbs=wx.GridBagSizer(4,3)
+        gbs=wx.GridBagSizer(4,2)
 
         # The top gridbag row gets buttons
-        #self.buttonLoad=wx.Button(panel, id=wx.ID_ANY, label="LoadLST")
-        #gbs.Add(self.buttonLoad, (0, 0))
-        #self.buttonLoad.Bind(wx.EVT_BUTTON, self.OnLoadLSTButtonClicked)
-
         self.buttonLoad=wx.Button(panel, id=wx.ID_ANY, label="Load")
-        gbs.Add(self.buttonLoad, (0,1))
+        gbs.Add(self.buttonLoad, (0,0))
         self.buttonLoad.Bind(wx.EVT_BUTTON, self.OnLoadButtonClicked)
 
         self.buttonGenerate=wx.Button(panel, id=wx.ID_ANY, label="Rename")
-        gbs.Add(self.buttonGenerate, (0,2))
+        gbs.Add(self.buttonGenerate, (0,1))
 
         # Now put a pair of buttons with labels above them in the middle two gridbag rows
         gbs.Add(wx.StaticText(panel, label=" Fanzine name"), (1,0))
@@ -96,6 +92,8 @@ class MainWindow(wx.Frame):
         self.fanzineIssuenumber=wx.TextCtrl(panel, id=wx.ID_ANY)
         gbs.Add(self.fanzineIssuenumber, (2,1))
         self.fanzineIssuenumber.Bind(wx.EVT_TEXT, self.OnFanzinenameOrIssueTextboxChanged)
+
+        self.grid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged)
 
         # And the grid itself goes in the bottom gridbag row, spanning both columns
         gbs.Add(grid, (3,0), span=(2,2))
@@ -172,6 +170,13 @@ class MainWindow(wx.Frame):
             self.fanzineIssuenumber.SetValue(fn)
             self.UpdateNewFilenames()
             self.grid.AutoSizeColumns()
+
+    def OnGridCellChanged(self, evt):
+        row=evt.GetRow()
+        col=evt.GetCol()
+        val=self.grid.GetCellValue(row, col)
+        self.lstData.Rows[row][col-1]=val
+
 
     def UpdateNewFilenames(self):
         for i in range(0, len(self.pageNum)):
