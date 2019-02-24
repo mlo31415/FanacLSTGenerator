@@ -122,12 +122,13 @@ class MainWindow(wx.Frame):
             f.writelines([c+"\n" for c in content])
 
 
-
     def OnGridCellChanged(self, evt):
         row=evt.GetRow()
         col=evt.GetCol()
-        val=self.grid.GetCellValue(row, col)
-        self.lstData.Rows[row][col-1]=val
+        if col > 1:
+            self.lstData.Rows[row][col-1]=self.grid.GetCellValue(row, col)
+        else:
+            self.lstData.Rows[row][0]=self.grid.GetCellValue(row, 0)+">"+self.grid.GetCellValue(row, 1)
 
 
     def UpdateNewFilenames(self):
