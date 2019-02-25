@@ -59,7 +59,7 @@ class GUIClass(wx.Frame):
         self.gRowGrid=wx.grid.Grid(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         # Grid
-        self.gRowGrid.CreateGrid(100, 10)
+        self.gRowGrid.CreateGrid(100, 15)
         self.gRowGrid.EnableEditing(True)
         self.gRowGrid.EnableGridLines(True)
         self.gRowGrid.EnableDragGridSize(False)
@@ -97,7 +97,8 @@ class GUIClass(wx.Frame):
         self.tTopMatter.Bind(wx.EVT_TEXT, self.OnTextTopMatter)
         self.tPText.Bind(wx.EVT_TEXT, self.OnTextComments)
         self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged)
-        self.gRowGrid.Bind(wx.EVT_KEY_UP, self.OnGridCellKeyUp)
+
+        self.gRowGrid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.OnGridLabelLeftClick)
 
     def __del__(self):
         pass
@@ -118,7 +119,7 @@ class GUIClass(wx.Frame):
     def OnGridCellChanged(self, event):
         event.Skip()
 
-    def OnGridCellKeyUp(self, event):
+    def OnGridLabelLeftClick(self, event):
         event.Skip()
 
 
