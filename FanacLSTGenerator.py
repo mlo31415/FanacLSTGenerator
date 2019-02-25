@@ -99,6 +99,10 @@ class MainWindow(GUIClass):
     def OnTextComments(self, event):
         self.lstData.TopTextLines=self.tPText.GetValue().split("\n")
 
+    def OnGridCellDoubleclick(self, event):
+        if event.GetRow() == 0 and event.GetCol() == 0:
+            self.gRowGrid.AutoSize()
+
     def OnGridCellChanged(self, event):
         row=event.GetRow()
         col=event.GetCol()

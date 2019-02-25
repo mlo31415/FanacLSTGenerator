@@ -96,6 +96,7 @@ class GUIClass(wx.Frame):
         self.mLoadNewIssues.Bind(wx.EVT_BUTTON, self.OnLoadNewIssues)
         self.tTopMatter.Bind(wx.EVT_TEXT, self.OnTextTopMatter)
         self.tPText.Bind(wx.EVT_TEXT, self.OnTextComments)
+        self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnGridCellDoubleclick)
         self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged)
 
         self.gRowGrid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.OnGridLabelLeftClick)
@@ -117,6 +118,9 @@ class GUIClass(wx.Frame):
         event.Skip()
 
     def OnGridCellChanged(self, event):
+        event.Skip()
+
+    def OnGridCellDoubleclick( self, event ):
         event.Skip()
 
     def OnGridLabelLeftClick(self, event):
