@@ -97,7 +97,7 @@ class MainWindow(GUIClass):
         self.lstData.FirstLine=self.tTopMatter.GetValue()
 
     def OnTextComments(self, event):
-        self.lstData.TopTextLines=self.tPText.GetValue()
+        self.lstData.TopTextLines=self.tPText.GetValue().split("\n")
 
     def OnGridCellChanged(self, event):
         row=event.GetRow()
