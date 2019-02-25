@@ -102,6 +102,10 @@ class MainWindow(GUIClass):
     def OnGridCellDoubleclick(self, event):
         if event.GetRow() == 0 and event.GetCol() == 0:
             self.gRowGrid.AutoSize()
+            return
+        if event.GetRow() == 0 and event.GetCol() > 0:
+            self.gRowGrid.AutoSizeColumn(event.GetCol())
+
 
     def OnGridCellChanged(self, event):
         row=event.GetRow()
