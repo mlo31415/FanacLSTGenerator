@@ -35,7 +35,7 @@ def ReadLstFile(filename):
     firstLine=contents[0]
     contents=contents[1:]
     topTextLines=[]
-    while contents[0].startswith("<P>"):
+    while contents[0].lower().startswith("<p>"):
         topTextLines.append(contents[0])
         contents=contents[1:]
     colHeaderLine=contents[0]
