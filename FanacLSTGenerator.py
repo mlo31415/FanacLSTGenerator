@@ -22,30 +22,33 @@ class MainWindow(GUIClass):
 
         self.lstData=ReadLstFile(self.lstFilename)
 
-        # Create a wxGrid object
-        grid=self.gRowGrid
+        # Fill in the upper stuff
+        self.tTopMatter.SetValue(self.lstData.FirstLine)
+        if len(self.lstData.TopTextLines) > 0:
+            self.tPText.SetValue("\n".join(self.lstData.TopTextLines))
 
         # The grid is a bit non-standard, since I want to be able to edit row numbers and column headers
         # The row and column labels are actually the (editable) 1st column and 1st row of the spreadsheet and the "real" row and column labels are hidden.
-        grid.HideRowLabels()
-        grid.HideColLabels()
-        # In effect, this makes all row and col references to data (as opposed to to labels) being 1-based
+        self.gRowGrid.HideRowLabels()
+        self.gRowGrid.HideColLabels()
+        # In effect, this makes all row and col references to data (as opposed to to labels) to be 1-based
 
         headerGray=wx.Colour(240, 240, 240)
 
         # Add the column headers
-        grid.SetCellValue(0, 0, "")
-        grid.SetCellValue(0, 1, "First Page")
+        self.gRowGrid.SetCellValue(0, 0, "")
+        self.gRowGrid.SetCellValue(0, 1, "First Page")
         i=2
         for colhead in self.lstData.ColumnHeaders:
-            grid.SetCellValue(0, i, colhead)
-            grid.SetCellBackgroundColour(0, i, headerGray)
+            self.gRowGrid.SetCellValue(0, i, colhead)
+            self.gRowGrid.SetCellBackgroundColour(0, i, headerGray)
             i+=1
-        grid.SetCellBackgroundColour(0, 0, headerGray)
+        self.gRowGrid.SetCellBackgroundColour(0, 0, headerGray)
 
-        self.RefreshDataRows(grid)
+        # Insert the row data into the grid
+        self.RefreshDataRows(self.gRowGrid)
 
-        grid.AutoSizeColumns()
+        self.gRowGrid.AutoSizeColumns()
 
         self.Show(True)
 
@@ -91,10 +94,10 @@ class MainWindow(GUIClass):
         pass
 
     def OnTextTopMatter(self, event):
-        pass
+        self.lstData.FirstLine=self.tTopMatter.GetValue()
 
     def OnTextComments(self, event):
-        pass
+        self.lstData.TopTextLines=self.tPText.GetValue()
 
     def OnGridCellChanged(self, event):
         row=event.GetRow()
