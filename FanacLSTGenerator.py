@@ -44,6 +44,7 @@ class MainWindow(GUIClass):
             self.gRowGrid.SetCellBackgroundColour(0, i, headerGray)
             i+=1
         self.gRowGrid.SetCellBackgroundColour(0, 0, headerGray)
+        self.gRowGrid.SetCellBackgroundColour(0, 1, headerGray)
 
         # Insert the row data into the grid
         self.RefreshDataRows(self.gRowGrid)
