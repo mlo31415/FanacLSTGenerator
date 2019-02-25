@@ -24,46 +24,48 @@ class MainWindow(GUIClass):
         # Create a wxGrid object
         grid=self.gRowGrid
 
-        # The grid is a bit non-standard, since I want to be able to edit row numbers
-        # The row labels are actually the (editable) 1st column f the spreadsheet and the row labels are hidden.
+        # The grid is a bit non-standard, since I want to be able to edit row numbers and column headers
+        # The row and column labels are actually the (editable) 1st column and 1st row of the spreadsheet and the "real" row and column labels are hidden.
         grid.HideRowLabels()
+        grid.HideColLabels()
+        # In effect, this makes all row and col references to data (as opposed to to labels) being 1-based
 
         # Add the column headers
-        grid.SetColLabelValue(0, "")
-        grid.SetColLabelValue(1, "First Page")
+        grid.SetCellValue(0, 0, "")
+        grid.SetCellValue(0, 1, "First Page")
         i=2
         for colhead in self.lstData.ColumnHeaders:
-            grid.SetColLabelValue(i, colhead)
-            i+=1
-
-        # Now insert the row data
-        grid.AppendRows(len(self.lstData.Rows))
-        i=0
-        for row in self.lstData.Rows:
-            j=2
-            for cell in row:
-                grid.SetCellValue(i, j, cell)
-                j+=1
+            grid.SetCellValue(0, i, colhead)
+            grid.SetCellBackgroundColour(0, i, wx.Colour(240, 240, 240))
             i+=1
 
         # Make the first column contain editable row numbers
         for i in range(1, grid.GetNumberRows()):
             grid.SetCellValue(i, 0, str(i))
-            grid.SetCellBackgroundColour(i,0, wx.NamedColour("light grey"))
+            grid.SetCellBackgroundColour(i, 0, wx.Colour(240, 240, 240))
+        grid.SetCellBackgroundColour(0, 0, wx.Colour(240, 240, 240))
+
+        # Now insert the row data (except for the first col from the LST file)
+        grid.AppendRows(len(self.lstData.Rows))
+        i=0
+        for row in self.lstData.Rows:
+            j=1
+            for cell in row:
+                grid.SetCellValue(i+1, j+1, cell)
+                j+=1
+            i+=1
 
         # We need to split the contents of col 2 into two parts, one for col 1 and the rest for col 2
         for i in range(0, len(self.lstData.Rows)):
-            val=grid.GetCellValue(i, 2).split(">")
-            grid.SetCellValue(i, 1, val[0])
-            grid.SetCellValue(i, 2, val[1])
+            val=grid.GetCellValue(i+1, 2).split(">")
+            grid.SetCellValue(i+1, 1, val[0])
+            grid.SetCellValue(i+1, 2, val[1])
 
         grid.AutoSizeColumns()
 
         self.Show(True)
 
     def OnSaveLSTFile(self, event):
-        if event.EventObject.Label != "Save LST file":
-            return
         content=[]
         content.append(self.lstData.FirstLine)
         content.append("")
