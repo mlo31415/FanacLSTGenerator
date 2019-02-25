@@ -30,22 +30,25 @@ class MainWindow(GUIClass):
         grid.HideColLabels()
         # In effect, this makes all row and col references to data (as opposed to to labels) being 1-based
 
+        headerGray=wx.Colour(240, 240, 240)
+
         # Add the column headers
         grid.SetCellValue(0, 0, "")
         grid.SetCellValue(0, 1, "First Page")
         i=2
         for colhead in self.lstData.ColumnHeaders:
             grid.SetCellValue(0, i, colhead)
-            grid.SetCellBackgroundColour(0, i, wx.Colour(240, 240, 240))
+            grid.SetCellBackgroundColour(0, i, headerGray)
             i+=1
+        grid.SetCellBackgroundColour(0, 0, headerGray)
 
         # Make the first column contain editable row numbers
         for i in range(1, grid.GetNumberRows()):
             grid.SetCellValue(i, 0, str(i))
-            grid.SetCellBackgroundColour(i, 0, wx.Colour(240, 240, 240))
-        grid.SetCellBackgroundColour(0, 0, wx.Colour(240, 240, 240))
+            grid.SetCellBackgroundColour(i, 0, headerGray)
+        grid.SetCellBackgroundColour(0, 0, headerGray)
 
-        # Now insert the row data (except for the first col from the LST file)
+        # Now insert the row data (except for the first col from the LST file which we'll deal with next)
         grid.AppendRows(len(self.lstData.Rows))
         i=0
         for row in self.lstData.Rows:
