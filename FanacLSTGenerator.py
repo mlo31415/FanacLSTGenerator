@@ -1,6 +1,7 @@
 import os
 import wx
 import wx.grid
+import math
 from GUIClass import GUIClass
 from LSTFile import *
 
@@ -42,12 +43,19 @@ class MainWindow(GUIClass):
             i+=1
         grid.SetCellBackgroundColour(0, 0, headerGray)
 
+        self.RefreshDataRows(grid)
+
+        grid.AutoSizeColumns()
+
+        self.Show(True)
+
+    def RefreshDataRows(self, grid):
+        headerGray=wx.Colour(240, 240, 240)
         # Make the first column contain editable row numbers
         for i in range(1, grid.GetNumberRows()):
             grid.SetCellValue(i, 0, str(i))
             grid.SetCellBackgroundColour(i, 0, headerGray)
         grid.SetCellBackgroundColour(0, 0, headerGray)
-
         # Now insert the row data (except for the first col from the LST file which we'll deal with next)
         grid.AppendRows(len(self.lstData.Rows))
         i=0
@@ -57,16 +65,11 @@ class MainWindow(GUIClass):
                 grid.SetCellValue(i+1, j+1, cell)
                 j+=1
             i+=1
-
         # We need to split the contents of col 2 into two parts, one for col 1 and the rest for col 2
         for i in range(0, len(self.lstData.Rows)):
             val=grid.GetCellValue(i+1, 2).split(">")
             grid.SetCellValue(i+1, 1, val[0])
             grid.SetCellValue(i+1, 2, val[1])
-
-        grid.AutoSizeColumns()
-
-        self.Show(True)
 
     def OnSaveLSTFile(self, event):
         content=[]
@@ -104,16 +107,49 @@ class MainWindow(GUIClass):
         if col == 2 or col == 1:
             self.lstData.Rows[row][0]=self.gRowGrid.GetCellValue(row, 1)+">"+self.gRowGrid.GetCellValue(row, 2)
             return
+
+        # So the user is editing a row number
         # This is tricky. We need to confirm that the user entered a new number.  (If not, we restore the old one and we're done.)
         # If there is a new number, we re-arrange the rows and then renumber them.
         try:
-            newnum=float(self.gRowGrid.GetCellValue(row, col))
+            newnumf=float(self.gRowGrid.GetCellValue(row, col))
         except:
             self.gRowGrid.SetCellValue(row, 0, str(row))
             return
+        newnumf-=0.00001    # when the user supplies an integer, we drop it just before that integer
 
-        # Determine the new position of this row and rearrange the rows accordingly.
+        # The indexes the user sees start with 1, but the rows list is 0-based.  Adjust accordingly.
+        oldrow=row-1
 
+        # We *should* have a fractional value or an integer value out of range. Check for this.
+        newrows=[]
+        if newnumf < 0:
+            # Ok, it's being moved to the beginning
+            newrows.append(self.lstData.Rows[oldrow])
+            newrows.extend(self.lstData.Rows[0:oldrow])
+            newrows.extend(self.lstData.Rows[oldrow+1:])
+        elif newnumf > len(self.lstData.Rows):
+            # OK, it's being moved to the end
+            newrows.extend(self.lstData.Rows[0:oldrow])
+            newrows.extend(self.lstData.Rows[oldrow+1:])
+            newrows.append(self.lstData.Rows[oldrow])
+        else:
+            # OK, it've being moved internally
+            newrow=math.ceil(newnumf)-1
+            if row <= newrow:
+                # Moving later
+                newrows.extend(self.lstData.Rows[0:oldrow])
+                newrows.extend(self.lstData.Rows[oldrow+1:newrow])
+                newrows.append(self.lstData.Rows[oldrow])
+                newrows.extend(self.lstData.Rows[newrow:])
+            else:
+                # Moving earlier
+                newrows.extend(self.lstData.Rows[0:newrow])
+                newrows.append(self.lstData.Rows[oldrow])
+                newrows.extend(self.lstData.Rows[newrow:oldrow])
+                newrows.extend(self.lstData.Rows[oldrow+1:])
+        self.lstData.Rows=newrows
+        self.RefreshDataRows(self.gRowGrid)
 
 
 app = wx.App(False)
