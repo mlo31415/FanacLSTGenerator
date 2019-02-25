@@ -21,7 +21,7 @@ class GUIClass(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition, size=wx.Size(1000, 700), style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
-        self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
+        self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
         self.m_toolBar2=self.CreateToolBar(wx.TB_HORIZONTAL, wx.ID_ANY)
         self.bSaveLSTFile=wx.Button(self.m_toolBar2, wx.ID_ANY, u"Save LST File", wx.DefaultPosition, wx.DefaultSize, 0)
@@ -49,7 +49,7 @@ class GUIClass(wx.Frame):
         self.m_staticText2.Wrap(-1)
         fgSizer2.Add(self.m_staticText2, 0, wx.ALL, 5)
 
-        self.tPText=wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0)
+        self.tPText = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
         fgSizer2.Add(self.tPText, 0, wx.ALL|wx.EXPAND, 5)
 
         bSizer1.Add(fgSizer2, 1, wx.ALL|wx.EXPAND, 5)
@@ -59,7 +59,7 @@ class GUIClass(wx.Frame):
         self.gRowGrid=wx.grid.Grid(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         # Grid
-        self.gRowGrid.CreateGrid(100, 15)
+        self.gRowGrid.CreateGrid(200, 15)
         self.gRowGrid.EnableEditing(True)
         self.gRowGrid.EnableGridLines(True)
         self.gRowGrid.EnableDragGridSize(False)
