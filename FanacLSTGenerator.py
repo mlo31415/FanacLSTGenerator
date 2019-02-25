@@ -33,7 +33,7 @@ class MainWindow(GUIClass):
         self.gRowGrid.HideColLabels()
         # In effect, this makes all row and col references to data (as opposed to to labels) to be 1-based
 
-        headerGray=wx.Colour(240, 240, 240)
+        headerGray=wx.Colour(230, 230, 230)
 
         # Add the column headers
         self.gRowGrid.SetCellValue(0, 0, "")
@@ -54,7 +54,7 @@ class MainWindow(GUIClass):
         self.Show(True)
 
     def RefreshDataRows(self, grid):
-        headerGray=wx.Colour(240, 240, 240)
+        headerGray=wx.Colour(230, 230, 230)
         # Make the first column contain editable row numbers
         for i in range(1, grid.GetNumberRows()):
             grid.SetCellValue(i, 0, str(i))
