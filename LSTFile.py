@@ -10,11 +10,10 @@ class LSTFile:
 
 # Read an LST file, returning its contents as an LSTFile
 def ReadLstFile(filename):
-    contents=None
-    # Open the file, read the lines in it and strip leading and trailing whilespace (including '\n')
-    with open(filename, "r") as f:
-        contents=f.readlines()
-        contents=[l.strip() for l in contents]
+
+    # Open the file, read the lines in it and strip leading and trailing whitespace (including '\n')
+    contents=list(open(filename))
+    contents=[l.strip() for l in contents]
 
     if contents is None or len(contents) == 0:
         return None
