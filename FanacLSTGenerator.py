@@ -2,6 +2,7 @@ import os
 import wx
 import wx.grid
 import math
+import sys
 from GUIClass import GUIClass
 from LSTFile import *
 
@@ -20,6 +21,7 @@ class MainWindow(GUIClass):
         self.dirname=dlg.GetDirectory()
         dlg.Destroy()
 
+        # Read the LST file
         self.lstData=ReadLstFile(self.lstFilename)
 
         # Fill in the upper stuff
@@ -60,6 +62,7 @@ class MainWindow(GUIClass):
             grid.SetCellValue(i, 0, str(i))
             grid.SetCellBackgroundColour(i, 0, headerGray)
         grid.SetCellBackgroundColour(0, 0, headerGray)
+
         # Now insert the row data (except for the first col from the LST file which we'll deal with next)
         grid.AppendRows(len(self.lstData.Rows))
         i=0
