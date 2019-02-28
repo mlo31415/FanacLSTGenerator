@@ -23,6 +23,7 @@ def ReadLstFile(filename):
     #   (blank line)
     #   Repeated 0 or more times:
     #       <P>line...</P>
+    #           (This may extend ove many lines)
     #       (blank line)
     #   Index table headers
     #   (blank line)
@@ -32,11 +33,16 @@ def ReadLstFile(filename):
     contents=[l for l in contents if len(l)>0]
 
     firstLine=contents[0]
-    contents=contents[1:]
+    contents=contents[1:]   # Drop the first line, as it has been processed
     topTextLines=[]
     while contents[0].lower().startswith("<p>"):
-        topTextLines.append(contents[0])
-        contents=contents[1:]
+        while True:
+            topTextLines.append(contents[0])
+            contents=contents[1:]
+            if topTextLines[-1:][0].lower().endswith(r"</p>") or topTextLines[-1:][0].lower().endswith(r"<p>"):
+                break
+
+
     colHeaderLine=contents[0]
     contents=contents[1:]
     rowLines=[]
