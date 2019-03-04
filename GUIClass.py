@@ -32,25 +32,30 @@ class GUIClass(wx.Frame):
 
         bSizer1=wx.BoxSizer(wx.VERTICAL)
 
+        bSizer3=wx.BoxSizer(wx.HORIZONTAL)
+
+        self.m_staticText1=wx.StaticText(self, wx.ID_ANY, u"Top matter:", wx.DefaultPosition, wx.DefaultSize, 0)
+        self.m_staticText1.Wrap(-1)
+        bSizer3.Add(self.m_staticText1, 0, wx.ALL, 5)
+
+        self.tTopMatter=wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size(800, -1), 0)
+        bSizer3.Add(self.tTopMatter, 0, wx.ALL|wx.EXPAND, 5)
+
+        bSizer1.Add(bSizer3, 1, wx.EXPAND, 5)
+
         fgSizer2=wx.FlexGridSizer(2, 2, 0, 0)
         fgSizer2.AddGrowableCol(1)
         fgSizer2.AddGrowableRow(1)
         fgSizer2.SetFlexibleDirection(wx.BOTH)
         fgSizer2.SetNonFlexibleGrowMode(wx.FLEX_GROWMODE_SPECIFIED)
 
-        self.m_staticText1=wx.StaticText(self, wx.ID_ANY, u"Top matter:", wx.DefaultPosition, wx.DefaultSize, 0)
-        self.m_staticText1.Wrap(-1)
-        fgSizer2.Add(self.m_staticText1, 0, wx.ALL, 5)
-
-        self.tTopMatter=wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0)
-        fgSizer2.Add(self.tTopMatter, 0, wx.ALL|wx.EXPAND, 5)
-
         self.m_staticText2=wx.StaticText(self, wx.ID_ANY, u"<P>Comments</P>:", wx.DefaultPosition, wx.DefaultSize, 0)
         self.m_staticText2.Wrap(-1)
         fgSizer2.Add(self.m_staticText2, 0, wx.ALL, 5)
 
-        self.tPText = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
-        fgSizer2.Add(self.tPText, 0, wx.ALL|wx.EXPAND, 5)
+        self.tPText=wx.TextCtrl(self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE)
+        self.tPText.SetMinSize(wx.Size(-1, 100))
+        fgSizer2.Add(self.tPText, 1, wx.ALL|wx.EXPAND, 5)
 
         bSizer1.Add(fgSizer2, 1, wx.ALL|wx.EXPAND, 5)
 
@@ -59,7 +64,7 @@ class GUIClass(wx.Frame):
         self.gRowGrid=wx.grid.Grid(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         # Grid
-        self.gRowGrid.CreateGrid(200, 15)
+        self.gRowGrid.CreateGrid(100, 15)
         self.gRowGrid.EnableEditing(True)
         self.gRowGrid.EnableGridLines(True)
         self.gRowGrid.EnableDragGridSize(False)
@@ -96,9 +101,8 @@ class GUIClass(wx.Frame):
         self.mLoadNewIssues.Bind(wx.EVT_BUTTON, self.OnLoadNewIssues)
         self.tTopMatter.Bind(wx.EVT_TEXT, self.OnTextTopMatter)
         self.tPText.Bind(wx.EVT_TEXT, self.OnTextComments)
-        self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnGridCellDoubleclick)
         self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged)
-
+        self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnGridCellDoubleclick)
         self.gRowGrid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.OnGridLabelLeftClick)
 
     def __del__(self):
@@ -120,7 +124,7 @@ class GUIClass(wx.Frame):
     def OnGridCellChanged(self, event):
         event.Skip()
 
-    def OnGridCellDoubleclick( self, event ):
+    def OnGridCellDoubleclick(self, event):
         event.Skip()
 
     def OnGridLabelLeftClick(self, event):
