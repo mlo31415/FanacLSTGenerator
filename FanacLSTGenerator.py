@@ -137,34 +137,37 @@ class MainWindow(GUIClass):
         oldrow=row-1
 
         # We *should* have a fractional value or an integer value out of range. Check for this.
-        newrows=[]
-        if newnumf < 0:
-            # Ok, it's being moved to the beginning
-            newrows.append(self.lstData.Rows[oldrow])
-            newrows.extend(self.lstData.Rows[0:oldrow])
-            newrows.extend(self.lstData.Rows[oldrow+1:])
-        elif newnumf > len(self.lstData.Rows):
-            # OK, it's being moved to the end
-            newrows.extend(self.lstData.Rows[0:oldrow])
-            newrows.extend(self.lstData.Rows[oldrow+1:])
-            newrows.append(self.lstData.Rows[oldrow])
-        else:
-            # OK, it've being moved internally
-            newrow=math.ceil(newnumf)-1
-            if row <= newrow:
-                # Moving later
-                newrows.extend(self.lstData.Rows[0:oldrow])
-                newrows.extend(self.lstData.Rows[oldrow+1:newrow])
-                newrows.append(self.lstData.Rows[oldrow])
-                newrows.extend(self.lstData.Rows[newrow:])
-            else:
-                # Moving earlier
-                newrows.extend(self.lstData.Rows[0:newrow])
-                newrows.append(self.lstData.Rows[oldrow])
-                newrows.extend(self.lstData.Rows[newrow:oldrow])
-                newrows.extend(self.lstData.Rows[oldrow+1:])
-        self.lstData.Rows=newrows
+        self.lstData.Rows=MoveRow(self.lstData, oldrow, newnumf)
         self.RefreshDataRows(self.gRowGrid)
+
+def MoveRow(lstData, oldrow, newnumf):
+    newrows=[]
+    if newnumf < 0:
+        # Ok, it's being moved to the beginning
+        newrows.append(lstData.Rows[oldrow])
+        newrows.extend(lstData.Rows[0:oldrow])
+        newrows.extend(lstData.Rows[oldrow+1:])
+    elif newnumf > len(lstData.Rows):
+        # OK, it's being moved to the end
+        newrows.extend(lstData.Rows[0:oldrow])
+        newrows.extend(lstData.Rows[oldrow+1:])
+        newrows.append(lstData.Rows[oldrow])
+    else:
+        # OK, it've being moved internally
+        newrow=math.ceil(newnumf)-1
+        if oldrow < newrow:
+            # Moving later
+            newrows.extend(lstData.Rows[0:oldrow])
+            newrows.extend(lstData.Rows[oldrow+1:newrow])
+            newrows.append(lstData.Rows[oldrow])
+            newrows.extend(lstData.Rows[newrow:])
+        else:
+            # Moving earlier
+            newrows.extend(lstData.Rows[0:newrow])
+            newrows.append(lstData.Rows[oldrow])
+            newrows.extend(lstData.Rows[newrow:oldrow])
+            newrows.extend(lstData.Rows[oldrow+1:])
+    return newrows
 
 
 app = wx.App(False)
