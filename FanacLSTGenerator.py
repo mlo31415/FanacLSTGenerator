@@ -140,7 +140,7 @@ class MainWindow(GUIClass):
         self.MoveRow(self, oldrow, newnumf)
         self.RefreshDataRows(self.gRowGrid)
 
-    def MoveRow(self, lstData, oldrow, newnumf):
+    def MoveRow(self, oldrow, newnumf):
         newrows=[]
         if newnumf < 0:
             # Ok, it's being moved to the beginning
