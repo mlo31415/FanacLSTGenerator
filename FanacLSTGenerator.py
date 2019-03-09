@@ -125,6 +125,7 @@ class MainWindow(GUIClass):
         self.RefreshDataRows()
         pass
 
+
     def DecodeIssueFileName(self, filename):
         if filename is None or len(filename) == 0:
             return None
@@ -157,12 +158,13 @@ class MainWindow(GUIClass):
         return row
 
 
-
     def OnTextTopMatter(self, event):
         self.lstData.FirstLine=self.tTopMatter.GetValue()
 
+
     def OnTextComments(self, event):
         self.lstData.TopTextLines=self.tPText.GetValue().split("\n")
+
 
     def OnGridCellDoubleclick(self, event):
         if event.GetRow() == 0 and event.GetCol() == 0:
@@ -176,9 +178,14 @@ class MainWindow(GUIClass):
         row=event.GetRow()
         col=event.GetCol()
 
+        # The first row is the column headers
+        if row == 0:
+            self.lstData.ColumnHeaders[col-2]=self.gRowGrid.GetCellValue(row, col)
+            return
+
         # The first three columns are special.  So start by dealing with the ordinary cases
         if col > 2:
-            self.lstData.Rows[row][col-2]=self.gRowGrid.GetCellValue(row, col)
+            self.lstData.Rows[row-1][col-2]=self.gRowGrid.GetCellValue(row, col)
             return
         if col == 2 or col == 1:
             self.lstData.Rows[row-1][0]=self.gRowGrid.GetCellValue(row, 1)+">"+self.gRowGrid.GetCellValue(row, 2)
