@@ -2,7 +2,6 @@ import os
 import wx
 import wx.grid
 import math
-import sys
 from GUIClass import GUIClass
 from LSTFile import *
 
@@ -86,9 +85,7 @@ class MainWindow(GUIClass):
             grid.SetCellValue(i+1, 2, val[1])
 
     def OnSaveLSTFile(self, event):
-        content=[]
-        content.append(self.lstData.FirstLine)
-        content.append("")
+        content=[self.lstData.FirstLine, ""]
         if len(self.lstData.TopTextLines) > 0:
             for line in self.lstData.TopTextLines:
                 content.append(line)
@@ -144,12 +141,12 @@ class MainWindow(GUIClass):
         row=[""]*len(self.lstData.ColumnHeaders)
         for val in rest:
             if len(val) > 1:
-                type=val[0]
+                valtype=val[0]
                 val=val[1:]
-                if not type.isupper():
+                if not valtype.isupper():
                     continue
                 try:
-                    index=self.lstData.ColumnHeaderTypes.index(type)
+                    index=self.lstData.ColumnHeaderTypes.index(valtype)
                     row[index]=val
                 except:
                     pass    # Just ignore the error
@@ -198,8 +195,9 @@ class MainWindow(GUIClass):
         oldrow=row-1
 
         # We *should* have a fractional value or an integer value out of range. Check for this.
-        self.MoveRow(self, oldrow, newnumf)
-        self.RefreshDataRows(self.gRowGrid)
+        self.MoveRow(oldrow, newnumf)
+        self.RefreshDataRows()
+
 
     def MoveRow(self, oldrow, newnumf):
         newrows=[]
