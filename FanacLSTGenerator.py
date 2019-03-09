@@ -59,7 +59,6 @@ class MainWindow(GUIClass):
         self.Show(True)
 
 
-
     def RefreshDataRows(self):
         grid=self.gRowGrid
         headerGray=wx.Colour(230, 230, 230)
@@ -84,6 +83,7 @@ class MainWindow(GUIClass):
             grid.SetCellValue(i+1, 1, val[0])
             grid.SetCellValue(i+1, 2, val[1])
 
+
     def OnSaveLSTFile(self, event):
         content=[self.lstData.FirstLine, ""]
         if len(self.lstData.TopTextLines) > 0:
@@ -94,7 +94,10 @@ class MainWindow(GUIClass):
         content.append("")
         for row in self.lstData.Rows:
             content.append("; ".join(row))
+
+        # Temporarily write the LST file with a "-1" at the end of the name
         newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-1.LST")
+        # And write it out
         with open(newname, "w+") as f:
             f.writelines([c+"\n" for c in content])
 
