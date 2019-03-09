@@ -53,7 +53,7 @@ class MainWindow(GUIClass):
         self.lstData.IdentifyColumnHeaders()
 
         # Insert the row data into the grid
-        self.RefreshDataRows(self.gRowGrid)
+        self.RefreshDataRows()
 
         self.gRowGrid.AutoSizeColumns()
 
@@ -61,7 +61,8 @@ class MainWindow(GUIClass):
 
 
 
-    def RefreshDataRows(self, grid):
+    def RefreshDataRows(self):
+        grid=self.gRowGrid
         headerGray=wx.Colour(230, 230, 230)
         # Make the first column contain editable row numbers
         for i in range(1, grid.GetNumberRows()):
@@ -100,6 +101,7 @@ class MainWindow(GUIClass):
         with open(newname, "w+") as f:
             f.writelines([c+"\n" for c in content])
 
+
     # We load a bunch of files, including one or more.issue files.
     # The .issue files tell us what image files we have present.
     # Add one row for each .issue file
@@ -120,8 +122,7 @@ class MainWindow(GUIClass):
             row=self.DecodeIssueFileName(file)
             if row is not None:
                 self.lstData.Rows.append(row)
-                newnumf=float(row[0])
-                self.MoveRow(len(self.lstData.Rows), newnumf)
+        self.RefreshDataRows()
         pass
 
     def DecodeIssueFileName(self, filename):
@@ -136,8 +137,25 @@ class MainWindow(GUIClass):
 
         # Now remove the extension and divide the balance of the name by spaces
         sections[1]=os.path.splitext(sections[1])
-        rest=[r for r in sections[1].split(" ") if len(r) > 0]
-        pass
+        rest=[r for r in sections[1][0].split(" ") if len(r) > 0]
+
+        # We have the table of column headers types in lstData.ColumnHeaderTypes
+        # Match them up and create the new row with the right stuff in each column.
+        row=[""]*len(self.lstData.ColumnHeaders)
+        for val in rest:
+            if len(val) > 1:
+                type=val[0]
+                val=val[1:]
+                if not type.isupper():
+                    continue
+                try:
+                    index=self.lstData.ColumnHeaderTypes.index(type)
+                    row[index]=val
+                except:
+                    pass    # Just ignore the error
+        row[0]=">"+namePrefix
+        return row
+
 
 
     def OnTextTopMatter(self, event):
@@ -163,7 +181,7 @@ class MainWindow(GUIClass):
             self.lstData.Rows[row][col-2]=self.gRowGrid.GetCellValue(row, col)
             return
         if col == 2 or col == 1:
-            self.lstData.Rows[row][0]=self.gRowGrid.GetCellValue(row, 1)+">"+self.gRowGrid.GetCellValue(row, 2)
+            self.lstData.Rows[row-1][0]=self.gRowGrid.GetCellValue(row, 1)+">"+self.gRowGrid.GetCellValue(row, 2)
             return
 
         # So the user is editing a row number
