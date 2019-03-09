@@ -22,7 +22,8 @@ class MainWindow(GUIClass):
         dlg.Destroy()
 
         # Read the LST file
-        self.lstData=ReadLstFile(self.lstFilename)
+        self.lstData=LSTFile()
+        self.lstData.Read(self.lstFilename)
 
         # Fill in the upper stuff
         self.tTopMatter.SetValue(self.lstData.FirstLine)
@@ -48,12 +49,17 @@ class MainWindow(GUIClass):
         self.gRowGrid.SetCellBackgroundColour(0, 0, headerGray)
         self.gRowGrid.SetCellBackgroundColour(0, 1, headerGray)
 
+        # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
+        self.lstData.IdentifyColumnHeaders()
+
         # Insert the row data into the grid
         self.RefreshDataRows(self.gRowGrid)
 
         self.gRowGrid.AutoSizeColumns()
 
         self.Show(True)
+
+
 
     def RefreshDataRows(self, grid):
         headerGray=wx.Colour(230, 230, 230)
@@ -94,8 +100,45 @@ class MainWindow(GUIClass):
         with open(newname, "w+") as f:
             f.writelines([c+"\n" for c in content])
 
+    # We load a bunch of files, including one or more.issue files.
+    # The .issue files tell us what image files we have present.
+    # Add one row for each .issue file
     def OnLoadNewIssues(self, event):
+        # Call the File Open dialog to get the .issue files
+        self.dirname=''
+        dlg=wx.FileDialog(self, "Select .issue files to load", self.dirname, "", "*.issue", wx.FD_OPEN|wx.FD_MULTIPLE)
+        if dlg.ShowModal() != wx.ID_OK:
+            dlg.Destroy()
+            return
+        files=dlg.GetFilenames()
+        dlg.Destroy()
+        for file in files:
+            # Decode the file name to get the row info.
+            # The filename consists of:
+            #       A first section (ending in $$) which is the prefix of the associated image files
+            #       A number of space-delimited segments consisting of a capital letter followed by data
+            row=self.DecodeIssueFileName(file)
+            if row is not None:
+                self.lstData.Rows.append(row)
+                newnumf=float(row[0])
+                self.MoveRow(len(self.lstData.Rows), newnumf)
         pass
+
+    def DecodeIssueFileName(self, filename):
+        if filename is None or len(filename) == 0:
+            return None
+
+        # Start by dividing on the "$$"
+        sections=filename.split("$$")
+        if len(sections) != 2:
+            return None
+        namePrefix=sections[0].strip()
+
+        # Now remove the extension and divide the balance of the name by spaces
+        sections[1]=os.path.splitext(sections[1])
+        rest=[r for r in sections[1].split(" ") if len(r) > 0]
+        pass
+
 
     def OnTextTopMatter(self, event):
         self.lstData.FirstLine=self.tTopMatter.GetValue()
