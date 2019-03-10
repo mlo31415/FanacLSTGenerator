@@ -39,10 +39,14 @@ class LSTFile:
     TopTextLines: str=None
     ColumnHeaders: list=None        # The actual text of the column headers
     ColumnHeaderTypes: list=None    # The single character types for the corresponding ColumnHeaders
+    SortColumn: dict=None           # The single character type(s) of the sort column(s).  Sort on whole num="W", sort on Vol+Num ="VN", etc.
     Rows: list=None
 
-    def IdentifyColumnHeaders(self):
 
+    #--------------------------------
+    # Figure out what the column headers are (they frequently have variant names)
+    # Get some statistics on which columns have info in them, also.
+    def IdentifyColumnHeaders(self):
         # The trick here is that "Number" (in its various forms) is used vaguely: Sometimes it means whole number and sometimes volume number
         # First identify all the easy ones
         self.ColumnHeaderTypes=[]
@@ -59,8 +63,75 @@ class LSTFile:
                 if self.ColumnHeaderTypes[i] == "N":
                     self.ColumnHeaderTypes[i]="W"
 
-        return
+        # Now cather statistics on what columns have data.  This will be needed to determine the best colums to use for inserting new data
+        self.MeasureSortColumns()
 
+
+    #---------------------------------
+    # take the supplied header types and use the row statistics to determine what column to use to do an insertion.
+    def GetInsertCol(self):
+        if self.SortColumn is None:
+            raise ValueError("class LSTFile: GetInsertCol called while SortColumn is None")
+
+        # ColumnHeaderTypes is a list of the type letters for which this issue has data.
+        possibleCols={}
+        if "W" in self.ColumnHeaderTypes and self.SortColumn["W"] > .75:
+            possibleCols["W"]=self.SortColumn["W"]
+        if "V" and self.ColumnHeaderTypes and "N" and self.ColumnHeaderTypes and self.SortColumn["VN"] > .75:
+            possibleCols["VN"]=self.SortColumn["VN"]
+        if "Y" in self.ColumnHeaderTypes and "M" in self.ColumnHeaderTypes and self.SortColumn["YM"] > .75:
+            possibleCols["YM"]=self.SortColumn["YM"]
+
+        if len(possibleCols) == 0:
+            return -1
+        keyBestCol=-1
+        valBestCol=0
+        for item in possibleCols.items():
+            if item[1] > valBestCol:
+                valBestCol=item[1]
+                keyBestCol=item[0]
+        return keyBestCol
+
+
+
+    #---------------------------------
+    # Look through the data and determine the likely column we're sorted on.
+    # The column will be (mostly) filled and will be in ascending order.
+    # This is necessarily based on heuristics and is inexact.
+    # TODO: For the moment we're going to ignore whether the selected column is in fact sorted. We need to fix this later.
+    def MeasureSortColumns(self):
+        # A sort column must either be the title or have a type code
+        # Start by looking through the columns that have a type code and seeing which are mostly or completely filled.  Do it in order of perceived importance.
+        fW=self.CountFilledCells("W")
+        fV=self.CountFilledCells("V")
+        fN=self.CountFilledCells("N")
+        fY=self.CountFilledCells("Y")
+        fM=self.CountFilledCells("M")
+
+        self.SortColumn={}
+        self.SortColumn["W"]=fW
+        self.SortColumn["VN"]=fV*fN
+        self.SortColumn["YM"]=fY*fM
+
+
+    #---------------------------------
+    # Count the number of filled cells in the column with the specified type code
+    # Returns a floating point fraction between 0 and 1
+    def CountFilledCells(self, type):
+        try:
+            index=self.ColumnHeaderTypes.index(type)
+        except:
+            return 0
+
+        # Count the number of filled-in values for this type
+        num=0
+        for row in self.Rows:
+            if row[index] is not None and len(row[index]) > 0:
+                num+=1
+        return num/len(self.Rows)
+
+
+    #---------------------------------
     # Read an LST file, returning its contents as an LSTFile
     def Read(self, filename):
 

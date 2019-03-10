@@ -30,12 +30,13 @@ class MainWindow(GUIClass):
             self.tPText.SetValue("\n".join(self.lstData.TopTextLines))
 
         # The grid is a bit non-standard, since I want to be able to edit row numbers and column headers
-        # The row and column labels are actually the (editable) 1st column and 1st row of the spreadsheet and the "real" row and column labels are hidden.
+        # The row and column labels are actually the (editable) 1st column and 1st row of the spreadsheet (they're colored gray)
+        # and the "real" row and column labels are hidden.
         self.gRowGrid.HideRowLabels()
         self.gRowGrid.HideColLabels()
-        # In effect, this makes all row and col references to data (as opposed to to labels) to be 1-based
+        # In effect, this makes all row and col references to data (as opposed to the labels) to be 1-based
 
-        headerGray=wx.Colour(230, 230, 230)
+        labelGray=wx.Colour(230, 230, 230)
 
         # Add the column headers
         self.gRowGrid.SetCellValue(0, 0, "")
@@ -43,10 +44,10 @@ class MainWindow(GUIClass):
         i=2
         for colhead in self.lstData.ColumnHeaders:
             self.gRowGrid.SetCellValue(0, i, colhead)
-            self.gRowGrid.SetCellBackgroundColour(0, i, headerGray)
+            self.gRowGrid.SetCellBackgroundColour(0, i, labelGray)
             i+=1
-        self.gRowGrid.SetCellBackgroundColour(0, 0, headerGray)
-        self.gRowGrid.SetCellBackgroundColour(0, 1, headerGray)
+        self.gRowGrid.SetCellBackgroundColour(0, 0, labelGray)
+        self.gRowGrid.SetCellBackgroundColour(0, 1, labelGray)
 
         # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
         self.lstData.IdentifyColumnHeaders()
@@ -120,6 +121,8 @@ class MainWindow(GUIClass):
             #       A first section (ending in $$) which is the prefix of the associated image files
             #       A number of space-delimited segments consisting of a capital letter followed by data
             row=self.DecodeIssueFileName(file)
+            bestColTypes=self.lstData.GetInsertCol()
+
             if row is not None:
                 self.lstData.Rows.append(row)
         self.RefreshDataRows()
