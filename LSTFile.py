@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-
+import math
+import re
 
 # -------------------------------------------------------------
 def CanonicizeColumnHeaders(header):
@@ -33,6 +34,48 @@ def CanonicizeColumnHeaders(header):
         return header.lower()
 
 
+# ====================================================================================
+# Convert a text month to integer
+# (Borrowed from FanacAnalyzer -- consider taking more)
+def MonthToInt(text):
+    monthConversionTable={"jan": 1, "january": 1, "1": 1,
+                          "feb": 2, "february": 2, "feburary": 2, "2": 2,
+                          "mar": 3, "march": 3, "3": 3,
+                          "apr": 4, "april": 4, "4": 4,
+                          "may": 5, "5": 5,
+                          "jun": 6, "june": 6, "6": 6,
+                          "jul": 7, "july": 7, "7": 7,
+                          "aug": 8, "august": 8, "8": 8,
+                          "sep": 9, "sept": 9, "september": 9, "9": 9,
+                          "oct": 10, "october": 10, "10": 10,
+                          "nov": 11, "november": 11, "11": 11,
+                          "dec": 12, "december": 12, "12": 12,
+                          "1q": 1, "q1": 1,
+                          "4q": 4, "q2": 4,
+                          "7q": 7, "q3": 7,
+                          "10q": 10, "q4": 10,
+                          "spring": 4, "spr": 4,
+                          "summer": 7, "sum": 7,
+                          "fall": 10, "autumn": 10, "fal": 10,
+                          "winter": 1, "win": 1,
+                          "xmas": 12, "christmas": 12}
+
+    text=text.replace(" ", "").lower()
+
+    # First look to see if the input is two month names separated by a non-alphabetic character (e.g., "September-November"
+    m=re.compile("^([a-zA-Z]+)[-/]([a-zA-Z]+)$").match(text)
+    if m is not None and len(m.groups()) == 2 and len(m.groups()[0]) > 0:
+        m1=MonthToInt(m.groups()[0])
+        m2=MonthToInt(m.groups()[1])
+        if m1 is not None and m2 is not None:
+            return math.ceil((m1+m2)/2)
+
+    try:
+        return monthConversionTable[text]
+    except:
+        return None
+
+
 @dataclass(order=False)
 class LSTFile:
     FirstLine: str=None
@@ -41,6 +84,84 @@ class LSTFile:
     ColumnHeaderTypes: list=None    # The single character types for the corresponding ColumnHeaders
     SortColumn: dict=None           # The single character type(s) of the sort column(s).  Sort on whole num="W", sort on Vol+Num ="VN", etc.
     Rows: list=None
+
+
+
+    # Simple method to turn a year/month pair into a float which can be sorted
+    def YMtoInt(self, year, month):
+        if year is None or year == "":
+            return 0
+
+        try:
+            year=int(year)
+        except:
+            return 0
+        if year < 30:
+            year+=2000
+        if year < 100:
+            year+=1900
+
+        if month is None or month == "":
+            return year
+
+        try:
+            month=int(month)
+        except:
+            month=MonthToInt(month)
+            if month == None:
+                month=0
+
+        return year+month/100
+
+
+    #--------------------------------
+    # Using the columns specified, find the best location to insert the row
+    # In all cases we assume that the LST file is sorted in increasing order, so we stop the first time we hit a larger value
+    # Note that we may return a negative index, which means to prepend the row.
+    def GetBestRowIndex(self, bestCols, newRow):
+        # The choices are
+        #   YM -- use year and month
+        #   VN -- use volume and number
+        #   W -- use whole number
+        #   "" -- use the title
+        if bestCols == "W":
+            if "W" not in self.ColumnHeaderTypes:
+                raise ValueError("LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
+            col=self.ColumnHeaderTypes.index("W")
+            for i in range(0, len(self.Rows)):
+                if int(self.Rows[i][col]) > int(newRow[col]):
+                    return i-0.5
+            return len(self.Rows)
+
+        if bestCols == "VN":
+            if "V" not in self.ColumnHeaderTypes or "N" not in self.ColumnHeaderTypes:
+                raise ValueError("LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
+            colV=self.ColumnHeaderTypes.index("V")
+            colN=self.ColumnHeaderTypes.index("N")
+            for i in range(0, len(self.Rows)):
+                if int(self.Rows[i][colV]) > int(newRow[colV]):
+                    return i-0.5
+                if int(self.Rows[i][colV]) == int(newRow[colV]) and int(self.Rows[i][colN]) == int(newRow[colN]):
+                    return i-0.5
+            return len(self.Rows)
+
+        if bestCols == "YM":
+            if "Y" not in self.ColumnHeaderTypes:   # We don't actually need a month in every column for this to be useful
+                raise ValueError("LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
+            colY=self.ColumnHeaderTypes.index("Y")
+            colM=self.ColumnHeaderTypes.index("M")
+            val=self.YMtoInt(newRow[colY], newRow[colM])
+            for i in range(0, len(self.Rows)):
+                if self.YMtoInt(self.Rows[i][colY], self.Rows[i][colM]) > val:
+                    return i-0.5
+            return len(self.Rows)
+
+        # OK, try to sort of title which is always col 1
+        for i in range(0, len(self.Rows)):
+            if int(self.Rows[i][1]) > int(newRow[1]):
+                return i-0.5
+        return len(self.Rows)
+
 
 
     #--------------------------------

@@ -122,9 +122,10 @@ class MainWindow(GUIClass):
             #       A number of space-delimited segments consisting of a capital letter followed by data
             row=self.DecodeIssueFileName(file)
             bestColTypes=self.lstData.GetInsertCol()
+            fIndex=self.lstData.GetBestRowIndex(bestColTypes, row)  # "findex" to remind me this is probably a floating point number to indicate an insertion between two rows
+            self.lstData.Rows.append(row)
+            self.MoveRow(len(self.lstData.Rows)-1, fIndex)
 
-            if row is not None:
-                self.lstData.Rows.append(row)
         self.RefreshDataRows()
         pass
 
