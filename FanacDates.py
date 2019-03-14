@@ -223,7 +223,7 @@ class FanacDate:
             except:
                 y=None
             if y is not None and m is not None:
-                if y > 1860 and y < 2100:  # Outside this range it can't be a fannish-relevant year (the range is oldest fan birth date to middle-future)
+                if 1860 < y < 2100:  # Outside this range it can't be a fannish-relevant year (the range is oldest fan birth date to middle-future)
                     self.Set6(ytext, y, mtext, m, None, None)
                     self.Raw=dateText
                     return self
@@ -368,7 +368,7 @@ def BoundDay(dayInt: int, monthInt: int) -> int:
     if dayInt is None:
         raise(ValueError, "FanacDates.BoundDay: dayInt is None")
     if monthInt is None:
-        raise(ValueError, "FanacDates.BoundDay: monthInt is None")
+        raise(ValueError, "FanacDates.BoundDay: dayInt is None")
     if dayInt < 1:
         return 1
     if monthInt == 2 and dayInt > 28:   # This messes up leap years. De minimus
@@ -440,7 +440,7 @@ def MonthToInt(text: str) -> int:
     try:
         return monthConversionTable[text]
     except:
-        return None
+        raise(ValueError, "FanacDates.MonthToInt: '"+text+"' is not interpretable")
 
 
 # ====================================================================================
@@ -565,7 +565,7 @@ def MonthName(month: int):
     if month is None:
         raise(ValueError, "FanacDates.MonthName: month is None")
 
-    if month > 0 and month < 13:
+    if 0 < month < 13:
         m=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][month-1]  # -1 is to deal with zero-based indexing...
     else:
         m="<invalid: "+str(month)+">"
