@@ -121,7 +121,7 @@ class MainWindow(GUIClass):
             #       A first section (ending in $$) which is the prefix of the associated image files
             #       A number of space-delimited segments consisting of a capital letter followed by data
             row=self.DecodeIssueFileName(file)
-            bestColTypes=self.lstData.GetInsertCol()
+            bestColTypes=self.lstData.GetInsertCol(row)
             fIndex=self.lstData.GetBestRowIndex(bestColTypes, row)  # "findex" to remind me this is probably a floating point number to indicate an insertion between two rows
             self.lstData.Rows.append(row)
             self.MoveRow(len(self.lstData.Rows)-1, fIndex)
@@ -130,7 +130,7 @@ class MainWindow(GUIClass):
         pass
 
 
-    def DecodeIssueFileName(self, filename):
+    def DecodeIssueFileName(self, filename: str):
         if filename is None or len(filename) == 0:
             return None
 
