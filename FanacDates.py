@@ -72,26 +72,33 @@ class FanacDate:
         self.Date=other.Date
 
     #--------------------------------
-    # Set values using only integer year/month/day. Day may be None
-    def Set3(self, yearInt, monthInt, dayInt):
+    # Set values using only integer year/month/day. dayInt may be None
+    def SetYM(self, yearInt: int, monthInt: int):
+        if yearInt is None or monthInt is None:
+            raise (ValueError, "FanacDates: SetYM -- one of the argumens is None")
         self.YearText=str(yearInt)
         self.YearInt=yearInt
         self.MonthText=MonthName(monthInt)
         self.MonthInt=monthInt
-        if dayInt is not None:
-            self.DayText=str(dayInt)
-        else:
-            self.DayText=None
-        self.DayInt=BoundDay(dayInt, monthInt)
-
-        if yearInt is None or monthInt is None:
-            self.Date=None
-        elif dayInt is None:
-            self.Date=datetime.datetime(self.YearInt, self.MonthInt, 1)
-        else:
-            self.Date=datetime.datetime(self.YearInt, self.MonthInt, self.DayInt)
+        self.DayText=None
+        self.DayInt=1
+        self.Date=datetime.datetime(self.YearInt, self.MonthInt, 1)
 
     #--------------------------------
+    # Set values using only integer year/month/day. dayInt may be None
+    def SetYMD(self, yearInt: int, monthInt: int, dayInt: int):
+        if yearInt is None or monthInt is None or dayInt is None:
+            raise(ValueError, "FanacDates: SetYMD -- one of the argumens is None")
+        self.YearText=str(yearInt)
+        self.YearInt=yearInt
+        self.MonthText=MonthName(monthInt)
+        self.MonthInt=monthInt
+        self.DayText=str(dayInt)
+        self.DayInt=BoundDay(dayInt, monthInt)
+        self.Date=datetime.datetime(self.YearInt, self.MonthInt, self.DayInt)
+
+    #--------------------------------
+    # This just sets things pretty rawly
     def Set6(self, yearText, yearInt, monthText, monthInt, dayText, dayInt):
         self.YearText=yearText
         self.YearInt=yearInt
@@ -111,7 +118,7 @@ class FanacDate:
     #   1969
     #   July 1969
     #   July 20, 1969
-    def FormatDate(self):
+    def FormatDate(self) -> str:
 
         # If we have a raw form of the date, just return it.
         if self.Raw is not None:
@@ -152,7 +159,7 @@ class FanacDate:
 
     #--------------------------------
     # Parse a string to find a date.  This tries to interpret the *whole* string.
-    def Parse(self, s):
+    def Parse(self, s: str):
 
         # Whitespace is not a date...
         dateText=s.strip()
@@ -164,7 +171,7 @@ class FanacDate:
         try:
             d=dateutil.parser.parse(dateText, default=datetime.datetime(1, 1, 1))
             if d != datetime.datetime(1, 1, 1):
-                self.Set3(d.year, d.month, d.day)
+                self.SetYMD(d.year, d.month, d.day)
                 self.Raw=dateText
                 self.Date=d
                 return self
@@ -264,16 +271,16 @@ class FanacDate:
     # =================================================================================
     # Returns True for a FanaDate which is internally None
     # Returns False if any of the internal state is set to a value
-    def IsEmpty(self):
+    def IsEmpty(self) -> bool:
         return self.YearText is None and self.YearInt is None and self.MonthText is None and self.MonthInt is None and self.DayText is None and self.DayInt is None and (self.Raw is None or self.Raw == "")  and self.Date is None
 
 
 # =================================================================================
 # Convert 2-digit years to four digit years
 # We accept 2-digit years from 1933 to 2032
-def YearAs4Digits(year):
+def YearAs4Digits(year: int) -> int:
     if year is None:
-        return None
+        raise(ValueError, "FanacDates.YearAs4Digits: year is None")
     if year > 100:
         return year
     if year < 33:
@@ -357,11 +364,11 @@ def InterpretDay(dayData: str):
 
 # =================================================================================
 # Make sure day is within month
-def BoundDay(dayInt, monthInt):
+def BoundDay(dayInt: int, monthInt: int) -> int:
     if dayInt is None:
-        return None
-    if monthInt is None:    # Should never happen!
-        return dayInt
+        raise(ValueError, "FanacDates.BoundDay: dayInt is None")
+    if monthInt is None:
+        raise(ValueError, "FanacDates.BoundDay: monthInt is None")
     if dayInt < 1:
         return 1
     if monthInt == 2 and dayInt > 28:   # This messes up leap years. De minimus
@@ -397,7 +404,7 @@ def InterpretMonth(monthData: str):
 
 # ====================================================================================
 # Convert a text month to integer
-def MonthToInt(text):
+def MonthToInt(text: str) -> int:
     monthConversionTable={"jan": 1, "january": 1, "1": 1,
                           "feb": 2, "february": 2, "feburary": 2, "2": 2,
                           "mar": 3, "march": 3, "3": 3,
@@ -438,21 +445,21 @@ def MonthToInt(text):
 
 # ====================================================================================
 # Deal with completely random date strings that we've uncovered and added
-# There's no rhyme nor reason here -- just otherwise uninterpretable things we've run across.
-def InterpretRandomDatestring(text: str):
-    text=text.lower()
+# There's neither rhyme nor reason here -- just otherwise uninterpretable things we've run across.
+def InterpretRandomDatestring(raw: str):
+    text=raw.lower()
     if text == "solar eclipse 2017":
-        return FanacDate("2017", 2017, "Solar Eclipse", 8, None, 21, text)
+        return FanacDate("2017", 2017, "Solar Eclipse", 8, "", 21, raw)
     if text == "2018 new year's day":
-        return FanacDate("2018", 2018, "New Years Day", 1, None, 1, text)
+        return FanacDate("2018", 2018, "New Years Day", 1, "", 1, raw)
     if text == "christmas 2015.":
-        return FanacDate("2015", 2015, "Christmas", 12, None, 25, text)
+        return FanacDate("2015", 2015, "Christmas", 12, "", 25, raw)
     if text == "hogmanay 1991/1992":
-        return FanacDate("1991", 1991, "Hogmany", 12, None, 31, text)
+        return FanacDate("1991", 1991, "Hogmany", 12, "", 31, raw)
     if text == "grey cup day 2014":
-        return FanacDate("2014", 2014, "Grey Cup Day", 11, None, 30, text)
+        return FanacDate("2014", 2014, "Grey Cup Day", 11, "", 30, raw)
     if text == "october 2013, halloween":
-        return FanacDate("2013", 2013, "Halloween", 10, None, 31, text)
+        return FanacDate("2013", 2013, "Halloween", 10, "", 31, raw)
 
     return None
 
@@ -556,7 +563,7 @@ def InterpretRelativeWords(daystring: str):
 # Format an integer month as text
 def MonthName(month: int):
     if month is None:
-        return None
+        raise(ValueError, "FanacDates.MonthName: month is None")
 
     if month > 0 and month < 13:
         m=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][month-1]  # -1 is to deal with zero-based indexing...
@@ -567,24 +574,21 @@ def MonthName(month: int):
 
 # ==============================================================================
 # Format an integer day as text
-def DayName(day: int):
+def DayName(day: int) -> str:
     if day is None or day == 0:
-        return None
-
+        raise (ValueError, "FanacDates.DayName: day is None or 0")
     if day < 1 or day > 31:
-        return "<invalid day>"
+        return "<invalid day: "+str(day)+">"
 
     return str(day)
 
 # =============================================================================
 # Format an integer year as text.  Note that this is designed for fanzines, so two-digit years become ambiguous at 2033.
-def YearName(year: int):
+def YearName(year: int) -> str:
     if year is None or year == 0:
-        return None
+        raise(ValueError, "FanacDates.YearName: year is None or 0")
 
-    year=YearAs4Digits(year)
-
-    return str(year)
+    return str(YearAs4Digits(year))
 
 
 # =============================================================================
@@ -611,7 +615,7 @@ def StandardizeMonth(month: str) -> str:
 
 # =============================================================================
 # Allow raw use of FormatDate given integer inputs
-def FormatDate2(year, month, day):
+def FormatDate2(year: int, month: int, day: int) -> str:
     d=FanacDate()
     d.Set6(YearName(year), year, MonthName(month), month, DayName(day), day)
     return d.FormatDate()
@@ -620,7 +624,7 @@ def FormatDate2(year, month, day):
 # =============================================================================
 # Sometimes we don't have raw text for the whole date, but do have raw text for the month and day.
 # Use them to generate raw text for the date
-def CreateRawText(dayText, monthText, yearText):
+def CreateRawText(dayText: str, monthText: str, yearText: str) -> str:
 
     # First make sure we have the text or an empty string if the item is None
     mo=monthText.strip() if monthText is not None else ""
