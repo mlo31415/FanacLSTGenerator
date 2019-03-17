@@ -142,6 +142,7 @@ class MainWindow(GUIClass):
 
         # Now remove the extension and divide the balance of the name by spaces
         balance=os.path.splitext(sections[1])[0]    # Get the filename and then drop the extension
+        rest: list  # Type hint
         rest=[r for r in balance.split(" ") if len(r) > 0]
 
         # We have the table of column headers types in lstData.ColumnHeaderTypes
@@ -150,7 +151,7 @@ class MainWindow(GUIClass):
         for val in rest:
             if len(val) > 1:
                 valtype=val[0]
-                val=val[1:]
+                val=val[1:]     # The value is the part after the initial character (which is the val type)
                 if not valtype.isupper():
                     continue
                 try:
