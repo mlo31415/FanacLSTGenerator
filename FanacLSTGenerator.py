@@ -181,29 +181,37 @@ class MainWindow(GUIClass):
     def OnGridCellChanged(self, event):
         row=event.GetRow()
         col=event.GetCol()
+        newVal=self.gRowGrid.GetCellValue(row, col)
 
         # The first row is the column headers
         if row == 0:
-            self.lstData.ColumnHeaders[col-2]=self.gRowGrid.GetCellValue(row, col)
+            self.lstData.ColumnHeaders[col-2]=newVal
             return
 
-        # The first three columns are special.  So start by dealing with the ordinary cases
+        # Columns 3 and later are ordinary colums. Just accept whatever edit is made.
         if col > 2:
-            self.lstData.Rows[row-1][col-2]=self.gRowGrid.GetCellValue(row, col)
+            self.lstData.Rows[row-1][col-2]=newVal
             return
+
+        # Columns 1 and 2 are the name and coded name. They are stored separately in lstData and thus need to be handled separately.
         if col == 2 or col == 1:
             self.lstData.Rows[row-1][0]=self.gRowGrid.GetCellValue(row, 1)+">"+self.gRowGrid.GetCellValue(row, 2)
             return
 
-        # So the user is editing a row number
-        # This is tricky. We need to confirm that the user entered a new number.  (If not, we restore the old one and we're done.)
+        # What's left is column zero and thus the user is editing a row number
+        # If it's an "X", the row has been deleted.
+        if newVal.lower() == "x":
+            del self.lstData.Rows[row-1]
+            return
+
+        # If it's a number, it is tricky. We need to confirm that the user entered a new number.  (If not, we restore the old one and we're done.)
         # If there is a new number, we re-arrange the rows and then renumber them.
         try:
-            newnumf=float(self.gRowGrid.GetCellValue(row, col))
+            newnumf=float(newVal)
         except:
-            self.gRowGrid.SetCellValue(row, 0, str(row))
+            self.gRowGrid.SetCellValue(row, 0, str(row))    # Restore the old value
             return
-        newnumf-=0.00001    # when the user supplies an integer, we drop it just before that integer
+        newnumf-=0.00001    # When the user supplies an integer, we drop the row *just* before that integer. No overwriting!
 
         # The indexes the user sees start with 1, but the rows list is 0-based.  Adjust accordingly.
         oldrow=row-1
@@ -211,6 +219,7 @@ class MainWindow(GUIClass):
         # We *should* have a fractional value or an integer value out of range. Check for this.
         self.MoveRow(oldrow, newnumf)
         self.RefreshDataRows()
+        return
 
 
     def MoveRow(self, oldrow, newnumf):
