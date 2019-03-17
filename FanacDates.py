@@ -6,7 +6,7 @@ import re
 
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number
-def IsNumeric(arg):
+def IsNumeric(arg) -> bool:
     if type(arg) in [float, int]:
         return True
 
@@ -61,7 +61,7 @@ class FanacDate:
 
     #--------------------------------
     # Copy a FanacDate to self
-    def Set1(self, other):
+    def Copy(self, other):
         self.YearText=other.YearText
         self.YearInt=other.YearInt
         self.MonthText=other.MonthText
@@ -99,7 +99,7 @@ class FanacDate:
 
     #--------------------------------
     # This just sets things pretty rawly
-    def Set6(self, yearText, yearInt, monthText, monthInt, dayText, dayInt):
+    def SetRaw(self, yearText, yearInt, monthText, monthInt, dayText, dayInt):
         self.YearText=yearText
         self.YearInt=yearInt
         self.MonthText=monthText
@@ -181,7 +181,7 @@ class FanacDate:
         # There are some dates which follow no useful pattern.  Check for them
         d=InterpretRandomDatestring(dateText)
         if d is not None:
-            self.Set1(d)
+            self.Copy(d)
             return self
 
         # A common pattern of date that dateutil can't parse is <something> <some year>, where <something> might be "Easter" or "Q1" or "summer"
@@ -209,7 +209,7 @@ class FanacDate:
             except:
                 y=None
             if y is not None and m is not None:
-                self.Set6(ytext, y, mtext, m, None, None)
+                self.SetRaw(ytext, y, mtext, m, None, None)
                 self.Raw=dateText
                 return self
 
@@ -224,7 +224,7 @@ class FanacDate:
                 y=None
             if y is not None and m is not None:
                 if 1860 < y < 2100:  # Outside this range it can't be a fannish-relevant year (the range is oldest fan birth date to middle-future)
-                    self.Set6(ytext, y, mtext, m, None, None)
+                    self.SetRaw(ytext, y, mtext, m, None, None)
                     self.Raw=dateText
                     return self
 
@@ -233,7 +233,7 @@ class FanacDate:
         if y is not None and mtext is not None:
             rslt=InterpretNamedDay(mtext)   # mtext was extracted by whichever pattern recognized the year and set y to non-None
             if rslt is not None:
-                self.Set6(ytext, y, mtext, rslt[0], None, rslt[1])
+                self.SetRaw(ytext, y, mtext, rslt[0], None, rslt[1])
                 self.Raw=dateText
                 return self
 
@@ -249,7 +249,7 @@ class FanacDate:
                 m=MonthToInt(mtext)
                 d=InterpretRelativeWords(modifier)
                 if m is not None and d is not None:
-                    self.Set6(ytext, y, mtext, m, modifier, d)
+                    self.SetRaw(ytext, y, mtext, m, modifier, d)
                     self.Raw=dateText
                     return self
 
@@ -290,7 +290,7 @@ def YearAs4Digits(year: int) -> int:
 
 #==================================================================================
 # Take a date split into day-month-year and return a FanacDate
-def ParseDMY(year: str, month: str, day: str) -> FanacDate:
+def ParseYMD(year: str, month: str, day: str) -> FanacDate:
     fd=FanacDate()
     y=InterpretYear(year)
     try:
@@ -302,7 +302,21 @@ def ParseDMY(year: str, month: str, day: str) -> FanacDate:
     except:
         d=None
 
-    fd.Set6(year, y, month, m, day, d)
+    fd.SetRaw(year, y, month, m, day, d)
+    return fd
+
+
+#==================================================================================
+# Take a date split into day-month-year and return a FanacDate
+def ParseYM(year: str, month: str) -> FanacDate:
+    fd=FanacDate()
+    y=InterpretYear(year)
+    try:
+        m=InterpretMonth(month)
+    except:
+        m=None
+
+    fd.SetRaw(year, y, month, m, None, None)
     return fd
 
 
@@ -348,7 +362,7 @@ def InterpretDay(dayData: str):
     if isinstance(dayData, int):  # If it's already an int, not to worry
         return dayData
     if len(dayData.strip()) == 0:  # If it's blank, return 0
-        return None
+        return 0
 
     # Convert to int
     dayData=RemoveHTMLDebris(dayData)
@@ -617,7 +631,7 @@ def StandardizeMonth(month: str) -> str:
 # Allow raw use of FormatDate given integer inputs
 def FormatDate2(year: int, month: int, day: int) -> str:
     d=FanacDate()
-    d.Set6(YearName(year), year, MonthName(month), month, DayName(day), day)
+    d.SetRaw(YearName(year), year, MonthName(month), month, DayName(day), day)
     return d.FormatDate()
 
 

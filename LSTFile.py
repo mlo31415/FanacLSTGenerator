@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import FanacDates
 
 # -------------------------------------------------------------
-def CanonicizeColumnHeaders(header):
+def CanonicizeColumnHeaders(header: str) -> str:
     # 2nd item is the canonical form
     translationTable={
         "published": "date",
@@ -47,7 +47,7 @@ class LSTFile:
     # Using the columns specified, find the best location to insert the row
     # In all cases we assume that the LST file is sorted in increasing order, so we stop the first time we hit a larger value
     # Note that we may return a negative index, which means to prepend the row.
-    def GetBestRowIndex(self, bestCols, newRow):
+    def GetBestRowIndex(self, bestCols: str, newRow: list) -> float:
         # The choices are
         #   YM -- use year and month
         #   VN -- use volume and number
@@ -79,9 +79,9 @@ class LSTFile:
                 raise ValueError("LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
             colY=self.ColumnHeaderTypes.index("Y")
             colM=self.ColumnHeaderTypes.index("M")
-            val=FanacDates.ParseDMY(newRow[colY], newRow[colM], 0).AsFloat()
+            val=FanacDates.ParseYM(newRow[colY], newRow[colM]).AsFloat()
             for i in range(0, len(self.Rows)):
-                if FanacDates.ParseDMY(self.Rows[i][colY], self.Rows[i][colM], 0).AsFloat() > val:
+                if FanacDates.ParseYM(self.Rows[i][colY], self.Rows[i][colM]).AsFloat() > val:
                     return i+0.5
             return len(self.Rows)+1
 
@@ -96,7 +96,7 @@ class LSTFile:
     #--------------------------------
     # Figure out what the column headers are (they frequently have variant names)
     # Get some statistics on which columns have info in them, also.
-    def IdentifyColumnHeaders(self):
+    def IdentifyColumnHeaders(self) -> None:
         # The trick here is that "Number" (in its various forms) is used vaguely: Sometimes it means whole number and sometimes volume number
         # First identify all the easy ones
         self.ColumnHeaderTypes=[]
@@ -119,7 +119,7 @@ class LSTFile:
 
     #---------------------------------
     # take the supplied header types and use the row statistics to determine what column to use to do an insertion.
-    def GetInsertCol(self, row):
+    def GetInsertCol(self, row: list) -> int:
         if self.SortColumn is None:
             raise ValueError("class LSTFile: GetInsertCol called while SortColumn is None")
 
@@ -160,7 +160,7 @@ class LSTFile:
     # The column will be (mostly) filled and will be in ascending order.
     # This is necessarily based on heuristics and is inexact.
     # TODO: For the moment we're going to ignore whether the selected column is in fact sorted. We need to fix this later.
-    def MeasureSortColumns(self):
+    def MeasureSortColumns(self) -> None:
         # A sort column must either be the title or have a type code
         # Start by looking through the columns that have a type code and seeing which are mostly or completely filled.  Do it in order of perceived importance.
         fW=self.CountFilledCells("W")
@@ -169,16 +169,12 @@ class LSTFile:
         fY=self.CountFilledCells("Y")
         fM=self.CountFilledCells("M")
 
-        self.SortColumn={}
-        self.SortColumn["W"]=fW
-        self.SortColumn["VN"]=fV*fN
-        self.SortColumn["YM"]=fY*fM
-
+        self.SortColumn={"W": fW, "VN": fV*fN, "YM": fY*fM}
 
     #---------------------------------
     # Count the number of filled cells in the column with the specified type code
     # Returns a floating point fraction between 0 and 1
-    def CountFilledCells(self, colType):
+    def CountFilledCells(self, colType: str) -> float:
         try:
             index=self.ColumnHeaderTypes.index(colType)
         except:
@@ -194,14 +190,14 @@ class LSTFile:
 
     #---------------------------------
     # Read an LST file, returning its contents as an LSTFile
-    def Read(self, filename):
+    def Read(self, filename: str) -> None:
 
         # Open the file, read the lines in it and strip leading and trailing whitespace (including '\n')
         contents=list(open(filename))
         contents=[l.strip() for l in contents]
 
         if contents is None or len(contents) == 0:
-            return None
+            return
 
         # The structure of an LST file is
         #   Header line
