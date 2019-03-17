@@ -141,12 +141,12 @@ class MainWindow(GUIClass):
         namePrefix=sections[0].strip()
 
         # Now remove the extension and divide the balance of the name by spaces
-        sections[1]=os.path.splitext(sections[1])
-        rest=[r for r in sections[1][0].split(" ") if len(r) > 0]
+        balance=os.path.splitext(sections[1])[0]    # Get the filename and then drop the extension
+        rest=[r for r in balance.split(" ") if len(r) > 0]
 
         # We have the table of column headers types in lstData.ColumnHeaderTypes
         # Match them up and create the new row with the right stuff in each column.
-        row=[""]*len(self.lstData.ColumnHeaders)
+        row=[""]*len(self.lstData.ColumnHeaders)    # Create an empty list of the correct size
         for val in rest:
             if len(val) > 1:
                 valtype=val[0]

@@ -119,7 +119,7 @@ class LSTFile:
 
     #---------------------------------
     # take the supplied header types and use the row statistics to determine what column to use to do an insertion.
-    def GetInsertCol(self, row: list) -> int:
+    def GetInsertCol(self, row: list) -> str:
         if self.SortColumn is None:
             raise ValueError("class LSTFile: GetInsertCol called while SortColumn is None")
 
@@ -144,7 +144,7 @@ class LSTFile:
                     possibleCols["YM"]=self.SortColumn["YM"]
 
         if len(possibleCols) == 0:
-            return -1
+            return ""
         keyBestCol=-1
         valBestCol=0
         for item in possibleCols.items():
