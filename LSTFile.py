@@ -36,7 +36,7 @@ def CanonicizeColumnHeaders(header: str) -> str:
 @dataclass(order=False)
 class LSTFile:
     FirstLine: str=None
-    TopTextLines: str=None
+    TopTextLines: list=None
     ColumnHeaders: list=None        # The actual text of the column headers
     ColumnHeaderTypes: list=None    # The single character types for the corresponding ColumnHeaders
     SortColumn: dict=None           # The single character type(s) of the sort column(s).  Sort on whole num="W", sort on Vol+Num ="VN", etc.
