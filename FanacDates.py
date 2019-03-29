@@ -380,7 +380,7 @@ def InterpretDay(dayData: str):
 # Make sure day is within month
 def BoundDay(dayInt: int, monthInt: int) -> int:
     if dayInt is None:
-        raise(ValueError, "FanacDates.BoundDay: dayInt is None")
+        dayInt=1    # If no day is specified, we'll assume the 1st of the month
     if monthInt is None:
         raise(ValueError, "FanacDates.BoundDay: dayInt is None")
     if dayInt < 1:
