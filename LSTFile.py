@@ -32,6 +32,44 @@ def CanonicizeColumnHeaders(header: str) -> str:
     except:
         return header.lower()
 
+# -------------------------------------------------------------
+# This takes a LST file column header and returns the preferred, human-readable form.
+def PreferredColumnHeaders(header: str) -> str:
+    # 2nd item is the canonical form
+    # a->A transformations are in place to ensure proper capitalization
+    translationTable={
+        "published": "Date",
+        "date": "Date",
+        "editors": "Editor",
+        "editor": "Editor",
+        "zine": "WholeNum",
+        "fanzine": "WholeNum",
+        "whole": "WholeNum",
+        "wholenum": "WholeNum",
+        "mo.": "Month",
+        "mon": "Month",
+        "month": "Month",
+        "no.": "Num",
+        "no,": "Num",
+        "#": "Num",
+        "num": "Num",
+        "page": "Pages",
+        "pages": "Pages",
+        "pp,": "Pages",
+        "pp": "Pages",
+        "pp.": "Pages",
+        "pub": "Publisher",
+        "publisher": "Publisher",
+        "volume": "Vol",
+        "v": "Vol",
+        "vol": "Vol",
+    }
+    try:
+        # If it's in the table, return the preferred version
+        return translationTable[header.replace(" ", "").replace("/", "").lower()]
+    except:
+        # Otherwise, just return whatever-it-was that was passed in.
+        return header
 
 @dataclass(order=False)
 class LSTFile:
