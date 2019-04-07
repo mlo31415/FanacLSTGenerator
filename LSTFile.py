@@ -261,9 +261,10 @@ class LSTFile:
                 if topTextLines[-1:][0].lower().endswith(r"</p>") or topTextLines[-1:][0].lower().endswith(r"<p>"):
                     break
 
-
+        # The column headers are in the first line
         colHeaderLine=contents[0]
-        contents=contents[1:]
+        contents=contents[1:]   # Drop them so we can read the rest later.
+
         rowLines=[]
         while len(contents)>0:
             rowLines.append(contents[0])
@@ -274,7 +275,7 @@ class LSTFile:
         self.TopTextLines=topTextLines
 
         # We need to parse the column headers
-        self.ColumnHeaders=[h.strip() for h in colHeaderLine.split(";")]
+        self.ColumnHeaders=[PreferredColumnHeaders(h.strip()) for h in colHeaderLine.split(";")]
 
         # And likewise the rows
         # Note that we have the funny structure (filename>displayname) of the first column. We split that off
