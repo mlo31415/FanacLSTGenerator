@@ -2,6 +2,7 @@ import os
 import wx
 import wx.grid
 import math
+import sys
 from GUIClass import GUIClass
 from LSTFile import *
 
@@ -9,8 +10,11 @@ class MainWindow(GUIClass):
     def __init__(self, parent, title):
         GUIClass.__init__(self, parent)
 
-        # Call the File Open dialog to get an LST file
         self.dirname=''
+        if len(sys.argv) > 1:
+            self.dirname=os.getcwd()
+
+        # Call the File Open dialog to get an LST file
         dlg=wx.FileDialog(self, "Select LST file to load", self.dirname, "", "*.LST", wx.FD_OPEN)
         if dlg.ShowModal() != wx.ID_OK:
             dlg.Destroy()
