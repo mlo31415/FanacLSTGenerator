@@ -193,7 +193,14 @@ class MainWindow(GUIClass):
             self.lstData.ColumnHeaders[col-2]=newVal
             return
 
-        # Columns 3 and later are ordinary colums. Just accept whatever edit is made.
+        # If we're entering data in a new row or a new column, append the necessary number of new rows of columns to lstData
+        while row > len(self.lstData.Rows):
+            self.lstData.Rows.append([""])
+
+        while col > len(self.lstData.Rows[row-1]):
+            self.lstData.Rows[row-1].append("")
+
+        # Columns 3 and later are ordinary columns. Just accept whatever edit is made.
         if col > 2:
             self.lstData.Rows[row-1][col-2]=newVal
             return
