@@ -89,7 +89,7 @@ class MainWindow(GUIClass):
             val=grid.GetCellValue(i+1, 2).split(">")
             grid.SetCellValue(i+1, 1, val[0])
             grid.SetCellValue(i+1, 2, val[1])
-            cellcolor=wx.Colour(255, 230, 230) if grid.GetCellValue(i+1, 2) in self.highlightRows else wx.Colour(255, 255, 255)
+            cellcolor=wx.Colour(255, 240, 240) if grid.GetCellValue(i+1, 2) in self.highlightRows else wx.Colour(255, 255, 255)
             for j in range(0, grid.GetNumberCols()):
                 grid.SetCellBackgroundColour(i+1, j+1, cellcolor)
 
