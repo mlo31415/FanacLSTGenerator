@@ -10,6 +10,8 @@ class MainWindow(GUIClass):
     def __init__(self, parent, title):
         GUIClass.__init__(self, parent)
 
+        self.highlightRows=[]       # A List of the names of fanzines in highlighted rows
+
         self.dirname=''
         if len(sys.argv) > 1:
             self.dirname=os.getcwd()
@@ -82,11 +84,14 @@ class MainWindow(GUIClass):
                 grid.SetCellValue(i+1, j+1, cell)
                 j+=1
             i+=1
-        # We need to split the contents of col 2 into two parts, one for col 1 and the rest for col 2
+        # We need to split the contents of col 2 into two parts, one for col 1 and the rest for col 2.  Also set the proper highlighting.
         for i in range(0, len(self.lstData.Rows)):
             val=grid.GetCellValue(i+1, 2).split(">")
             grid.SetCellValue(i+1, 1, val[0])
             grid.SetCellValue(i+1, 2, val[1])
+            cellcolor=wx.Colour(255, 230, 230) if grid.GetCellValue(i+1, 2) in self.highlightRows else wx.Colour(255, 255, 255)
+            for j in range(0, grid.GetNumberCols()):
+                grid.SetCellBackgroundColour(i+1, j+1, cellcolor)
 
 
     def OnSaveLSTFile(self, event):
@@ -129,6 +134,7 @@ class MainWindow(GUIClass):
             fIndex=self.lstData.GetBestRowIndex(bestColTypes, row)  # "findex" to remind me this is probably a floating point number to indicate an insertion between two rows
             self.lstData.Rows.append(row)
             self.MoveRow(len(self.lstData.Rows)-1, fIndex)
+            self.highlightRows.append(row[0][1:])
 
         self.RefreshDataRows()
         pass
