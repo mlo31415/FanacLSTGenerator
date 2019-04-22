@@ -86,7 +86,7 @@ class MainWindow(GUIClass):
             i+=1
         # We need to split the contents of col 2 into two parts, one for col 1 and the rest for col 2.  Also set the proper highlighting.
         for i in range(0, len(self.lstData.Rows)):
-            val=grid.GetCellValue(i+1, 2).split(">")
+            val=self.SplitColOne(grid.GetCellValue(i+1, 2))
             grid.SetCellValue(i+1, 1, val[0])
             grid.SetCellValue(i+1, 2, val[1])
             cellcolor=wx.Colour(255, 240, 240) if grid.GetCellValue(i+1, 2) in self.highlightRows else wx.Colour(255, 255, 255)
@@ -134,7 +134,7 @@ class MainWindow(GUIClass):
             fIndex=self.lstData.GetBestRowIndex(bestColTypes, row)  # "findex" to remind me this is probably a floating point number to indicate an insertion between two rows
             self.lstData.Rows.append(row)
             self.MoveRow(len(self.lstData.Rows)-1, fIndex)
-            self.highlightRows.append(row[0][1:])
+            self.highlightRows.append(row[0][1:])   # Add this row's fanzine name to the list of newly-added rows.
 
         self.RefreshDataRows()
         pass
@@ -169,7 +169,7 @@ class MainWindow(GUIClass):
                     row[index]=val
                 except:
                     pass    # Just ignore the error
-        row[0]=">"+namePrefix
+        row[0]=self.JoinColOne("", namePrefix)
         return row
 
 
@@ -187,6 +187,12 @@ class MainWindow(GUIClass):
             return
         if event.GetRow() == 0 and event.GetCol() > 0:
             self.gRowGrid.AutoSizeColumn(event.GetCol())
+
+    def SplitColOne(self, val: str):
+        return val.split(">")[0], val.split(">")[1]
+
+    def JoinColOne(self, v1: str, v2: str):
+        return v1+">"+v2
 
 
     def OnGridCellChanged(self, event):
@@ -211,9 +217,12 @@ class MainWindow(GUIClass):
             self.lstData.Rows[row-1][col-2]=newVal
             return
 
-        # Columns 1 and 2 are the name and coded name. They are stored separately in lstData and thus need to be handled separately.
+        # Columns 1 and 2 are the name and coded name. They are stored specially in lstData and thus need to be handled differently than the other cells.
         if col == 2 or col == 1:
-            self.lstData.Rows[row-1][0]=self.gRowGrid.GetCellValue(row, 1)+">"+self.gRowGrid.GetCellValue(row, 2)
+            # We need to update highlightRows with the new name of this issue
+            old=self.SplitColOne(self.lstData.Rows[row-1][0])
+            self.highlightRows=[self.gRowGrid.GetCellValue(row, 2) if x == old[1] else x for x in self.highlightRows]
+            self.lstData.Rows[row-1][0]=self.JoinColOne(self.gRowGrid.GetCellValue(row, 1), self.gRowGrid.GetCellValue(row, 2))
             return
 
         # What's left is column zero and thus the user is editing a row number
