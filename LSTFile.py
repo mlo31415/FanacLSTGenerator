@@ -71,6 +71,28 @@ def PreferredColumnHeaders(header: str) -> str:
         # Otherwise, just return whatever-it-was that was passed in.
         return header
 
+def InterpretIssueSpec(s: str):
+    if s is None:
+        return 0
+    s=s.strip()
+    if len(s) == 0:
+        return 0
+
+    # First thing to try is to just interpret the string as a number
+    try:
+        return float(s)
+    except:
+        # well, that didn't work!
+        # See if it can be interpreted as a range a-b
+        if "-" in s:
+            try:
+                return float(s.split("-")[0])      # We only care about the first number in a range
+            except:
+                # That also failed.  Just fall through to the ignominious end.
+                pass
+    raise ValueError("LSTFile.InterpretIssueSpec can't interpret '"+s+"'")
+
+
 @dataclass(order=False)
 class LSTFile:
     FirstLine: str=None
@@ -96,7 +118,7 @@ class LSTFile:
                 raise ValueError("LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
             col=self.ColumnHeaderTypes.index("W")
             for i in range(0, len(self.Rows)):
-                if int(self.Rows[i][col]) > int(newRow[col]):
+                if InterpretIssueSpec(self.Rows[i][col]) > InterpretIssueSpec(newRow[col]):
                     return i+0.5
             return len(self.Rows)+1
 
@@ -106,9 +128,9 @@ class LSTFile:
             colV=self.ColumnHeaderTypes.index("V")
             colN=self.ColumnHeaderTypes.index("N")
             for i in range(0, len(self.Rows)):
-                if int(self.Rows[i][colV]) > int(newRow[colV]):
+                if InterpretIssueSpec(self.Rows[i][colV]) > InterpretIssueSpec(newRow[colV]):
                     return i+0.5
-                if int(self.Rows[i][colV]) == int(newRow[colV]) and int(self.Rows[i][colN]) == int(newRow[colN]):
+                if InterpretIssueSpec(self.Rows[i][colV]) == InterpretIssueSpec(newRow[colV]) and InterpretIssueSpec(self.Rows[i][colN]) == InterpretIssueSpec(newRow[colN]):
                     return i+0.5
             return len(self.Rows)+1
 
@@ -125,7 +147,7 @@ class LSTFile:
 
         # OK, try to sort of title which is always col 1
         for i in range(0, len(self.Rows)):
-            if int(self.Rows[i][1]) > int(newRow[1]):
+            if InterpretIssueSpec(self.Rows[i][1]) > InterpretIssueSpec(newRow[1]):
                 return i+0.5
         return len(self.Rows)+1
 
