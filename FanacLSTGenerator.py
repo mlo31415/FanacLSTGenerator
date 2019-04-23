@@ -221,7 +221,7 @@ class MainWindow(GUIClass):
         if col == 2 or col == 1:
             # We need to update highlightRows with the new name of this issue
             old=self.SplitColOne(self.lstData.Rows[row-1][0])
-            self.highlightRows=[self.gRowGrid.GetCellValue(row, 2) if x == old[1] else x for x in self.highlightRows]
+            self.highlightRows=[self.gRowGrid.GetCellValue(row, 2) if x == old[1] else x for x in self.highlightRows]   # Replace one name with another
             self.lstData.Rows[row-1][0]=self.JoinColOne(self.gRowGrid.GetCellValue(row, 1), self.gRowGrid.GetCellValue(row, 2))
             return
 
