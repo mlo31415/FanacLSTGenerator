@@ -189,7 +189,10 @@ class MainWindow(GUIClass):
             self.gRowGrid.AutoSizeColumn(event.GetCol())
 
     def SplitColOne(self, val: str):
-        return val.split(">")[0], val.split(">")[1]
+        v=val.split(">")
+        if len(v) == 1:
+            return "", val
+        return v[0], v[1]
 
     def JoinColOne(self, v1: str, v2: str):
         return v1+">"+v2
