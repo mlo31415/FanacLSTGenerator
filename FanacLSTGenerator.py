@@ -9,7 +9,7 @@ from LSTFile import *
 
 def Bailout(e, s: str):
     ctypes.windll.user32.MessageBoxW(0, s, "Main error", 1)
-    raise e(s)
+    raise
 
 class MainWindow(GUIClass):
     def __init__(self, parent, title):
@@ -47,7 +47,11 @@ class MainWindow(GUIClass):
         self.dirname=dlg.GetDirectory()
         dlg.Destroy()
 
-        self.lstData.Read(self.lstFilename)
+        try:
+            pathname=os.path.join(self.dirname, self.lstFilename)
+            self.lstData.Read(pathname)
+        except Exception as e:
+            Bailout(e, "MainWindow: Failure reading LST file '"+pathname+"'")
 
         # Fill in the upper stuff
         self.tTopMatter.SetValue(self.lstData.FirstLine)
