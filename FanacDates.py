@@ -3,6 +3,11 @@ import datetime
 import dateutil.parser
 import math
 import re
+import ctypes
+
+def Bailout(e, s: str):
+    ctypes.windll.user32.MessageBoxW(0, s, "FanacDates error", 1)
+    raise e(s)
 
 # =============================================================================
 # Check to see if an argument (int, float or string) is a number
@@ -75,7 +80,7 @@ class FanacDate:
     # Set values using only integer year/month/day. dayInt may be None
     def SetYM(self, yearInt: int, monthInt: int):
         if yearInt is None or monthInt is None:
-            raise (ValueError, "FanacDates: SetYM -- one of the argumens is None")
+            Bailout(ValueError, ValueError, "FanacDates: SetYM -- one of the argumens is None")
         self.YearText=str(yearInt)
         self.YearInt=yearInt
         self.MonthText=MonthName(monthInt)
@@ -88,7 +93,7 @@ class FanacDate:
     # Set values using only integer year/month/day. dayInt may be None
     def SetYMD(self, yearInt: int, monthInt: int, dayInt: int):
         if yearInt is None or monthInt is None or dayInt is None:
-            raise(ValueError, "FanacDates: SetYMD -- one of the argumens is None")
+            Bailout(ValueError, "FanacDates: SetYMD -- one of the argumens is None")
         self.YearText=str(yearInt)
         self.YearInt=yearInt
         self.MonthText=MonthName(monthInt)
@@ -280,7 +285,7 @@ class FanacDate:
 # We accept 2-digit years from 1933 to 2032
 def YearAs4Digits(year: int) -> int:
     if year is None:
-        raise(ValueError, "FanacDates.YearAs4Digits: year is None")
+        Bailout(ValueError, "FanacDates.YearAs4Digits: year is None")
     if year > 100:
         return year
     if year < 33:
@@ -350,7 +355,7 @@ def InterpretYear(yearText: str):
         except:
             pass
 
-    raise(ValueError, "   ***Year conversion failed: '"+yearText+"'")
+    Bailout(ValueError, "   ***Year conversion failed: '"+yearText+"'")
 
 
 # =================================================================================
@@ -371,7 +376,7 @@ def InterpretDay(dayData: str):
     try:
         day=int(dayData)
     except:
-        raise(ValueError, "   ***Day conversion failed: '"+dayData+"'")
+        Bailout(ValueError, "   ***Day conversion failed: '"+dayData+"'")
 
     return day
 
@@ -382,7 +387,7 @@ def BoundDay(dayInt: int, monthInt: int) -> int:
     if dayInt is None:
         dayInt=1    # If no day is specified, we'll assume the 1st of the month
     if monthInt is None:
-        raise(ValueError, "FanacDates.BoundDay: dayInt is None")
+        Bailout(ValueError, "FanacDates.BoundDay: dayInt is None")
     if dayInt < 1:
         return 1
     if monthInt == 2 and dayInt > 28:   # This messes up leap years. De minimus
@@ -411,7 +416,7 @@ def InterpretMonth(monthData: str):
 
     monthInt=MonthToInt(monthData)
     if monthInt is None:
-        raise(ValueError, "   ***Month conversion failed: "+monthData)
+        Bailout(ValueError, "   ***Month conversion failed: "+monthData)
 
     return monthInt
 
@@ -454,7 +459,7 @@ def MonthToInt(text: str) -> int:
     try:
         return monthConversionTable[text]
     except:
-        raise(ValueError, "FanacDates.MonthToInt: '"+text+"' is not interpretable")
+        Bailout(ValueError, "FanacDates.MonthToInt: '"+text+"' is not interpretable")
 
 
 # ====================================================================================
@@ -577,7 +582,7 @@ def InterpretRelativeWords(daystring: str):
 # Format an integer month as text
 def MonthName(month: int):
     if month is None:
-        raise(ValueError, "FanacDates.MonthName: month is None")
+        Bailout(ValueError, "FanacDates.MonthName: month is None")
 
     if 0 < month < 13:
         m=["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][month-1]  # -1 is to deal with zero-based indexing...
@@ -590,7 +595,7 @@ def MonthName(month: int):
 # Format an integer day as text
 def DayName(day: int) -> str:
     if day is None or day == 0:
-        raise (ValueError, "FanacDates.DayName: day is None or 0")
+        Bailout(ValueError, "FanacDates.DayName: day is None or 0")
     if day < 1 or day > 31:
         return "<invalid day: "+str(day)+">"
 
@@ -600,7 +605,7 @@ def DayName(day: int) -> str:
 # Format an integer year as text.  Note that this is designed for fanzines, so two-digit years become ambiguous at 2033.
 def YearName(year: int) -> str:
     if year is None or year == 0:
-        raise(ValueError, "FanacDates.YearName: year is None or 0")
+        Bailout(ValueError, "FanacDates.YearName: year is None or 0")
 
     return str(YearAs4Digits(year))
 

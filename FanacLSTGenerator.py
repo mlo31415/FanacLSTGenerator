@@ -1,10 +1,15 @@
 import os
+import ctypes
 import wx
 import wx.grid
 import math
 import sys
 from GUIClass import GUIClass
 from LSTFile import *
+
+def Bailout(e, s: str):
+    ctypes.windll.user32.MessageBoxW(0, s, "Main error", 1)
+    raise e(s)
 
 class MainWindow(GUIClass):
     def __init__(self, parent, title):
@@ -16,6 +21,22 @@ class MainWindow(GUIClass):
         if len(sys.argv) > 1:
             self.dirname=os.getcwd()
 
+        # Read the LST file
+        self.LoadLSTFile()
+
+        self.Show(True)
+
+    # Given a LST file loaded into self
+    def LoadLSTFile(self):
+
+        # Clear out any old information
+        self.lstData=LSTFile()
+        self.tTopMatter.SetValue("")
+        self.tPText.SetValue("")
+        for i in range(0, self.gRowGrid.NumberCols):
+            for j in range(0, self.gRowGrid.NumberRows):
+                self.gRowGrid.SetCellValue(j, i, "")
+
         # Call the File Open dialog to get an LST file
         dlg=wx.FileDialog(self, "Select LST file to load", self.dirname, "", "*.LST", wx.FD_OPEN)
         if dlg.ShowModal() != wx.ID_OK:
@@ -26,8 +47,6 @@ class MainWindow(GUIClass):
         self.dirname=dlg.GetDirectory()
         dlg.Destroy()
 
-        # Read the LST file
-        self.lstData=LSTFile()
         self.lstData.Read(self.lstFilename)
 
         # Fill in the upper stuff
@@ -41,9 +60,7 @@ class MainWindow(GUIClass):
         self.gRowGrid.HideRowLabels()
         self.gRowGrid.HideColLabels()
         # In effect, this makes all row and col references to data (as opposed to the labels) to be 1-based
-
         labelGray=wx.Colour(230, 230, 230)
-
         # Add the column headers
         self.gRowGrid.SetCellValue(0, 0, "")
         self.gRowGrid.SetCellValue(0, 1, "First Page")
@@ -54,16 +71,16 @@ class MainWindow(GUIClass):
             i+=1
         self.gRowGrid.SetCellBackgroundColour(0, 0, labelGray)
         self.gRowGrid.SetCellBackgroundColour(0, 1, labelGray)
-
         # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
         self.lstData.IdentifyColumnHeaders()
-
         # Insert the row data into the grid
         self.RefreshDataRows()
-
         self.gRowGrid.AutoSizeColumns()
 
-        self.Show(True)
+
+    def OnLoadNewLSTFile(self, event):
+        self.LoadLSTFile()
+        pass
 
 
     def RefreshDataRows(self):
@@ -105,12 +122,14 @@ class MainWindow(GUIClass):
         for row in self.lstData.Rows:
             content.append("; ".join(row))
 
-        # Temporarily write the LST file with a "-1" at the end of the name
-        newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-1.LST")
-        # And write it out
-        with open(newname, "w+") as f:
-            f.writelines([c+"\n" for c in content])
-
+        try:
+            # Temporarily write the LST file with a "-1" at the end of the name
+            newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-1.LST")
+            # And write it out
+            with open(newname, "w+") as f:
+                f.writelines([c+"\n" for c in content])
+        except:
+            Bailout(OSError, "FanacLSTGenerator.OnSaveLSTFile: Failure writing '"+newname+"'")
 
     # We load a bunch of files, including one or more.issue files.
     # The .issue files tell us what image files we have present.
@@ -147,7 +166,7 @@ class MainWindow(GUIClass):
         # Start by dividing on the "$$"
         sections=filename.split("$$")
         if len(sections) != 2:
-            return None
+            Bailout(ValueError, "FanacLSTGenerator.DecodeIssueFileName: Missing $$ in '"+filename+"'")
         namePrefix=sections[0].strip()
 
         # Now remove the extension and divide the balance of the name by spaces
@@ -168,7 +187,7 @@ class MainWindow(GUIClass):
                     index=self.lstData.ColumnHeaderTypes.index(valtype)
                     row[index]=val
                 except:
-                    pass    # Just ignore the error
+                    pass    # Just ignore the error and the column
         row[0]=self.JoinColOne("", namePrefix)
         return row
 

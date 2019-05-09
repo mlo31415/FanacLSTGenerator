@@ -1,5 +1,10 @@
 from dataclasses import dataclass
+import ctypes
 import FanacDates
+
+def Bailout(e, s: str):
+    ctypes.windll.user32.MessageBoxW(0, s, "LSTFile error", 1)
+    raise e(s)
 
 # -------------------------------------------------------------
 def CanonicizeColumnHeaders(header: str) -> str:
@@ -90,7 +95,7 @@ def InterpretIssueSpec(s: str):
             except:
                 # That also failed.  Just fall through to the ignominious end.
                 pass
-    raise ValueError("LSTFile.InterpretIssueSpec can't interpret '"+s+"'")
+    Bailout(ValueError, "LSTFile.InterpretIssueSpec can't interpret '"+s+"'")
 
 
 @dataclass(order=False)
@@ -115,7 +120,7 @@ class LSTFile:
         #   "" -- use the title
         if bestCols == "W":
             if "W" not in self.ColumnHeaderTypes:
-                raise ValueError("LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
+                Bailout(ValueError, "LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
             col=self.ColumnHeaderTypes.index("W")
             for i in range(0, len(self.Rows)):
                 if InterpretIssueSpec(self.Rows[i][col]) > InterpretIssueSpec(newRow[col]):
@@ -124,7 +129,7 @@ class LSTFile:
 
         if bestCols == "VN":
             if "V" not in self.ColumnHeaderTypes or "N" not in self.ColumnHeaderTypes:
-                raise ValueError("LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
+                Bailout(ValueError, "LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
             colV=self.ColumnHeaderTypes.index("V")
             colN=self.ColumnHeaderTypes.index("N")
             for i in range(0, len(self.Rows)):
@@ -136,7 +141,7 @@ class LSTFile:
 
         if bestCols == "YM":
             if "Y" not in self.ColumnHeaderTypes:   # We don't actually need a month in every column for this to be useful
-                raise ValueError("LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
+                Bailout(ValueError, "LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
             colY=self.ColumnHeaderTypes.index("Y")
             colM=self.ColumnHeaderTypes.index("M")
             val=FanacDates.ParseYM(newRow[colY], newRow[colM]).AsFloat()
@@ -173,7 +178,7 @@ class LSTFile:
                 if self.ColumnHeaderTypes[i] == "N":
                     self.ColumnHeaderTypes[i]="W"
 
-        # Now cather statistics on what columns have data.  This will be needed to determine the best colums to use for inserting new data
+        # Now gather statistics on what columns have data.  This will be needed to determine the best colums to use for inserting new data
         self.MeasureSortColumns()
 
 
@@ -181,7 +186,7 @@ class LSTFile:
     # take the supplied header types and use the row statistics to determine what column to use to do an insertion.
     def GetInsertCol(self, row: list) -> str:
         if self.SortColumn is None:
-            raise ValueError("class LSTFile: GetInsertCol called while SortColumn is None")
+            Bailout(ValueError, "class LSTFile: GetInsertCol called while SortColumn is None")
 
         # ColumnHeaderTypes is a list of the type letters for which this issue has data.
         possibleCols={}
@@ -212,7 +217,6 @@ class LSTFile:
                 valBestCol=item[1]
                 keyBestCol=item[0]
         return keyBestCol
-
 
 
     #---------------------------------
