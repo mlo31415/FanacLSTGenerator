@@ -127,13 +127,33 @@ class MainWindow(GUIClass):
             content.append("; ".join(row))
 
         try:
-            # Temporarily write the LST file with a "-1" at the end of the name
-            newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-1.LST")
+            # Rename the old file
+            oldname=os.path.join(self.dirname, self.lstFilename)
+            newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
+            i=0
+            while os.path.exists(newname):
+                i+=1
+                newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-old-"+str(i)+".LST")
+
+            os.rename(oldname, newname)
+        except:
+            Bailout(PermissionError, "OnSaveLSTFile fails when trying to rename "+oldname+" to "+newname)
+
+        try:
             # And write it out
-            with open(newname, "w+") as f:
+            with open(oldname, "w+") as f:
                 f.writelines([c+"\n" for c in content])
         except:
-            Bailout(OSError, "FanacLSTGenerator.OnSaveLSTFile: Failure writing '"+newname+"'")
+            Bailout(PermissionError, "OnSaveLSTFile fails when trying to write file "+newname)
+
+        # try:
+        #     # Temporarily write the LST file with a "-1" at the end of the name
+        #     newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-1.LST")
+        #     # And write it out
+        #     with open(newname, "w+") as f:
+        #         f.writelines([c+"\n" for c in content])
+        # except:
+        #     Bailout(OSError, "FanacLSTGenerator.OnSaveLSTFile: Failure writing '"+newname+"'")
 
     # We load a bunch of files, including one or more.issue files.
     # The .issue files tell us what image files we have present.
