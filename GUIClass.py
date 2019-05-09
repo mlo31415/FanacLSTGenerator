@@ -21,7 +21,7 @@ class GUIClass(wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=wx.EmptyString, pos=wx.DefaultPosition, size=wx.Size(1000, 700), style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
-        self.SetSizeHintsSz(wx.DefaultSize, wx.DefaultSize)
+        self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
 
         self.m_toolBar2=self.CreateToolBar(wx.TB_HORIZONTAL, wx.ID_ANY)
         self.mLoadNewIssues=wx.Button(self.m_toolBar2, wx.ID_ANY, u"Load New Issue(s)", wx.DefaultPosition, wx.DefaultSize, 0)
