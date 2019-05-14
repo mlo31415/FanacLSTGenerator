@@ -326,7 +326,7 @@ class LSTFile:
         content.append("")
         for row in self.Rows:
             # We have to join the first two elements of row into a single element to deal with the LST's odd format
-            content.append( row[0] + ">" + row[1]+ "; " + ("; ".join(row[1:])) )
+            content.append( row[0] + ">" + row[1]+ "; " + ("; ".join(row[2:])) )
 
         # And write it out
         with open(filename, "w+") as f:
