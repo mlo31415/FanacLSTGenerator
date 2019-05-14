@@ -78,9 +78,9 @@ class MainWindow(GUIClass):
         self.gRowGrid.SetCellBackgroundColour(0, 1, labelGray)
         # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
         self.lstData.IdentifyColumnHeaders()
+
         # Insert the row data into the grid
-        self.RefreshDataRows()
-        self.gRowGrid.AutoSizeColumns()
+        self.RefreshGridFromLSTData()
 
 
     def OnLoadNewLSTFile(self, event):
@@ -88,7 +88,7 @@ class MainWindow(GUIClass):
         pass
 
 
-    def RefreshDataRows(self):
+    def RefreshGridFromLSTData(self):
         grid=self.gRowGrid
         headerGray=wx.Colour(230, 230, 230)
         # Make the first grid column contain editable row numbers
@@ -111,6 +111,8 @@ class MainWindow(GUIClass):
             cellcolor=wx.Colour(255, 240, 240) if grid.GetCellValue(i+1, 2) in self.highlightRows else wx.Colour(255, 255, 255)
             for j in range(0, grid.GetNumberCols()):
                 grid.SetCellBackgroundColour(i+1, j+1, cellcolor)
+
+        grid.AutoSizeColumns()
 
 
     def OnSaveLSTFile(self, event):
@@ -157,7 +159,7 @@ class MainWindow(GUIClass):
             self.MoveRow(len(self.lstData.Rows)-1, fIndex)
             self.highlightRows.append(row[0][1:])   # Add this row's fanzine name to the list of newly-added rows.
 
-        self.RefreshDataRows()
+        self.RefreshGridFromLSTData()
         pass
 
 
@@ -235,26 +237,29 @@ class MainWindow(GUIClass):
     def OnPopupPaste(self, event):
         # We paste the clipboard data into the block of the same size with the upper-left at the mouse's position
         # Might some of the new material be outside the current bounds?  If so, add some blank rows and/or columns
-        pasteBottom=self.gRowGrid.GridCursorRow+len(self.clipboard)
-        pasteRight=self.gRowGrid.GridCursorCol+len(self.clipboard[0])
+        pasteTop=self.gRowGrid.GridCursorRow
+        pasteBottom=pasteTop+len(self.clipboard)
+        pasteLeft=self.gRowGrid.GridCursorCol
+        pasteRight=pasteLeft+len(self.clipboard[0])
         num=pasteBottom-len(self.lstData.Rows)-1
         if num > 0:
             for i in range(num):
-                self.lstData.Rows.append(["" for i in range(len(self.lstData.Rows[0]))])   # The strange contortion is to create a list of distinct empty lists
+                self.lstData.Rows.append(["" for x in range(len(self.lstData.Rows[0]))])   # The strange contortion is to append a list of distinct empty strings
         num=pasteRight-len(self.lstData.Rows[0])-1
         if num > 0:
             for row in self.lstData.Rows:
-                row.extend(["" for i in range(num)])
-        i=self.gRowGrid.GridCursorRow
+                row.extend(["" for x in range(num)])
+        i=pasteTop
         for row in self.clipboard:
-            j=self.gRowGrid.GridCursorCol
+            j=pasteLeft
             for cell in row:
                 self.lstData.Rows[i-1][j-1]=cell    # The -1 is to deal with the 1-indexing
                 j+=1
             i+=1
 
-        self.RefreshDataRows()
+        self.RefreshGridFromLSTData()
         event.Skip()
+
 
     def OnGridRangeSelect(self, event):
         if event.TopRow != 0 or event.LeftCol != 0 or event.BottomRow+1 != event.EventObject.NumberRows or event.RightCol+1 != event.EventObject.NumberCols:
@@ -310,7 +315,7 @@ class MainWindow(GUIClass):
 
         # We *should* have a fractional value or an integer value out of range. Check for this.
         self.MoveRow(oldrow, newnumf)
-        self.RefreshDataRows()
+        self.RefreshGridFromLSTData()
         return
 
 
