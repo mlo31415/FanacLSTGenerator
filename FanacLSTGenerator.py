@@ -212,7 +212,7 @@ class MainWindow(GUIClass):
         # Gray out the Past popup menu item if there is nothing to paste
         item_id=self.m_popupMenu1.FindItem("Paste")
         item=self.m_popupMenu1.FindItemById(item_id)
-        item.Enabled=self.clipboard is not None
+        item.Enabled=self.clipboard is not None and len(self.clipboard) > 0 and len(self.clipboard[0]) > 0  # Enable only if the clipboard contains actual content
 
         self.PopupMenu(self.m_popupMenu1)
 
@@ -233,6 +233,16 @@ class MainWindow(GUIClass):
         event.Skip()
 
     def OnPopupPaste(self, event):
+        # We paste the clipboard data into the block of the save size with the upper-left at the mouse's position
+        i=self.gRowGrid.GridCursorRow
+        for row in self.clipboard:
+            j=self.gRowGrid.GridCursorCol
+            for cell in row:
+                self.lstData.Rows[i][j]=cell
+                j+=1
+            i+=1
+
+        self.RefreshDataRows()
         event.Skip()
 
     def OnGridRangeSelect(self, event):
