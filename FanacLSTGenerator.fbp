@@ -915,7 +915,6 @@
                                 <event name="OnGridCmdLabelLeftDClick"></event>
                                 <event name="OnGridCmdLabelRightClick"></event>
                                 <event name="OnGridCmdLabelRightDClick"></event>
-                                <event name="OnGridCmdRangeSelect"></event>
                                 <event name="OnGridCmdRowSize"></event>
                                 <event name="OnGridCmdSelectCell"></event>
                                 <event name="OnGridColSize"></event>
@@ -926,7 +925,6 @@
                                 <event name="OnGridLabelLeftDClick"></event>
                                 <event name="OnGridLabelRightClick"></event>
                                 <event name="OnGridLabelRightDClick"></event>
-                                <event name="OnGridRangeSelect">OnGridRangeSelect</event>
                                 <event name="OnGridRowSize"></event>
                                 <event name="OnGridSelectCell"></event>
                                 <event name="OnKeyDown"></event>

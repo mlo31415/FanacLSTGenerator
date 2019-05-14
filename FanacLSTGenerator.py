@@ -278,19 +278,6 @@ class MainWindow(GUIClass):
 
 
     #------------------
-    def OnGridRangeSelect(self, event):
-        if event.TopRow != 0 or event.LeftCol != 0 or event.BottomRow+1 != event.EventObject.NumberRows or event.RightCol+1 != event.EventObject.NumberCols:
-            self.userSelection=(event.TopRow, event.LeftCol, event.BottomRow, event.RightCol)
-            print("select: ("+str(event.TopRow)+", "+str(event.LeftCol)+") -- ("+str(event.BottomRow)+", "+str(event.RightCol)+")")
-            if len(self.gRowGrid.SelectedCells) == 0:
-                topleft=self.gRowGrid.SelectionBlockTopLeft[0]
-                bottomright=self.gRowGrid.SelectionBlockBottomRight[0]
-            else:
-                topleft=bottomright=self.gRowGrid.SelectedCells[0]
-            print("        ("+str(topleft[0])+", "+str(topleft[1])+") -- ("+str(bottomright[0])+", "+str(bottomright[1])+")")
-
-
-    #------------------
     def OnGridCellChanged(self, event):
         row=event.GetRow()
         col=event.GetCol()

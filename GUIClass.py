@@ -115,7 +115,6 @@ class GUIClass(wx.Frame):
         self.tPText.Bind(wx.EVT_TEXT, self.OnTextComments)
         self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChange)
         self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnGridCellRightClick)
-        self.gRowGrid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, self.OnGridRangeSelect)
         self.Bind(wx.EVT_MENU, self.OnPopupCopy, id=self.m_menuItemCopy.GetId())
         self.Bind(wx.EVT_MENU, self.OnPopupPaste, id=self.m_menuItemPaste.GetId())
 
@@ -142,9 +141,6 @@ class GUIClass(wx.Frame):
         event.Skip()
 
     def OnGridCellRightClick(self, event):
-        event.Skip()
-
-    def OnGridRangeSelect(self, event):
         event.Skip()
 
     def OnPopupCopy(self, event):
