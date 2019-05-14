@@ -27,7 +27,8 @@ class MainWindow(GUIClass):
 
         self.Show(True)
 
-    # Given a LST file loaded into self
+    #------------------
+    # Given a LST file of disk load it into self
     def LoadLSTFile(self):
 
         # Clear out any old information
@@ -83,14 +84,17 @@ class MainWindow(GUIClass):
         self.RefreshGridFromLSTData()
 
 
+    #------------------
     def OnLoadNewLSTFile(self, event):
         self.LoadLSTFile()
         pass
 
-
+    #------------------
+    # The LSTFile object has the official information. This function refreshes the display from it.
     def RefreshGridFromLSTData(self):
         grid=self.gRowGrid
         headerGray=wx.Colour(230, 230, 230)
+
         # Make the first grid column contain editable row numbers
         for i in range(1, grid.GetNumberRows()):
             grid.SetCellValue(i, 0, str(i))
@@ -106,6 +110,7 @@ class MainWindow(GUIClass):
                 grid.SetCellValue(i, j, cell)
                 j+=1
             i+=1
+
         # Set the proper highlighting.
         for i in range(0, len(self.lstData.Rows)):
             cellcolor=wx.Colour(255, 240, 240) if grid.GetCellValue(i+1, 2) in self.highlightRows else wx.Colour(255, 255, 255)
@@ -115,6 +120,8 @@ class MainWindow(GUIClass):
         grid.AutoSizeColumns()
 
 
+    #------------------
+    # Save an LSTFile object to disk.
     def OnSaveLSTFile(self, event):
         try:
             # Rename the old file
@@ -135,6 +142,7 @@ class MainWindow(GUIClass):
             Bailout(PermissionError, "OnSaveLSTFile fails when trying to write file "+newname)
 
 
+    #------------------
     # We load a bunch of files, including one or more.issue files.
     # The .issue files tell us what image files we have present.
     # Add one row for each .issue file
@@ -163,6 +171,7 @@ class MainWindow(GUIClass):
         pass
 
 
+    #------------------
     def DecodeIssueFileName(self, filename: str):
         if filename is None or len(filename) == 0:
             return None
@@ -195,14 +204,17 @@ class MainWindow(GUIClass):
         return row
 
 
+    #------------------
     def OnTextTopMatter(self, event):
         self.lstData.FirstLine=self.tTopMatter.GetValue()
 
 
+    #------------------
     def OnTextComments(self, event):
         self.lstData.TopTextLines=self.tPText.GetValue().split("\n")
 
 
+    #------------------
     def OnGridCellDoubleclick(self, event):
         if event.GetRow() == 0 and event.GetCol() == 0:
             self.gRowGrid.AutoSize()
@@ -210,6 +222,7 @@ class MainWindow(GUIClass):
         if event.GetRow() == 0 and event.GetCol() > 0:
             self.gRowGrid.AutoSizeColumn(event.GetCol())
 
+    #------------------
     def OnGridCellRightClick(self, event):
         # Gray out the Past popup menu item if there is nothing to paste
         item_id=self.m_popupMenu1.FindItem("Paste")
@@ -218,6 +231,7 @@ class MainWindow(GUIClass):
 
         self.PopupMenu(self.m_popupMenu1)
 
+    #------------------
     def OnPopupCopy(self, event):
         # We need to copy the selected cells into the clipboard object.
         # (We can't simply store the coordinates because the user might edit the cells before pasting.)
@@ -234,6 +248,8 @@ class MainWindow(GUIClass):
 
         event.Skip()
 
+
+    #------------------
     def OnPopupPaste(self, event):
         # We paste the clipboard data into the block of the same size with the upper-left at the mouse's position
         # Might some of the new material be outside the current bounds?  If so, add some blank rows and/or columns
@@ -261,6 +277,7 @@ class MainWindow(GUIClass):
         event.Skip()
 
 
+    #------------------
     def OnGridRangeSelect(self, event):
         if event.TopRow != 0 or event.LeftCol != 0 or event.BottomRow+1 != event.EventObject.NumberRows or event.RightCol+1 != event.EventObject.NumberCols:
             self.userSelection=(event.TopRow, event.LeftCol, event.BottomRow, event.RightCol)
@@ -273,6 +290,7 @@ class MainWindow(GUIClass):
             print("        ("+str(topleft[0])+", "+str(topleft[1])+") -- ("+str(bottomright[0])+", "+str(bottomright[1])+")")
 
 
+    #------------------
     def OnGridCellChanged(self, event):
         row=event.GetRow()
         col=event.GetCol()
@@ -319,6 +337,7 @@ class MainWindow(GUIClass):
         return
 
 
+    #------------------
     def MoveRow(self, oldrow, newnumf):
         newrows=[]
         if newnumf < 0:
@@ -349,6 +368,7 @@ class MainWindow(GUIClass):
         self.lstData.Rows=newrows
 
 
+# Start the GUI and run the event loop
 app = wx.App(False)
 frame = MainWindow(None, "Sample editor")
 app.MainLoop()
