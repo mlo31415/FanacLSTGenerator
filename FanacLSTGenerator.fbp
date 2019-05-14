@@ -900,7 +900,7 @@
                                 <event name="OnGridCellChange">OnGridCellChange</event>
                                 <event name="OnGridCellLeftClick"></event>
                                 <event name="OnGridCellLeftDClick">OnGridCellDoubleclick</event>
-                                <event name="OnGridCellRightClick"></event>
+                                <event name="OnGridCellRightClick">OnGridCellRightClick</event>
                                 <event name="OnGridCellRightDClick"></event>
                                 <event name="OnGridCmdCellChange"></event>
                                 <event name="OnGridCmdCellLeftClick"></event>
@@ -926,7 +926,7 @@
                                 <event name="OnGridLabelLeftDClick"></event>
                                 <event name="OnGridLabelRightClick"></event>
                                 <event name="OnGridLabelRightDClick"></event>
-                                <event name="OnGridRangeSelect"></event>
+                                <event name="OnGridRangeSelect">OnGridRangeSelect</event>
                                 <event name="OnGridRowSize"></event>
                                 <event name="OnGridSelectCell"></event>
                                 <event name="OnKeyDown"></event>

@@ -16,6 +16,7 @@ class MainWindow(GUIClass):
         GUIClass.__init__(self, parent)
 
         self.highlightRows=[]       # A List of the names of fanzines in highlighted rows
+        self.clipboard=None         # The grid's clipboard
 
         self.dirname=''
         if len(sys.argv) > 1:
@@ -230,6 +231,26 @@ class MainWindow(GUIClass):
             return
         if event.GetRow() == 0 and event.GetCol() > 0:
             self.gRowGrid.AutoSizeColumn(event.GetCol())
+
+    def OnGridCellRightClick(self, event):
+        # Gray out the Past popup menu item if there is nothing to paste
+        item_id=self.m_popupMenu1.FindItem("Paste")
+        item=self.m_popupMenu1.FindItemById(item_id)
+        item.Enabled=self.clipboard is not None
+
+        self.PopupMenu(self.m_popupMenu1)
+
+    def OnPopupCopy(self, event):
+        event.Skip()
+
+    def OnPopupPaste(self, event):
+        event.Skip()
+
+    def OnGridRangeSelect(self, event):
+        if event.TopRow != 0 or event.LeftCol != 0 or event.BottomRow+1 != event.EventObject.NumberRows or event.RightCol+1 != event.EventObject.NumberCols:
+            self.userSelection=(event.TopRow, event.LeftCol, event.BottomRow, event.RightCol)
+            print("select: ("+str(event.TopRow)+", "+str(event.LeftCol)+") -- ("+str(event.BottomRow)+", "+str(event.RightCol)+")")
+            self.userSelection
 
     def SplitColOne(self, val: str):
         v=val.split(">")

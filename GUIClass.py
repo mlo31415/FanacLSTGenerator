@@ -90,6 +90,14 @@ class GUIClass(wx.Frame):
 
         # Cell Defaults
         self.gRowGrid.SetDefaultCellAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
+        self.m_popupMenu1=wx.Menu()
+        self.m_menuItemCopy=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Copy", wx.EmptyString, wx.ITEM_NORMAL)
+        self.m_popupMenu1.Append(self.m_menuItemCopy)
+        self.m_menuItemPaste=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Paste", wx.EmptyString, wx.ITEM_NORMAL)
+        self.m_popupMenu1.Append        (self.m_menuItemPaste)
+
+        self.gRowGrid.Bind(wx.EVT_RIGHT_DOWN, self.gRowGridOnContextMenu)
+
         theIssueGrid.Add(self.gRowGrid, 0, wx.ALL|wx.EXPAND, 5)
 
         bSizer1.Add(theIssueGrid, 1, wx.EXPAND, 5)
@@ -105,9 +113,11 @@ class GUIClass(wx.Frame):
         self.bSaveLSTFile.Bind(wx.EVT_BUTTON, self.OnSaveLSTFile)
         self.tTopMatter.Bind(wx.EVT_TEXT, self.OnTextTopMatter)
         self.tPText.Bind(wx.EVT_TEXT, self.OnTextComments)
-        self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged)
-        self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnGridCellDoubleclick)
-        self.gRowGrid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.OnGridLabelLeftClick)
+        self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChange)
+        self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnGridCellRightClick)
+        self.gRowGrid.Bind(wx.grid.EVT_GRID_RANGE_SELECT, self.OnGridRangeSelect)
+        self.Bind(wx.EVT_MENU, self.OnPopupCopy, id=self.m_menuItemCopy.GetId())
+        self.Bind(wx.EVT_MENU, self.OnPopupPaste, id=self.m_menuItemPaste.GetId())
 
     def __del__(self):
         pass
@@ -128,13 +138,22 @@ class GUIClass(wx.Frame):
     def OnTextComments(self, event):
         event.Skip()
 
-    def OnGridCellChanged(self, event):
+    def OnGridCellChange(self, event):
         event.Skip()
 
-    def OnGridCellDoubleclick(self, event):
+    def OnGridCellRightClick(self, event):
         event.Skip()
 
-    def OnGridLabelLeftClick(self, event):
+    def OnGridRangeSelect(self, event):
         event.Skip()
+
+    def OnPopupCopy(self, event):
+        event.Skip()
+
+    def OnPopupPaste(self, event):
+        event.Skip()
+
+    def gRowGridOnContextMenu(self, event):
+        self.gRowGrid.PopupMenu(self.m_popupMenu1, event.GetPosition())
 
 
