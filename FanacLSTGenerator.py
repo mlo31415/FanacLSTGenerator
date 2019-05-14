@@ -17,6 +17,7 @@ class MainWindow(GUIClass):
 
         self.highlightRows=[]       # A List of the names of fanzines in highlighted rows
         self.clipboard=None         # The grid's clipboard
+        self.userSelection=None
 
         self.dirname=''
         if len(sys.argv) > 1:
@@ -241,6 +242,19 @@ class MainWindow(GUIClass):
         self.PopupMenu(self.m_popupMenu1)
 
     def OnPopupCopy(self, event):
+        # We need to copy the selected cells into the clipboard object.
+        # (We can't simply store the coordinates because the user might edit the cells before pasting.)
+        self.clipboard=[]
+        if len(self.gRowGrid.SelectedCells) == 0:
+            topleft=self.gRowGrid.SelectionBlockTopLeft[0]
+            bottomright=self.gRowGrid.SelectionBlockBottomRight[0]
+        else:
+            topleft=bottomright=self.gRowGrid.SelectedCells[0]
+        # We must remember that the first two data columns map to a single LST column.
+
+        for row in self.lstData.Rows[topleft[0]-1 : bottomright[0]]:
+            self.clipboard.append(row[topleft[1]-1 : bottomright[1]])
+
         event.Skip()
 
     def OnPopupPaste(self, event):
@@ -250,7 +264,12 @@ class MainWindow(GUIClass):
         if event.TopRow != 0 or event.LeftCol != 0 or event.BottomRow+1 != event.EventObject.NumberRows or event.RightCol+1 != event.EventObject.NumberCols:
             self.userSelection=(event.TopRow, event.LeftCol, event.BottomRow, event.RightCol)
             print("select: ("+str(event.TopRow)+", "+str(event.LeftCol)+") -- ("+str(event.BottomRow)+", "+str(event.RightCol)+")")
-            self.userSelection
+            if len(self.gRowGrid.SelectedCells) == 0:
+                topleft=self.gRowGrid.SelectionBlockTopLeft[0]
+                bottomright=self.gRowGrid.SelectionBlockBottomRight[0]
+            else:
+                topleft=bottomright=self.gRowGrid.SelectedCells[0]
+            print("        ("+str(topleft[0])+", "+str(topleft[1])+") -- ("+str(bottomright[0])+", "+str(bottomright[1])+")")
 
     def SplitColOne(self, val: str):
         v=val.split(">")
