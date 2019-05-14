@@ -183,7 +183,7 @@ class LSTFile:
 
 
     #---------------------------------
-    # take the supplied header types and use the row statistics to determine what column to use to do an insertion.
+    # Take the supplied header types and use the row statistics to determine what column to use to do an insertion.
     def GetInsertCol(self, row: list) -> str:
         if self.SortColumn is None:
             Bailout(ValueError, "class LSTFile: GetInsertCol called while SortColumn is None")
@@ -304,9 +304,30 @@ class LSTFile:
         self.ColumnHeaders=[PreferredColumnHeaders(h.strip()) for h in colHeaderLine.split(";")]
 
         # And likewise the rows
-        # Note that we have the funny structure (filename>displayname) of the first column. We split that off
+        # Note that we have the funny structure (filename>displayname) of the first column. We treat the ">" as a ";" for the purposes of the spreadsheet. (We'll undo this on save.)
         self.Rows=[]
         for row in rowLines:
+            # Turn the first ">" before the first ";" into a ";"
+            if row.find(">") != -1 and row.find(">") < row.find(";"):
+                row=row[:row.find(">")]+";"+row[row.find(">")+1:]
+            # Split the row on ";"
             self.Rows.append([h.strip() for h in row.split(";")])
 
+    # ---------------------------------
+    # Save an LST file back to disk
+    def Save(self, filename: str) -> None:
 
+        content=[self.FirstLine, ""]
+        if len(self.TopTextLines) > 0:
+            for line in self.TopTextLines:
+                content.append(line)
+            content.append("")
+        content.append("; ".join(self.ColumnHeaders))
+        content.append("")
+        for row in self.Rows:
+            # We have to join the first two elements of row into a single element to deal with the LST's odd format
+            content.append( row[0] + ">" + row[1]+ "; " + ("; ".join(row[1:])) )
+
+        # And write it out
+        with open(filename, "w+") as f:
+            f.writelines([c+"\n" for c in content])

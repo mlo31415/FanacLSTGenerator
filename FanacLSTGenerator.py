@@ -1,5 +1,4 @@
 import os
-import ctypes
 import wx
 import wx.grid
 import math
@@ -92,42 +91,29 @@ class MainWindow(GUIClass):
     def RefreshDataRows(self):
         grid=self.gRowGrid
         headerGray=wx.Colour(230, 230, 230)
-        # Make the first column contain editable row numbers
+        # Make the first grid column contain editable row numbers
         for i in range(1, grid.GetNumberRows()):
             grid.SetCellValue(i, 0, str(i))
             grid.SetCellBackgroundColour(i, 0, headerGray)
         grid.SetCellBackgroundColour(0, 0, headerGray)
 
-        # Now insert the row data (except for the first col from the LST file which we'll deal with next)
+        # Now insert the row data
         grid.AppendRows(len(self.lstData.Rows))
         i=0
         for row in self.lstData.Rows:
-            j=1
+            j=0
             for cell in row:
                 grid.SetCellValue(i+1, j+1, cell)
                 j+=1
             i+=1
-        # We need to split the contents of col 2 into two parts, one for col 1 and the rest for col 2.  Also set the proper highlighting.
+        # Set the proper highlighting.
         for i in range(0, len(self.lstData.Rows)):
-            val=self.SplitColOne(grid.GetCellValue(i+1, 2))
-            grid.SetCellValue(i+1, 1, val[0])
-            grid.SetCellValue(i+1, 2, val[1])
             cellcolor=wx.Colour(255, 240, 240) if grid.GetCellValue(i+1, 2) in self.highlightRows else wx.Colour(255, 255, 255)
             for j in range(0, grid.GetNumberCols()):
                 grid.SetCellBackgroundColour(i+1, j+1, cellcolor)
 
 
     def OnSaveLSTFile(self, event):
-        content=[self.lstData.FirstLine, ""]
-        if len(self.lstData.TopTextLines) > 0:
-            for line in self.lstData.TopTextLines:
-                content.append(line)
-            content.append("")
-        content.append("; ".join(self.lstData.ColumnHeaders))
-        content.append("")
-        for row in self.lstData.Rows:
-            content.append("; ".join(row))
-
         try:
             # Rename the old file
             oldname=os.path.join(self.dirname, self.lstFilename)
@@ -142,20 +128,10 @@ class MainWindow(GUIClass):
             Bailout(PermissionError, "OnSaveLSTFile fails when trying to rename "+oldname+" to "+newname)
 
         try:
-            # And write it out
-            with open(oldname, "w+") as f:
-                f.writelines([c+"\n" for c in content])
+            self.lstData.Save(oldname)
         except:
             Bailout(PermissionError, "OnSaveLSTFile fails when trying to write file "+newname)
 
-        # try:
-        #     # Temporarily write the LST file with a "-1" at the end of the name
-        #     newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-1.LST")
-        #     # And write it out
-        #     with open(newname, "w+") as f:
-        #         f.writelines([c+"\n" for c in content])
-        # except:
-        #     Bailout(OSError, "FanacLSTGenerator.OnSaveLSTFile: Failure writing '"+newname+"'")
 
     # We load a bunch of files, including one or more.issue files.
     # The .issue files tell us what image files we have present.
@@ -197,7 +173,6 @@ class MainWindow(GUIClass):
 
         # Now remove the extension and divide the balance of the name by spaces
         balance=os.path.splitext(sections[1])[0]    # Get the filename and then drop the extension
-        rest: list  # Type hint
         rest=[r for r in balance.split(" ") if len(r) > 0]
 
         # We have the table of column headers types in lstData.ColumnHeaderTypes
@@ -214,7 +189,7 @@ class MainWindow(GUIClass):
                     row[index]=val
                 except:
                     pass    # Just ignore the error and the column
-        row[0]=self.JoinColOne("", namePrefix)
+        row[0]=namePrefix
         return row
 
 
@@ -271,15 +246,6 @@ class MainWindow(GUIClass):
                 topleft=bottomright=self.gRowGrid.SelectedCells[0]
             print("        ("+str(topleft[0])+", "+str(topleft[1])+") -- ("+str(bottomright[0])+", "+str(bottomright[1])+")")
 
-    def SplitColOne(self, val: str):
-        v=val.split(">")
-        if len(v) == 1:
-            return "", val
-        return v[0], v[1]
-
-    def JoinColOne(self, v1: str, v2: str):
-        return v1+">"+v2
-
 
     def OnGridCellChanged(self, event):
         row=event.GetRow()
@@ -298,17 +264,9 @@ class MainWindow(GUIClass):
         while col > len(self.lstData.Rows[row-1]):
             self.lstData.Rows[row-1].append("")
 
-        # Columns 3 and later are ordinary columns. Just accept whatever edit is made.
-        if col > 2:
-            self.lstData.Rows[row-1][col-2]=newVal
-            return
-
-        # Columns 1 and 2 are the name and coded name. They are stored specially in lstData and thus need to be handled differently than the other cells.
-        if col == 2 or col == 1:
-            # We need to update highlightRows with the new name of this issue
-            old=self.SplitColOne(self.lstData.Rows[row-1][0])
-            self.highlightRows=[self.gRowGrid.GetCellValue(row, 2) if x == old[1] else x for x in self.highlightRows]   # Replace one name with another
-            self.lstData.Rows[row-1][0]=self.JoinColOne(self.gRowGrid.GetCellValue(row, 1), self.gRowGrid.GetCellValue(row, 2))
+        # Ordinary columns
+        if col > 0:
+            self.lstData.Rows[row-1][col-1]=newVal
             return
 
         # What's left is column zero and thus the user is editing a row number
