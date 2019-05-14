@@ -99,11 +99,11 @@ class MainWindow(GUIClass):
 
         # Now insert the row data
         grid.AppendRows(len(self.lstData.Rows))
-        i=0
+        i=1
         for row in self.lstData.Rows:
-            j=0
+            j=1
             for cell in row:
-                grid.SetCellValue(i+1, j+1, cell)
+                grid.SetCellValue(i, j, cell)
                 j+=1
             i+=1
         # Set the proper highlighting.
