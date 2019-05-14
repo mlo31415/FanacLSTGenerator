@@ -238,7 +238,7 @@ class MainWindow(GUIClass):
         for row in self.clipboard:
             j=self.gRowGrid.GridCursorCol
             for cell in row:
-                self.lstData.Rows[i][j]=cell
+                self.lstData.Rows[i-1][j-1]=cell    # The -1 is to deal with the 1-indexing
                 j+=1
             i+=1
 
