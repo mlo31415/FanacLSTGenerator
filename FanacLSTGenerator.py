@@ -254,8 +254,6 @@ class MainWindow(GUIClass):
 
     #-------------------
     def OnKeyDown(self, event):
-        print("key="+str(event.KeyCode)+"   cntlDown="+str(self.cntlDown))
-
         top, left, bottom, right=self.LocateSelection()
 
         if event.KeyCode == 67 and self.cntlDown:   # cntl-C
@@ -269,7 +267,6 @@ class MainWindow(GUIClass):
     #-------------------
     def OnKeyUp(self, event):
         if event.KeyCode == 308:                    # cntl
-            print("cntl is up")
             self.cntlDown=False
 
     #------------------
