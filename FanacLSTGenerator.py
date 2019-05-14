@@ -17,6 +17,7 @@ class MainWindow(GUIClass):
         self.highlightRows=[]       # A List of the names of fanzines in highlighted rows
         self.clipboard=None         # The grid's clipboard
         self.userSelection=None
+        self.cntlDown=False
 
         self.dirname=''
         if len(sys.argv) > 1:
@@ -231,36 +232,81 @@ class MainWindow(GUIClass):
 
         self.PopupMenu(self.m_popupMenu1)
 
+
+    #-------------------
+    # Locate the selection, real or implied
+    # There are three cases, in descending order of preference:
+    #   There is a selection block defined
+    #   There is a SelectedCells defined
+    #   There is a GridCurso location
+    def LocateSelection(self):
+        if len(self.gRowGrid.SelectionBlockTopLeft) > 0 and len(self.gRowGrid.SelectionBlockBottomRight) > 0:
+            top, left=self.gRowGrid.SelectionBlockTopLeft[0]
+            bottom, right=self.gRowGrid.SelectionBlockBottomRight[0]
+        elif len(self.gRowGrid.SelectedCells) > 0:
+            top, left=self.gRowGrid.SelectedCells[0]
+            bottom, right=top, left
+        else:
+            left=right=self.gRowGrid.GridCursorCol
+            top=bottom=self.gRowGrid.GridCursorRow
+        return top, left, bottom, right
+
+
+    #-------------------
+    def OnKeyDown(self, event):
+        print("key="+str(event.KeyCode)+"   cntlDown="+str(self.cntlDown))
+
+        top, left, bottom, right=self.LocateSelection()
+
+        if event.KeyCode == 67 and self.cntlDown:   # cntl-C
+            self.CopyCells(top, left, bottom, right)
+        elif event.KeyCode == 86 and self.cntlDown: # cntl-V
+            self.PasteCells(top, left)
+        elif event.KeyCode == 308:                  # cntl
+            self.cntlDown=True
+        event.Skip()
+
+    #-------------------
+    def OnKeyUp(self, event):
+        if event.KeyCode == 308:                    # cntl
+            print("cntl is up")
+            self.cntlDown=False
+
     #------------------
     def OnPopupCopy(self, event):
         # We need to copy the selected cells into the clipboard object.
         # (We can't simply store the coordinates because the user might edit the cells before pasting.)
-        self.clipboard=[]
-        if len(self.gRowGrid.SelectedCells) == 0:
-            topleft=self.gRowGrid.SelectionBlockTopLeft[0]
-            bottomright=self.gRowGrid.SelectionBlockBottomRight[0]
-        else:
-            topleft=bottomright=self.gRowGrid.SelectedCells[0]
-        # We must remember that the first two data columns map to a single LST column.
-
-        for row in self.lstData.Rows[topleft[0]-1 : bottomright[0]]:
-            self.clipboard.append(row[topleft[1]-1 : bottomright[1]])
-
+        top, left, bottom, right=self.LocateSelection()
+        self.CopyCells(top, left, bottom, right)
         event.Skip()
-
 
     #------------------
     def OnPopupPaste(self, event):
+        top, left, bottom, right=self.LocateSelection()
+        self.PasteCells(top, left)
+        event.Skip()
+
+    #------------------
+    def CopyCells(self, top, left, bottom, right):
+        self.clipboard=[]
+        # We must remember that the first two data columns map to a single LST column.
+        for row in self.lstData.Rows[top-1: bottom]:
+            self.clipboard.append(row[left-1: right])
+
+    #------------------
+    def PasteCells(self, top, left):
         # We paste the clipboard data into the block of the same size with the upper-left at the mouse's position
         # Might some of the new material be outside the current bounds?  If so, add some blank rows and/or columns
-        pasteTop=self.gRowGrid.GridCursorRow
-        pasteBottom=pasteTop+len(self.clipboard)
-        pasteLeft=self.gRowGrid.GridCursorCol
-        pasteRight=pasteLeft+len(self.clipboard[0])
+
+        pasteTop=top
+        pasteBottom=top+len(self.clipboard)
+        pasteLeft=left
+        pasteRight=left+len(self.clipboard[0])
+
         num=pasteBottom-len(self.lstData.Rows)-1
         if num > 0:
             for i in range(num):
-                self.lstData.Rows.append(["" for x in range(len(self.lstData.Rows[0]))])   # The strange contortion is to append a list of distinct empty strings
+                self.lstData.Rows.append(["" for x in range(len(self.lstData.Rows[0]))])  # The strange contortion is to append a list of distinct empty strings
         num=pasteRight-len(self.lstData.Rows[0])-1
         if num > 0:
             for row in self.lstData.Rows:
@@ -269,13 +315,10 @@ class MainWindow(GUIClass):
         for row in self.clipboard:
             j=pasteLeft
             for cell in row:
-                self.lstData.Rows[i-1][j-1]=cell    # The -1 is to deal with the 1-indexing
+                self.lstData.Rows[i-1][j-1]=cell  # The -1 is to deal with the 1-indexing
                 j+=1
             i+=1
-
         self.RefreshGridFromLSTData()
-        event.Skip()
-
 
     #------------------
     def OnGridCellChanged(self, event):
