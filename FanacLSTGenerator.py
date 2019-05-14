@@ -233,7 +233,18 @@ class MainWindow(GUIClass):
         event.Skip()
 
     def OnPopupPaste(self, event):
-        # We paste the clipboard data into the block of the save size with the upper-left at the mouse's position
+        # We paste the clipboard data into the block of the same size with the upper-left at the mouse's position
+        # Might some of the new material be outside the current bounds?  If so, add some blank rows and/or columns
+        pasteBottom=self.gRowGrid.GridCursorRow+len(self.clipboard)
+        pasteRight=self.gRowGrid.GridCursorCol+len(self.clipboard[0])
+        num=pasteBottom-len(self.lstData.Rows)-1
+        if num > 0:
+            for i in range(num):
+                self.lstData.Rows.append(["" for i in range(len(self.lstData.Rows[0]))])   # The strange contortion is to create a list of distinct empty lists
+        num=pasteRight-len(self.lstData.Rows[0])-1
+        if num > 0:
+            for row in self.lstData.Rows:
+                row.extend(["" for i in range(num)])
         i=self.gRowGrid.GridCursorRow
         for row in self.clipboard:
             j=self.gRowGrid.GridCursorCol
