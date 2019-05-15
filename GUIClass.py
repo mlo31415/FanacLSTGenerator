@@ -113,7 +113,7 @@ class GUIClass(wx.Frame):
         self.bSaveLSTFile.Bind(wx.EVT_BUTTON, self.OnSaveLSTFile)
         self.tTopMatter.Bind(wx.EVT_TEXT, self.OnTextTopMatter)
         self.tPText.Bind(wx.EVT_TEXT, self.OnTextComments)
-        self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChange)
+        self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged)
         self.gRowGrid.Bind(wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnGridCellRightClick)
         self.gRowGrid.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
         self.gRowGrid.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
@@ -139,7 +139,7 @@ class GUIClass(wx.Frame):
     def OnTextComments(self, event):
         event.Skip()
 
-    def OnGridCellChange(self, event):
+    def OnGridCellChanged(self, event):
         event.Skip()
 
     def OnGridCellRightClick(self, event):
