@@ -67,7 +67,7 @@ class GUIClass(wx.Frame):
         self.gRowGrid=wx.grid.Grid(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
 
         # Grid
-        self.gRowGrid.CreateGrid(100, 15)
+        self.gRowGrid.CreateGrid(300, 30)
         self.gRowGrid.EnableEditing(True)
         self.gRowGrid.EnableGridLines(True)
         self.gRowGrid.EnableDragGridSize(False)
