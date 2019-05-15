@@ -326,14 +326,40 @@ class LSTFile:
             for line in self.TopTextLines:
                 content.append(line)
             content.append("")
+
+        # Next we determine the last column to have non-blank content in any cell (including the header)
+        # Helper function
+        def Length(row: list):
+            temp=row
+            while len(temp) > 0 and len(temp[-1:][0].strip()) == 0:
+                temp=temp[:-1]
+            return len(temp)
+
+        # How long is the longest row?
+        maxlen=Length(self.ColumnHeaders)
+        for row in self.Rows:
+            l=Length(row)
+            maxlen=max(maxlen, l)
+
+        # Column headers
+        if len(self.ColumnHeaders) > maxlen:
+            self.ColumnHeaders=self.ColumnHeaders[:maxlen]
         content.append("; ".join(self.ColumnHeaders))
         content.append("")
+
+        # Rows
         for row in self.Rows:
+            if len(row) < 3:    # Smallest possible LST file
+                continue
             # We have to join the first two elements of row into a single element to deal with the LST's odd format
+            if len(row) > maxlen:
+                row=row[:maxlen]
             if len(row[0]) > 0 or len(row[1]) > 0:
-                content.append( row[0] + ">" + row[1]+ "; " + ("; ".join(row[2:])) )
+                out=row[0] + ">" + row[1]+ "; " + ("; ".join(row[2:]))
             else:
-                content.append(" ;"+ ("; ".join(row[2:])) )     # Leave the first column entirely blank
+                out=" ;"+ ("; ".join(row[2:]))     # Leave the first column entirely blank
+            if not re.match("^[>;\s]*$", out):  # Don't save null rows
+                content.append(out)
 
         # And write it out
         with open(filename, "w+") as f:
