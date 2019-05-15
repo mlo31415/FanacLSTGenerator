@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import ctypes
 import FanacDates
+import re
 
 def Bailout(e, s: str):
     ctypes.windll.user32.MessageBoxW(0, s, "LSTFile error", 1)
@@ -310,6 +311,9 @@ class LSTFile:
             # Turn the first ">" before the first ";" into a ";"
             if row.find(">") != -1 and row.find(">") < row.find(";"):
                 row=row[:row.find(">")]+";"+row[row.find(">")+1:]
+            # If the line has no content (other than ">" and ";" and whitespace, skip it.
+            if re.match("^[>;\s]*$", row):
+                continue
             # Split the row on ";"
             self.Rows.append([h.strip() for h in row.split(";")])
 
