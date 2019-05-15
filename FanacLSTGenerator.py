@@ -96,6 +96,7 @@ class MainWindow(GUIClass):
     def RefreshGridFromLSTData(self):
         grid=self.gRowGrid
         grid.EvtHandlerEnabled=False
+        grid.ClearGrid()
 
         # Make the first grid column contain editable row numbers
         headerGray=wx.Colour(230, 230, 230)
