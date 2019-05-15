@@ -67,18 +67,7 @@ class MainWindow(GUIClass):
         # and the "real" row and column labels are hidden.
         self.gRowGrid.HideRowLabels()
         self.gRowGrid.HideColLabels()
-        # In effect, this makes all row and col references to data (as opposed to the labels) to be 1-based
-        labelGray=wx.Colour(230, 230, 230)
-        # Add the column headers
-        self.gRowGrid.SetCellValue(0, 0, "")
-        self.gRowGrid.SetCellValue(0, 1, "First Page")
-        i=2
-        for colhead in self.lstData.ColumnHeaders:
-            self.gRowGrid.SetCellValue(0, i, colhead)
-            self.gRowGrid.SetCellBackgroundColour(0, i, labelGray)
-            i+=1
-        self.gRowGrid.SetCellBackgroundColour(0, 0, labelGray)
-        self.gRowGrid.SetCellBackgroundColour(0, 1, labelGray)
+
         # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
         self.lstData.IdentifyColumnHeaders()
 
@@ -97,6 +86,19 @@ class MainWindow(GUIClass):
         grid=self.gRowGrid
         grid.EvtHandlerEnabled=False
         grid.ClearGrid()
+
+        # In effect, this makes all row and col references to data (as opposed to the labels) to be 1-based
+        labelGray=wx.Colour(230, 230, 230)
+        # Add the column headers
+        self.gRowGrid.SetCellValue(0, 0, "")
+        self.gRowGrid.SetCellValue(0, 1, "First Page")
+        i=2
+        for colhead in self.lstData.ColumnHeaders:
+            self.gRowGrid.SetCellValue(0, i, colhead)
+            self.gRowGrid.SetCellBackgroundColour(0, i, labelGray)
+            i+=1
+        self.gRowGrid.SetCellBackgroundColour(0, 0, labelGray)
+        self.gRowGrid.SetCellBackgroundColour(0, 1, labelGray)
 
         # Make the first grid column contain editable row numbers
         headerGray=wx.Colour(230, 230, 230)
