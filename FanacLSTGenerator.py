@@ -50,6 +50,7 @@ class MainWindow(GUIClass):
         self.dirname=dlg.GetDirectory()
         dlg.Destroy()
 
+        # Read the lst file
         try:
             pathname=os.path.join(self.dirname, self.lstFilename)
             self.lstData.Read(pathname)
@@ -94,9 +95,10 @@ class MainWindow(GUIClass):
     # The LSTFile object has the official information. This function refreshes the display from it.
     def RefreshGridFromLSTData(self):
         grid=self.gRowGrid
-        headerGray=wx.Colour(230, 230, 230)
+        grid.EvtHandlerEnabled=False
 
         # Make the first grid column contain editable row numbers
+        headerGray=wx.Colour(230, 230, 230)
         for i in range(1, grid.GetNumberRows()):
             grid.SetCellValue(i, 0, str(i))
             grid.SetCellBackgroundColour(i, 0, headerGray)
@@ -118,7 +120,9 @@ class MainWindow(GUIClass):
             for j in range(0, grid.GetNumberCols()):
                 grid.SetCellBackgroundColour(i+1, j+1, cellcolor)
 
+        grid.ForceRefresh()
         grid.AutoSizeColumns()
+        grid.EvtHandlerEnabled=True
 
 
     #------------------
@@ -209,11 +213,9 @@ class MainWindow(GUIClass):
     def OnTextTopMatter(self, event):
         self.lstData.FirstLine=self.tTopMatter.GetValue()
 
-
     #------------------
     def OnTextComments(self, event):
         self.lstData.TopTextLines=self.tPText.GetValue().split("\n")
-
 
     #------------------
     def OnGridCellDoubleclick(self, event):
@@ -262,6 +264,8 @@ class MainWindow(GUIClass):
             self.PasteCells(top, left)
         elif event.KeyCode == 308:                  # cntl
             self.cntlDown=True
+        elif event.KeyCode == 68:                   # Kludge to be able to force a refresh
+            self.RefreshGridFromLSTData()
         event.Skip()
 
     #-------------------
@@ -344,6 +348,8 @@ class MainWindow(GUIClass):
         # If it's an "X", the row has been deleted.
         if newVal.lower() == "x":
             del self.lstData.Rows[row-1]
+            event.Veto()                # This is a bit of magic to prevent the event from making later changed to the grid.
+            self.RefreshGridFromLSTData()
             return
 
         # If it's a number, it is tricky. We need to confirm that the user entered a new number.  (If not, we restore the old one and we're done.)
@@ -360,6 +366,7 @@ class MainWindow(GUIClass):
 
         # We *should* have a fractional value or an integer value out of range. Check for this.
         self.MoveRow(oldrow, newnumf)
+        event.Veto()  # This is a bit of magic to prevent the event from making later changed to the grid.
         self.RefreshGridFromLSTData()
         return
 
