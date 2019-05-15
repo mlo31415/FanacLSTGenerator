@@ -263,7 +263,7 @@ class MainWindow(GUIClass):
 
         if event.KeyCode == 67 and self.cntlDown:   # cntl-C
             self.CopyCells(top, left, bottom, right)
-        elif event.KeyCode == 86 and self.cntlDown: # cntl-V
+        elif event.KeyCode == 86 and self.cntlDown and self.clipboard is not None and len(self.clipboard) > 0: # cntl-V
             self.PasteCells(top, left)
         elif event.KeyCode == 308:                  # cntl
             self.cntlDown=True
