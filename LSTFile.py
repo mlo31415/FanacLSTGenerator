@@ -247,7 +247,7 @@ class LSTFile:
         # Count the number of filled-in values for this type
         num=0
         for row in self.Rows:
-            if row[index] is not None and len(row[index]) > 0:
+            if index < len(row) and row[index] is not None and len(row[index]) > 0:
                 num+=1
         return num/len(self.Rows)
 
@@ -326,7 +326,10 @@ class LSTFile:
         content.append("")
         for row in self.Rows:
             # We have to join the first two elements of row into a single element to deal with the LST's odd format
-            content.append( row[0] + ">" + row[1]+ "; " + ("; ".join(row[2:])) )
+            if len(row[0]) > 0 or len(row[1]) > 0:
+                content.append( row[0] + ">" + row[1]+ "; " + ("; ".join(row[2:])) )
+            else:
+                content.append(" ;"+ ("; ".join(row[2:])) )     # Leave the first column entirely blank
 
         # And write it out
         with open(filename, "w+") as f:
