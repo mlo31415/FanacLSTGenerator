@@ -5,6 +5,7 @@ import math
 import sys
 from GUIClass import GUIClass
 from LSTFile import *
+from LSTFile import CanonicizeColumnHeaders
 
 def Bailout(e, s: str):
     ctypes.windll.user32.MessageBoxW(0, s, "Main error", 1)
@@ -302,19 +303,25 @@ class MainWindow(GUIClass):
         # We paste the clipboard data into the block of the same size with the upper-left at the mouse's position
         # Might some of the new material be outside the current bounds?  If so, add some blank rows and/or columns
 
+        # Define the bounds of the paste-to box
         pasteTop=top
         pasteBottom=top+len(self.clipboard)
         pasteLeft=left
         pasteRight=left+len(self.clipboard[0])
 
+        # Does the paste-to box extend beyond the end of the available rows?  If so, extend the available rows.
         num=pasteBottom-len(self.lstData.Rows)-1
         if num > 0:
             for i in range(num):
                 self.lstData.Rows.append(["" for x in range(len(self.lstData.Rows[0]))])  # The strange contortion is to append a list of distinct empty strings
+
+        # Does the paste-to box extend beyond the right side of the availableels If so, extend l the rows with more columns.
         num=pasteRight-len(self.lstData.Rows[0])-1
         if num > 0:
             for row in self.lstData.Rows:
                 row.extend(["" for x in range(num)])
+
+        # Copy the cells from the clipboard to the grid in lstData.
         i=pasteTop
         for row in self.clipboard:
             j=pasteLeft
@@ -332,7 +339,15 @@ class MainWindow(GUIClass):
 
         # The first row is the column headers
         if row == 0:
+            event.Veto()  # This is a bit of magic to prevent the event from making later changes to the grid.
+            # Note that the Column Headers is offset by *2*. (The first column is the row number column and is blank; the second is the weird filename thingie and is untitled.)
+            if len(self.lstData.ColumnHeaders)+1 < col:
+                self.lstData.ColumnHeaders.extend(["" for x in range(col-len(self.lstData.ColumnHeaders)-1)])
             self.lstData.ColumnHeaders[col-2]=newVal
+            if len(self.lstData.ColumnHeaderTypes)+1 < col:
+                self.lstData.ColumnHeaderTypes.extend(["" for x in range(col-len(self.lstData.ColumnHeaderTypes)-1)])
+            self.lstData.ColumnHeaderTypes[col-2]=CanonicizeColumnHeaders(newVal)
+            self.RefreshGridFromLSTData()
             return
 
         # If we're entering data in a new row or a new column, append the necessary number of new rows of columns to lstData
@@ -351,7 +366,7 @@ class MainWindow(GUIClass):
         # If it's an "X", the row has been deleted.
         if newVal.lower() == "x":
             del self.lstData.Rows[row-1]
-            event.Veto()                # This is a bit of magic to prevent the event from making later changed to the grid.
+            event.Veto()                # This is a bit of magic to prevent the event from making later changes to the grid.
             self.RefreshGridFromLSTData()
             return
 

@@ -34,9 +34,14 @@ def CanonicizeColumnHeaders(header: str) -> str:
         "day": "D",
     }
     try:
-        return translationTable[header.replace(" ", "").replace("/", "").lower()]
+        # If we find a single upper case character as the cannonical form, return it.
+        val=translationTable[header.replace(" ", "").replace("/", "").lower()]
+        if len(val) == 1 and val.isupper():
+            return val
     except:
-        return header.lower()
+        pass
+    # Otherwise, return the input
+    return header
 
 # -------------------------------------------------------------
 # This takes a LST file column header and returns the preferred, human-readable form.
@@ -167,11 +172,7 @@ class LSTFile:
         # First identify all the easy ones
         self.ColumnHeaderTypes=[]
         for header in self.ColumnHeaders:
-            cHeader=CanonicizeColumnHeaders(header)
-            if len(cHeader) == 1 and cHeader.isupper():
-                self.ColumnHeaderTypes.append(cHeader)
-            else:
-                self.ColumnHeaderTypes.append(header)
+            self.ColumnHeaderTypes.append(CanonicizeColumnHeaders(header))
 
         # In cases where we have a num *and* a vol, the num is treated as the issue's volume number; else its treated as the issue's whole number
         if "V" not in self.ColumnHeaderTypes:
