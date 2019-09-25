@@ -43,7 +43,10 @@ class MainWindow(GUIClass):
 
         # Call the File Open dialog to get an LST file
         dlg=wx.FileDialog(self, "Select LST file to load", self.dirname, "", "*.LST", wx.FD_OPEN)
+        dlg.SetWindowStyle(wx.STAY_ON_TOP)
+
         if dlg.ShowModal() != wx.ID_OK:
+            dlg.Raise()
             dlg.Destroy()
             return
 
@@ -292,6 +295,12 @@ class MainWindow(GUIClass):
         event.Skip()
 
     #------------------
+    def OnPopupDelete(self, event):
+        top, left, bottom, right=self.LocateSelection()
+        self.DeleteColumn(left)
+        event.Skip()
+
+    #------------------
     def CopyCells(self, top, left, bottom, right):
         self.clipboard=[]
         # We must remember that the first two data columns map to a single LST column.
@@ -330,6 +339,10 @@ class MainWindow(GUIClass):
                 j+=1
             i+=1
         self.RefreshGridFromLSTData()
+
+    #------------------
+    def DeleteColumn(self, left):
+        pass
 
     #------------------
     def OnGridCellChanged(self, event):
