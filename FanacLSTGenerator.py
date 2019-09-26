@@ -93,6 +93,11 @@ class MainWindow(GUIClass):
         grid.ClearGrid()
 
         # In effect, this makes all row and col references to data (as opposed to the labels) to be 1-based
+
+        # Color all the column headers white before coloring the ones that actually exist gray.  (This handles cases where a column has been deleted.)
+        for i in range(0, self.gRowGrid.NumberCols-1):
+            self.gRowGrid.SetCellBackgroundColour(0, i, wx.WHITE)
+
         labelGray=wx.Colour(230, 230, 230)
         # Add the column headers
         self.gRowGrid.SetCellValue(0, 0, "")
@@ -106,11 +111,10 @@ class MainWindow(GUIClass):
         self.gRowGrid.SetCellBackgroundColour(0, 1, labelGray)
 
         # Make the first grid column contain editable row numbers
-        headerGray=wx.Colour(230, 230, 230)
         for i in range(1, grid.GetNumberRows()):
             grid.SetCellValue(i, 0, str(i))
-            grid.SetCellBackgroundColour(i, 0, headerGray)
-        grid.SetCellBackgroundColour(0, 0, headerGray)
+            grid.SetCellBackgroundColour(i, 0, labelGray)
+        grid.SetCellBackgroundColour(0, 0, labelGray)
 
         # Now insert the row data
         grid.AppendRows(len(self.lstData.Rows))
