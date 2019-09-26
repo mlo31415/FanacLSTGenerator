@@ -97,6 +97,8 @@ class GUIClass(wx.Frame):
         self.m_popupMenu1.Append        (self.m_menuItemPaste)
         self.m_menuItemDelete=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Delete", wx.EmptyString, wx.ITEM_NORMAL)
         self.m_popupMenu1.Append        (self.m_menuItemDelete)
+        self.m_menuItemExtractScanner=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Extract Scanner", wx.EmptyString, wx.ITEM_NORMAL)
+        self.m_popupMenu1.Append        (self.m_menuItemExtractScanner)
 
         self.gRowGrid.Bind(wx.EVT_RIGHT_DOWN, self.gRowGridOnContextMenu)
 
@@ -122,6 +124,7 @@ class GUIClass(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnPopupCopy, id=self.m_menuItemCopy.GetId())
         self.Bind(wx.EVT_MENU, self.OnPopupPaste, id=self.m_menuItemPaste.GetId())
         self.Bind(wx.EVT_MENU, self.OnPopupDelete, id=self.m_menuItemDelete.GetId())
+        self.Bind(wx.EVT_MENU, self.OnPopupExtractScanner, id=self.m_menuItemExtractScanner.GetId())
 
     def __del__(self):
         pass
@@ -161,6 +164,9 @@ class GUIClass(wx.Frame):
         event.Skip()
 
     def OnPopupDelete(self, event):
+        event.Skip()
+
+    def OnPopupExtractScanner(self, event):
         event.Skip()
 
     def gRowGridOnContextMenu(self, event):

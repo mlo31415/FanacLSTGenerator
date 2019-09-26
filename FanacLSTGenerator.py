@@ -306,6 +306,11 @@ class MainWindow(GUIClass):
         event.Skip()
 
     #------------------
+    def OnPopupExtractScanner(self, event):
+        self.ExtractScanner(self.rightClickedColumn)
+        event.Skip()
+
+    #------------------
     def CopyCells(self, top, left, bottom, right):
         self.clipboard=[]
         # We must remember that the first two data columns map to a single LST column.
@@ -370,6 +375,10 @@ class MainWindow(GUIClass):
 
         # And redisplay
         self.RefreshGridFromLSTData()
+        pass
+
+    # ------------------
+    def ExtractScanner(self, col):
         pass
 
     #------------------
