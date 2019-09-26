@@ -322,11 +322,20 @@ class MainWindow(GUIClass):
     def SetPopupHighlight(self):
         if len(self.lstData.ColumnHeaders) <= self.rightClickedColumn-2:
             return
-
         menuItems=self.m_popupMenu1.GetMenuItems()
         for mi in menuItems:
             if mi.GetItemLabelText() == "Extract Scanner":
-                mi.Enable(self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes")
+                mi.Enable(False)
+                if self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes":
+                    # We only want to enable the Notes column if it contains scanned by information
+                    for row in self.lstData.Rows:
+                        if "Scan by" in row[self.rightClickedColumn-1] or \
+                                "Scanned by" in row[self.rightClickedColumn-1] or \
+                                "Scanned at" in row[self.rightClickedColumn-1]:
+                            mi.Enable(True)
+
+
+
 
     #------------------
     def PasteCells(self, top, left):
