@@ -343,16 +343,28 @@ class MainWindow(GUIClass):
 
     #------------------
     def DeleteColumn(self, col):
+        # Some columns are sacrosanct
+        # Column 0 is the row number and col 1 is the "first page" (computerd) column
+        # We must subtract 2 from col because the real data only starts at the third column.
+        col=col-2
+        if col >= len(self.lstData.Rows[0]) or col < 0:
+            return
+
         # For each row, delete the specified column
+        # Note that the computed "first page" column *is* in lastData.Rows as it is editable
         for i in range(0, len(self.lstData.Rows)):
             row=self.lstData.Rows[i]
-            if col < len(row):
-                newrow=[]
-                if col > 0:
-                    newrow.extend(row[:col-1])
-                if col < len(row)-1:
-                    newrow.extend(row[col:])
-                self.lstData.Rows[i]=newrow
+            newrow=[]
+            if col > 0:
+                newrow.extend(row[:col+1])
+            if col < len(row)-3:
+                newrow.extend(row[col+2:])
+            self.lstData.Rows[i]=newrow
+
+        # Now delete the column header
+        del self.lstData.ColumnHeaders[col]
+
+        # And redisplay
         self.RefreshGridFromLSTData()
         pass
 
