@@ -245,6 +245,7 @@ class MainWindow(GUIClass):
         item.Enabled=self.clipboard is not None and len(self.clipboard) > 0 and len(self.clipboard[0]) > 0  # Enable only if the clipboard contains actual content
 
         self.rightClickedColumn=event.Col
+        self.SetPopupHighlight()
         self.PopupMenu(self.m_popupMenu1)
 
 
@@ -316,6 +317,16 @@ class MainWindow(GUIClass):
         # We must remember that the first two data columns map to a single LST column.
         for row in self.lstData.Rows[top-1: bottom]:
             self.clipboard.append(row[left-1: right])
+
+    #------------------
+    def SetPopupHighlight(self):
+        if len(self.lstData.ColumnHeaders) <= self.rightClickedColumn-2:
+            return
+
+        menuItems=self.m_popupMenu1.GetMenuItems()
+        for mi in menuItems:
+            if mi.GetItemLabelText() == "Extract Scanner":
+                mi.Enable(self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes")
 
     #------------------
     def PasteCells(self, top, left):

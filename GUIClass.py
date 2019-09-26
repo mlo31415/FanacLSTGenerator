@@ -148,9 +148,6 @@ class GUIClass(wx.Frame):
     def OnGridCellChanged(self, event):
         event.Skip()
 
-    def OnGridCellRightClick(self, event):
-        event.Skip()
-
     def OnKeyDown(self, event):
         event.Skip()
 
@@ -163,7 +160,7 @@ class GUIClass(wx.Frame):
     def OnPopupPaste(self, event):
         event.Skip()
 
-    def OnPopupDelete(self, event):
+    def OnPopupDeleteColumn(self, event):
         event.Skip()
 
     def OnPopupExtractScanner(self, event):
