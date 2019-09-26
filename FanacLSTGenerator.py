@@ -301,7 +301,7 @@ class MainWindow(GUIClass):
         event.Skip()
 
     #------------------
-    def OnPopupDelete(self, event):
+    def OnPopupDeleteColumn(self, event):
         self.DeleteColumn(self.rightClickedColumn)
         event.Skip()
 
