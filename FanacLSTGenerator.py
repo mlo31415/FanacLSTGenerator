@@ -19,6 +19,7 @@ class MainWindow(GUIClass):
         self.clipboard=None         # The grid's clipboard
         self.userSelection=None
         self.cntlDown=False
+        self.rightClickedColumn=None
 
         self.dirname=''
         if len(sys.argv) > 1:
@@ -239,6 +240,7 @@ class MainWindow(GUIClass):
         item=self.m_popupMenu1.FindItemById(item_id)
         item.Enabled=self.clipboard is not None and len(self.clipboard) > 0 and len(self.clipboard[0]) > 0  # Enable only if the clipboard contains actual content
 
+        self.rightClickedColumn=event.Col
         self.PopupMenu(self.m_popupMenu1)
 
 
@@ -296,8 +298,7 @@ class MainWindow(GUIClass):
 
     #------------------
     def OnPopupDelete(self, event):
-        top, left, bottom, right=self.LocateSelection()
-        self.DeleteColumn(left)
+        self.DeleteColumn(self.rightClickedColumn)
         event.Skip()
 
     #------------------
@@ -324,7 +325,7 @@ class MainWindow(GUIClass):
             for i in range(num):
                 self.lstData.Rows.append(["" for x in range(len(self.lstData.Rows[0]))])  # The strange contortion is to append a list of distinct empty strings
 
-        # Does the paste-to box extend beyond the right side of the availableels If so, extend l the rows with more columns.
+        # Does the paste-to box extend beyond the right side of the availables? If so, extend the rows with more columns.
         num=pasteRight-len(self.lstData.Rows[0])-1
         if num > 0:
             for row in self.lstData.Rows:
@@ -341,7 +342,18 @@ class MainWindow(GUIClass):
         self.RefreshGridFromLSTData()
 
     #------------------
-    def DeleteColumn(self, left):
+    def DeleteColumn(self, col):
+        # For each row, delete the specified column
+        for i in range(0, len(self.lstData.Rows)):
+            row=self.lstData.Rows[i]
+            if col < len(row):
+                newrow=[]
+                if col > 0:
+                    newrow.extend(row[:col-1])
+                if col < len(row)-1:
+                    newrow.extend(row[col:])
+                self.lstData.Rows[i]=newrow
+        self.RefreshGridFromLSTData()
         pass
 
     #------------------
