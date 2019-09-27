@@ -247,9 +247,9 @@ class MainWindow(GUIClass):
         mi.Enabled=self.clipboard is not None and len(self.clipboard) > 0 and len(self.clipboard[0]) > 0  # Enable only if the clipboard contains actual content
 
         # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
+        mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Extract Scanner"))
+        mi.Enable(False)
         if len(self.lstData.ColumnHeaders) > self.rightClickedColumn-2:
-            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Extract Scanner"))
-            mi.Enable(False)
             if self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes":
                 # We only want to enable the Notes column if it contains scanned by information
                 for row in self.lstData.Rows:
@@ -258,6 +258,8 @@ class MainWindow(GUIClass):
                             "Scanning by" in row[self.rightClickedColumn-1] or \
                             "Scanned at" in row[self.rightClickedColumn-1]:
                         mi.Enable(True)
+
+        # Pop the menu up.
         self.PopupMenu(self.m_popupMenu1)
 
 
