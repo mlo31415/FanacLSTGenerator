@@ -97,6 +97,8 @@ class GUIClass(wx.Frame):
         self.m_popupMenu1.Append        (self.m_menuItemPaste)
         self.m_menuItemDeleteColumn=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Delete Column", wx.EmptyString, wx.ITEM_NORMAL)
         self.m_popupMenu1.Append        (self.m_menuItemDeleteColumn)
+        self.m_menuItemAddColumn=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Add Column", wx.EmptyString, wx.ITEM_NORMAL)
+        self.m_popupMenu1.Append(self.m_menuItemAddColumn)
         self.m_menuItemExtractScanner=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Extract Scanner", wx.EmptyString, wx.ITEM_NORMAL)
         self.m_popupMenu1.Append        (self.m_menuItemExtractScanner)
 
@@ -124,6 +126,7 @@ class GUIClass(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnPopupCopy, id=self.m_menuItemCopy.GetId())
         self.Bind(wx.EVT_MENU, self.OnPopupPaste, id=self.m_menuItemPaste.GetId())
         self.Bind(wx.EVT_MENU, self.OnPopupDeleteColumn, id=self.m_menuItemDeleteColumn.GetId())
+        self.Bind(wx.EVT_MENU, self.OnPopupAddColumn, id=self.m_menuItemAddColumn.GetId())
         self.Bind(wx.EVT_MENU, self.OnPopupExtractScanner, id=self.m_menuItemExtractScanner.GetId())
 
     def __del__(self):
@@ -161,6 +164,9 @@ class GUIClass(wx.Frame):
         event.Skip()
 
     def OnPopupDeleteColumn(self, event):
+        event.Skip()
+
+    def OnPopupAddColumn(self, event):
         event.Skip()
 
     def OnPopupExtractScanner(self, event):

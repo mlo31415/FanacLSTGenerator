@@ -308,6 +308,11 @@ class MainWindow(GUIClass):
         event.Skip()
 
     #------------------
+    def OnPopupAddColumn(self, event):
+        self.AddColumn(self.rightClickedColumn)
+        event.Skip()
+
+    #------------------
     def OnPopupExtractScanner(self, event):
         self.ExtractScanner(self.rightClickedColumn)
         event.Skip()
@@ -397,6 +402,10 @@ class MainWindow(GUIClass):
 
         # And redisplay
         self.RefreshGridFromLSTData()
+        pass
+
+    # ------------------
+    def AddColumn(selfself, col):
         pass
 
     # ------------------
