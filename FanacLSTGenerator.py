@@ -242,24 +242,22 @@ class MainWindow(GUIClass):
     def OnGridCellRightClick(self, event):
         self.rightClickedColumn=event.GetCol()
 
-        # Gray out the Past popup menu item if there is nothing to paste
-        item_id=self.m_popupMenu1.FindItem("Paste")
-        item=self.m_popupMenu1.FindItemById(item_id)
-        item.Enabled=self.clipboard is not None and len(self.clipboard) > 0 and len(self.clipboard[0]) > 0  # Enable only if the clipboard contains actual content
+        # We enable the Paste popup menu item if there is something to paste
+        mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Paste"))
+        mi.Enabled=self.clipboard is not None and len(self.clipboard) > 0 and len(self.clipboard[0]) > 0  # Enable only if the clipboard contains actual content
 
+        # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
         if len(self.lstData.ColumnHeaders) > self.rightClickedColumn-2:
-            menuItems=self.m_popupMenu1.GetMenuItems()
-            for mi in menuItems:
-                if mi.GetItemLabelText() == "Extract Scanner":
-                    mi.Enable(False)
-                    if self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes":
-                        # We only want to enable the Notes column if it contains scanned by information
-                        for row in self.lstData.Rows:
-                            if "Scan by" in row[self.rightClickedColumn-1] or \
-                                    "Scanned by" in row[self.rightClickedColumn-1] or \
-                                    "Scanning by" in row[self.rightClickedColumn-1] or \
-                                    "Scanned at" in row[self.rightClickedColumn-1]:
-                                mi.Enable(True)
+            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Extract Scanner"))
+            mi.Enable(False)
+            if self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes":
+                # We only want to enable the Notes column if it contains scanned by information
+                for row in self.lstData.Rows:
+                    if "Scan by" in row[self.rightClickedColumn-1] or \
+                            "Scanned by" in row[self.rightClickedColumn-1] or \
+                            "Scanning by" in row[self.rightClickedColumn-1] or \
+                            "Scanned at" in row[self.rightClickedColumn-1]:
+                        mi.Enable(True)
         self.PopupMenu(self.m_popupMenu1)
 
 
