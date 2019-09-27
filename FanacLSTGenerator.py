@@ -240,13 +240,26 @@ class MainWindow(GUIClass):
 
     #------------------
     def OnGridCellRightClick(self, event):
+        self.rightClickedColumn=event.GetCol()
+
         # Gray out the Past popup menu item if there is nothing to paste
         item_id=self.m_popupMenu1.FindItem("Paste")
         item=self.m_popupMenu1.FindItemById(item_id)
         item.Enabled=self.clipboard is not None and len(self.clipboard) > 0 and len(self.clipboard[0]) > 0  # Enable only if the clipboard contains actual content
 
-        self.rightClickedColumn=event.Col
-        self.SetPopupHighlight()
+        if len(self.lstData.ColumnHeaders) > self.rightClickedColumn-2:
+            menuItems=self.m_popupMenu1.GetMenuItems()
+            for mi in menuItems:
+                if mi.GetItemLabelText() == "Extract Scanner":
+                    mi.Enable(False)
+                    if self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes":
+                        # We only want to enable the Notes column if it contains scanned by information
+                        for row in self.lstData.Rows:
+                            if "Scan by" in row[self.rightClickedColumn-1] or \
+                                    "Scanned by" in row[self.rightClickedColumn-1] or \
+                                    "Scanning by" in row[self.rightClickedColumn-1] or \
+                                    "Scanned at" in row[self.rightClickedColumn-1]:
+                                mi.Enable(True)
         self.PopupMenu(self.m_popupMenu1)
 
 
@@ -323,26 +336,6 @@ class MainWindow(GUIClass):
         # We must remember that the first two data columns map to a single LST column.
         for row in self.lstData.Rows[top-1: bottom]:
             self.clipboard.append(row[left-1: right])
-
-    #------------------
-    def SetPopupHighlight(self):
-        if len(self.lstData.ColumnHeaders) <= self.rightClickedColumn-2:
-            return
-        menuItems=self.m_popupMenu1.GetMenuItems()
-        for mi in menuItems:
-            if mi.GetItemLabelText() == "Extract Scanner":
-                mi.Enable(False)
-                if self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes":
-                    # We only want to enable the Notes column if it contains scanned by information
-                    for row in self.lstData.Rows:
-                        if "Scan by" in row[self.rightClickedColumn-1] or \
-                                "Scanned by" in row[self.rightClickedColumn-1] or \
-                                "Scanning by" in row[self.rightClickedColumn-1] or \
-                                "Scanned at" in row[self.rightClickedColumn-1]:
-                            mi.Enable(True)
-
-
-
 
     #------------------
     def PasteCells(self, top, left):
