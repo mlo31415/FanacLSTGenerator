@@ -421,7 +421,7 @@ class MainWindow(GUIClass):
         pass
 
     # ------------------
-    def AddColumnToLeft(selfself, col):
+    def AddColumnToLeft(self, col):
         pass
 
     # ------------------
