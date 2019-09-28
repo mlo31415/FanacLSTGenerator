@@ -344,9 +344,9 @@ class MainWindow(GUIClass):
         event.Skip()
 
     #------------------
-    def (self, event):
+    def OnPopupAddColumnToLeft(self, event):
         self.AddColumnToLeft(self.rightClickedColumn)
-        event.Skip()OnPopupAddColumnToLeft
+        event.Skip()
 
     #------------------
     def OnPopupExtractScanner(self, event):
