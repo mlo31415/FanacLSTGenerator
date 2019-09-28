@@ -242,14 +242,37 @@ class MainWindow(GUIClass):
     def OnGridCellRightClick(self, event):
         self.rightClickedColumn=event.GetCol()
 
+        # Set everything to disabled.
+        for mi in self.m_popupMenu1.GetMenuItems():
+            mi.Enable(False)
+
+        # Everything remains disabled when we're outside the defined columns
+        if self.rightClickedColumn > len(self.lstData.ColumnHeaders)+1 or self.rightClickedColumn == 0:
+            return
+
+        # We enable the Delete Column item if we're on a deletable column
+        if self.rightClickedColumn > 1 and self.rightClickedColumn < len(self.lstData.ColumnHeaders)+1:
+            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Delete Column"))
+            mi.Enable(True)
+
+        # We enable the Copy item if have a selection
+        sel=self.LocateSelection()
+        if sel[0] != 0 or sel[1] != 0 or sel[2] != 0 or sel[3] != 0:
+            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Copy"))
+            mi.Enable(True)
+
+        # We enable the Add Column to Left item if we're on a column to the left of the first -- it can be off the right and a column will be added to the right
+        if self.rightClickedColumn > 1:
+            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Insert Column to Left"))
+            mi.Enable(True)
+
         # We enable the Paste popup menu item if there is something to paste
         mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Paste"))
         mi.Enabled=self.clipboard is not None and len(self.clipboard) > 0 and len(self.clipboard[0]) > 0  # Enable only if the clipboard contains actual content
 
         # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
         mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Extract Scanner"))
-        mi.Enable(False)
-        if len(self.lstData.ColumnHeaders) > self.rightClickedColumn-2:
+        if self.rightClickedColumn < len(self.lstData.ColumnHeaders)+1:
             if self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes":
                 # We only want to enable the Notes column if it contains scanned by information
                 for row in self.lstData.Rows:

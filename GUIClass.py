@@ -97,7 +97,7 @@ class GUIClass(wx.Frame):
         self.m_popupMenu1.Append        (self.m_menuItemPaste)
         self.m_menuItemDeleteColumn=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Delete Column", wx.EmptyString, wx.ITEM_NORMAL)
         self.m_popupMenu1.Append        (self.m_menuItemDeleteColumn)
-        self.m_menuItemAddColumn=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Add Column", wx.EmptyString, wx.ITEM_NORMAL)
+        self.m_menuItemAddColumn=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Insert Column to Left", wx.EmptyString, wx.ITEM_NORMAL)
         self.m_popupMenu1.Append(self.m_menuItemAddColumn)
         self.m_menuItemExtractScanner=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Extract Scanner", wx.EmptyString, wx.ITEM_NORMAL)
         self.m_popupMenu1.Append        (self.m_menuItemExtractScanner)
