@@ -418,11 +418,18 @@ class MainWindow(GUIClass):
 
         # And redisplay
         self.RefreshGridFromLSTData()
-        pass
 
     # ------------------
     def AddColumnToLeft(self, col):
-        pass
+        col=col-2
+        self.lstData.ColumnHeaders=self.lstData.ColumnHeaders[:col]+[""]+self.lstData.ColumnHeaders[col:]
+        for i in range(0, len(self.lstData.Rows)):
+            row=self.lstData.Rows[i]
+            row=row[:col+1]+[""]+row[col+1:]
+            self.lstData.Rows[i]=row
+
+        # And redisplay
+        self.RefreshGridFromLSTData()
 
     # ------------------
     def ExtractScanner(self, col):
