@@ -272,14 +272,15 @@ class MainWindow(GUIClass):
 
         # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
         mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Extract Scanner"))
-        if self.rightClickedColumn < len(self.lstData.ColumnHeaders)+1:
+        if self.rightClickedColumn < len(self.lstData.ColumnHeaders)+2:
             if self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes":
                 # We only want to enable the Notes column if it contains scanned by information
                 for row in self.lstData.Rows:
-                    if "Scan by" in row[self.rightClickedColumn-1] or \
-                            "Scanned by" in row[self.rightClickedColumn-1] or \
-                            "Scanning by" in row[self.rightClickedColumn-1] or \
-                            "Scanned at" in row[self.rightClickedColumn-1]:
+                    note=row[self.rightClickedColumn-1].lower()
+                    if "scan by" in note or \
+                            "scanned by" in note or \
+                            "scanning by" in note or \
+                            "scanned at" in note:
                         mi.Enable(True)
 
         # Pop the menu up.
@@ -457,8 +458,8 @@ class MainWindow(GUIClass):
 
         # Now parse the notes looking for scanning information
         # Scanning Info will look like one of the four prefixes (Scan by, Scanned by, Scanned at, Scanning by) followed by two capitalized words or a capitalized work followed by a number
-        pattern1="(Scanned by|Scan by|Scanned at|Scanning by) ([A-Z][a-z]+ [A-Z][a-z]+)"
-        pattern2="(Scanned by|Scan by|Scanned at|Scanning by) ([A-Z][a-z]+ [0-9]+)"
+        pattern1="[sS](can by|canned by|canned at|canning by) ([A-Z][a-z]+ [A-Z][a-z]+)"
+        pattern2="[sS](can by|canned by|canned at|canning by) ([A-Z][a-z]+ [0-9]+)"
         for i in range(0, len(self.lstData.Rows)):
             row=self.lstData.Rows[i]
             note=row[notesCol+1]
