@@ -434,43 +434,43 @@ class MainWindow(GUIClass):
 
     # ------------------
     def ExtractScanner(self, col):
-        # Start by adding a Scanned column to the left of the Notes column. (We check to see if one already exists.)
+        # Start by adding a Scanned column to the right of the Notes column. (We check to see if one already exists.)
+        # Located the Notes and Scanned columns, if any.
         scannedCol=None
         for i in range(0, len(self.lstData.ColumnHeaders)):
             if self.lstData.ColumnHeaders[i] == "Scanned":
                 scannedCol=i
                 break
         notesCol=None
-        if scannedCol is None:
-            for i in range(0, len(self.lstData.ColumnHeaders)):
-                if self.lstData.ColumnHeaders[i] == "Notes":
-                    notesCol=i
-                    break
-        # Add the Scanned colum if needed
+        for i in range(0, len(self.lstData.ColumnHeaders)):
+            if self.lstData.ColumnHeaders[i] == "Notes":
+                notesCol=i
+                break
+
+        # Add the Scanned column if needed
         if scannedCol is None:
             for i in range(0, len(self.lstData.Rows)):
                 row=self.lstData.Rows[i]
-                row=row[:notesCol+1]+[""]+row[notesCol+1:]
+                row=row[:notesCol+2]+[""]+row[notesCol+2:]
                 self.lstData.Rows[i]=row
-            self.lstData.ColumnHeaders=self.lstData.ColumnHeaders[:notesCol]+["Scanned"]+self.lstData.ColumnHeaders[notesCol:]
-            scannedCol=notesCol
-            notesCol=notesCol+1
+            self.lstData.ColumnHeaders=self.lstData.ColumnHeaders[:notesCol+1]+["Scanned"]+self.lstData.ColumnHeaders[notesCol+1:]
+            scannedCol=notesCol+1
+            notesCol=notesCol
 
         # Now parse the notes looking for scanning information
         # Scanning Info will look like one of the four prefixes (Scan by, Scanned by, Scanned at, Scanning by) followed by two capitalized words or a capitalized work followed by a number
-        pattern1="[sS](can by|canned by|canned at|canning by) ([A-Z][a-z]+ [A-Z][a-z]+)"
-        pattern2="[sS](can by|canned by|canned at|canning by) ([A-Z][a-z]+ [0-9]+)"
+        pattern="[sS](can by|canned by|canned at|canning by) ([A-Z][a-z]+) ([A-Z][a-z]+|[0-9]+)"
         for i in range(0, len(self.lstData.Rows)):
             row=self.lstData.Rows[i]
             note=row[notesCol+1]
-            m=re.search(pattern1, note)
+            m=re.search(pattern, note)
             if m is not None:
-                row[scannedCol+1]=m.groups()[1]     # Put the matched name in the scanned
-                row[notesCol+1]=re.sub(pattern1, "", note)
-            m=re.search(pattern2, note)
-            if m is not None:
-                row[scannedCol+1]=m.groups()[1]  # Put the matched name in the scanned
-                row[notesCol+1]=re.sub(pattern2, "", note)
+                row[scannedCol+1]=m.groups()[1]+" "+m.groups()[2]     # Put the matched name in the scanned
+                note=re.sub(pattern, "", note)  # Delete the matched text from the note
+                # Now remove leading and trailing spans of spaces and commas from the note.
+                note=re.sub("^([ ,]*)", "", note)
+                note=re.sub("([ ,]*)$", "", note)
+                row[notesCol+1]=note
 
         # And redisplay
         self.RefreshGridFromLSTData()
