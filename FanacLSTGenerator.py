@@ -255,8 +255,10 @@ class MainWindow(GUIClass):
             mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Delete Column"))
             mi.Enable(True)
 
-        # Always enable the MoveColRight item
+        # Always enable the MoveColRight and Left items
         mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Column Right"))
+        mi.Enable(True)
+        mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Column Left"))
         mi.Enable(True)
 
         # We enable the Copy item if have a selection
@@ -361,6 +363,10 @@ class MainWindow(GUIClass):
     #------------------
     def OnPopupMoveColRight(self, event):
         self.MoveColRight(self.rightClickedColumn)
+
+    #------------------
+    def OnPopupMoveColLeft(self, event):
+        self.MoveColLeft(self.rightClickedColumn)
 
     #------------------
     def CopyCells(self, top, left, bottom, right):
@@ -483,15 +489,31 @@ class MainWindow(GUIClass):
         # And redisplay
         self.RefreshGridFromLSTData()
 
+    #------------------
     def MoveColRight(self, rightClickedColumn):
+        col=rightClickedColumn-2
         for i in range(0, len(self.lstData.Rows)):
             row=self.lstData.Rows[i]
             if rightClickedColumn > len(row):
                 row.append([""])
-            row=row[:rightClickedColumn-1]+row[rightClickedColumn:rightClickedColumn+1]+row[rightClickedColumn-1:rightClickedColumn]+row[rightClickedColumn+1:]
+            row=row[:col+1]+row[col+2:col+3]+row[col+1:col+2]+row[col+3:]
             self.lstData.Rows[i]=row
         ch=self.lstData.ColumnHeaders
-        self.lstData.ColumnHeaders=ch[:rightClickedColumn-2]+ch[rightClickedColumn-1:rightClickedColumn]+ch[rightClickedColumn-2:rightClickedColumn-1]+ch[rightClickedColumn:]
+        self.lstData.ColumnHeaders=ch[:col]+ch[col+1:col+2]+ch[col:col+1]+ch[col+2:]
+        # And redisplay
+        self.RefreshGridFromLSTData()
+
+    #------------------
+    def MoveColLeft(self, rightClickedColumn):
+        col=rightClickedColumn-2
+        for i in range(0, len(self.lstData.Rows)):
+            row=self.lstData.Rows[i]
+            if rightClickedColumn > len(row):
+                row.append([""])
+            row=row[:col]+row[col+1:col+2]+row[col:col+1]+row[col+2:]
+            self.lstData.Rows[i]=row
+        ch=self.lstData.ColumnHeaders
+        self.lstData.ColumnHeaders=ch[:col-1]+ch[col:col+1]+ch[col-1:col]+ch[col+1:]
         # And redisplay
         self.RefreshGridFromLSTData()
 
