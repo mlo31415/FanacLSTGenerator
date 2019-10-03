@@ -108,6 +108,7 @@ def InterpretIssueSpec(s: str):
 class LSTFile:
     FirstLine: str=None
     TopTextLines: list=None
+    BottomTextLines: list=None
     ColumnHeaders: list=None        # The actual text of the column headers
     ColumnHeaderTypes: list=None    # The single character types for the corresponding ColumnHeaders
     SortColumn: dict=None           # The single character type(s) of the sort column(s).  Sort on whole num="W", sort on Vol+Num ="VN", etc.
@@ -276,16 +277,20 @@ class LSTFile:
         #   (blank line)
         #   Repeated 0 or more times:
         #       Index table line
+
         # I will not enforce the blank lines unless forced to. So for now, remove all empty lines
         contents=[l for l in contents if len(l)>0]
 
         firstLine=contents[0]
         contents=contents[1:]   # Drop the first line, as it has been processed
+
+        # The top text lines are contained in <p>...</p> pairs
+        # Collect them.
         topTextLines=[]
-        while contents[0].lower().startswith("<p>"):
+        while len(contents) > 0 and contents[0].lower().startswith("<p>"):
             while True:
                 topTextLines.append(contents[0])
-                contents=contents[1:]
+                contents=contents[1:]   # Consume the line
                 if topTextLines[-1:][0].lower().endswith(r"</p>") or topTextLines[-1:][0].lower().endswith(r"<p>"):
                     break
 
@@ -294,13 +299,28 @@ class LSTFile:
         contents=contents[1:]   # Drop them so we can read the rest later.
 
         rowLines=[]
-        while len(contents)>0:
+        while len(contents) > 0:
+            # There may be <p>-bracketed bumpf on the bottom, also.  Check for this and bail if found.
+            if contents[0].lower().startswith("<p>"):
+                break
             rowLines.append(contents[0])
             contents=contents[1:]
 
-        # The firstLine and the topTestLines are usable as-is, so we just store them
+        bottomTextLines=[]
+        if len(contents) > 0:
+            # The bottom text lines are also contained in <p>...</p> pairs
+            # Collect them.
+            while len(contents) > 0 and contents[0].lower().startswith("<p>"):
+                while True:
+                    bottomTextLines.append(contents[0])
+                    contents=contents[1:]  # Consume the line
+                    if bottomTextLines[-1:][0].lower().endswith(r"</p>") or bottomTextLines[-1:][0].lower().endswith(r"<p>"):
+                        break
+
+        # The firstLine and the topTestLines and bottomTextLines are usable as-is, so we just store them
         self.FirstLine=firstLine
         self.TopTextLines=topTextLines
+        self.BottomTextLines=bottomTextLines
 
         # We need to parse the column headers
         self.ColumnHeaders=[PreferredColumnHeaders(h.strip()) for h in colHeaderLine.split(";")]
@@ -361,6 +381,11 @@ class LSTFile:
                 out=" ;"+ ("; ".join(row[2:]))     # Leave the first column entirely blank
             if not re.match("^[>;\s]*$", out):  # Don't save null rows
                 content.append(out)
+
+        if len(self.BottomTextLines) > 0:
+            for line in self.BottomTextLines:
+                content.append(line)
+            content.append("")
 
         # And write it out
         with open(filename, "w+") as f:

@@ -67,6 +67,8 @@ class MainWindow(GUIClass):
         self.tTopMatter.SetValue(self.lstData.FirstLine)
         if len(self.lstData.TopTextLines) > 0:
             self.tPText.SetValue("\n".join(self.lstData.TopTextLines))
+        elif len(self.lstData.BottomTextLines) > 0:
+            self.tPText.SetValue("\n".join(self.lstData.BottomTextLines))
 
         # The grid is a bit non-standard, since I want to be able to edit row numbers and column headers
         # The row and column labels are actually the (editable) 1st column and 1st row of the spreadsheet (they're colored gray)
@@ -228,7 +230,12 @@ class MainWindow(GUIClass):
 
     #------------------
     def OnTextComments(self, event):
-        self.lstData.TopTextLines=self.tPText.GetValue().split("\n")
+        if self.lstData.TopTextLines is not None and len(self.lstData.TopTextLines) > 0:
+            self.lstData.TopTextLines=self.tPText.GetValue().split("\n")
+        elif self.lstData.BottomTextLines is not None and len(self.lstData.BottomTextLines) > 0:
+            self.lstData.BottomTextLines=self.tPText.GetValue().split("\n")
+        else:
+            self.lstData.TopTextLines=self.tPText.GetValue().split("\n")
 
     #------------------
     def OnGridCellDoubleclick(self, event):
