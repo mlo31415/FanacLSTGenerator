@@ -255,11 +255,15 @@ class MainWindow(GUIClass):
             mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Delete Column"))
             mi.Enable(True)
 
-        # Always enable the MoveColRight and Left items
-        mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Column Right"))
-        mi.Enable(True)
-        mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Column Left"))
-        mi.Enable(True)
+        # Enable the MoveColRight item if we're in the 2nd data column or later
+        if self.rightClickedColumn > 2:
+            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Column Right"))
+            mi.Enable(True)
+
+        # Enable the MoveColLeft item if we're in the 2nd data column or later
+        if self.rightClickedColumn > 2:
+            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Column Left"))
+            mi.Enable(True)
 
         # We enable the Copy item if have a selection
         sel=self.LocateSelection()
