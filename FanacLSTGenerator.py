@@ -255,6 +255,10 @@ class MainWindow(GUIClass):
             mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Delete Column"))
             mi.Enable(True)
 
+        # Always enable the MoveColRight item
+        mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Column Right"))
+        mi.Enable(True)
+
         # We enable the Copy item if have a selection
         sel=self.LocateSelection()
         if sel[0] != 0 or sel[1] != 0 or sel[2] != 0 or sel[3] != 0:
@@ -353,6 +357,10 @@ class MainWindow(GUIClass):
     def OnPopupExtractScanner(self, event):
         self.ExtractScanner(self.rightClickedColumn)
         event.Skip()
+
+    #------------------
+    def OnPopupMoveColRight(self, event):
+        self.MoveColRight(self.rightClickedColumn)
 
     #------------------
     def CopyCells(self, top, left, bottom, right):
@@ -475,6 +483,17 @@ class MainWindow(GUIClass):
         # And redisplay
         self.RefreshGridFromLSTData()
 
+    def MoveColRight(self, rightClickedColumn):
+        for i in range(0, len(self.lstData.Rows)):
+            row=self.lstData.Rows[i]
+            if rightClickedColumn > len(row):
+                row.append([""])
+            row=row[:rightClickedColumn-1]+row[rightClickedColumn:rightClickedColumn+1]+row[rightClickedColumn-1:rightClickedColumn]+row[rightClickedColumn+1:]
+            self.lstData.Rows[i]=row
+        ch=self.lstData.ColumnHeaders
+        self.lstData.ColumnHeaders=ch[:rightClickedColumn-2]+ch[rightClickedColumn-1:rightClickedColumn]+ch[rightClickedColumn-2:rightClickedColumn-1]+ch[rightClickedColumn:]
+        # And redisplay
+        self.RefreshGridFromLSTData()
 
     #------------------
     def OnGridCellChanged(self, event):
