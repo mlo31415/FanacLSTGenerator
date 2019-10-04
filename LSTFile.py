@@ -287,12 +287,11 @@ class LSTFile:
         # The top text lines are contained in <p>...</p> pairs
         # Collect them.
         topTextLines=[]
-        while len(contents) > 0 and contents[0].lower().startswith("<p>"):
-            while True:
-                topTextLines.append(contents[0])
-                contents=contents[1:]   # Consume the line
-                if topTextLines[-1:][0].lower().endswith(r"</p>") or topTextLines[-1:][0].lower().endswith(r"<p>"):
-                    break
+        while len(contents) > 0:
+            pFound=self.ConsumeHTML(contents, topTextLines, "p")
+            h3Found=self.ConsumeHTML(contents, topTextLines, "h3")
+            if not pFound and not h3Found:
+                break
 
         # The column headers are in the first line
         colHeaderLine=contents[0]
@@ -307,15 +306,11 @@ class LSTFile:
             contents=contents[1:]
 
         bottomTextLines=[]
-        if len(contents) > 0:
-            # The bottom text lines are also contained in <p>...</p> pairs
-            # Collect them.
-            while len(contents) > 0 and contents[0].lower().startswith("<p>"):
-                while True:
-                    bottomTextLines.append(contents[0])
-                    contents=contents[1:]  # Consume the line
-                    if bottomTextLines[-1:][0].lower().endswith(r"</p>") or bottomTextLines[-1:][0].lower().endswith(r"<p>"):
-                        break
+        while len(contents) > 0:
+            pFound=self.ConsumeHTML(contents, bottomTextLines, "p")
+            h3Found=self.ConsumeHTML(contents, bottomTextLines, "h3")
+            if not pFound and not h3Found:
+                break
 
         # The firstLine and the topTestLines and bottomTextLines are usable as-is, so we just store them
         self.FirstLine=firstLine
@@ -337,6 +332,19 @@ class LSTFile:
                 continue
             # Split the row on ";"
             self.Rows.append([h.strip() for h in row.split(";")])
+
+    #----------------------------------
+    def ConsumeHTML(self, contents: list, textLines: list, s: str):
+        found=False
+        s=s.lower()
+        if contents[0].lower().startswith("<"+s+">"):
+            while True:
+                found=True
+                textLines.append(contents[0])
+                del contents[0]  # Consume the line
+                if textLines[-1:][0].lower().endswith("</"+s+">") or textLines[-1:][0].lower().endswith("<"+s+">"):
+                    break
+        return found
 
     # ---------------------------------
     # Save an LST file back to disk
