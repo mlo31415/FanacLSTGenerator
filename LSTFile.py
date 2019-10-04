@@ -325,6 +325,10 @@ class LSTFile:
         self.Rows=[]
         for row in rowLines:
             # Turn the first ">" before the first ";" into a ";"
+            # if there is none, insert one at the start of the line.
+            #       (This is one of those bozo rows without scans and will need to be dealt with on write-out, also.)
+            if row.find(">") == -1 or (row.find(">") > row.find(";")):  # Case 1 is no '>', case 2 is '>' follows ';', so it's text not delimiter
+                row=">"+row
             if row.find(">") != -1 and row.find(">") < row.find(";"):
                 row=row[:row.find(">")]+";"+row[row.find(">")+1:]
             # If the line has no content (other than ">" and ";" and whitespace, skip it.
@@ -380,14 +384,20 @@ class LSTFile:
         for row in self.Rows:
             if len(row) < 3:    # Smallest possible LST file
                 continue
-            # We have to join the first two elements of row into a single element to deal with the LST's odd format
+
             if len(row) > maxlen:
-                row=row[:maxlen]
-            if len(row[0]) > 0 or len(row[1]) > 0:
-                out=row[0] + ">" + row[1]+ "; " + ("; ".join(row[2:]))
+                row=row[:maxlen]    # Truncate if necessary
+
+            # We have to join the first two elements of row into a single element to deal with the LST's odd format
+            if len(row[0]) == 0 and len(row[1]) > 0:
+                out=row[1]    # If the first column is empty, then we have a bozo row with no link and need to fudge it a bit.
+            elif len(row[0]) > 0:
+                out=row[0] + ">" + row[1]   # The normal case
             else:
-                out=" ;"+ ("; ".join(row[2:]))     # Leave the first column entirely blank
-            if not re.match("^[>;\s]*$", out):  # Don't save null rows
+                out=" "     # Leave the first column entirely blank. (Shouldn't happen, but...)
+            # Now append the rest of the columns
+            out=out+ "; " + ("; ".join(row[2:]))
+            if not re.match("^[>;\s]*$", out):  # Save only null rows
                 content.append(out)
 
         if len(self.BottomTextLines) > 0:
