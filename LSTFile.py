@@ -340,14 +340,15 @@ class LSTFile:
     #----------------------------------
     def ConsumeHTML(self, contents: list, textLines: list, s: str):
         found=False
-        s=s.lower()
-        if contents[0].lower().startswith("<"+s+">"):
-            while True:
-                found=True
-                textLines.append(contents[0])
-                del contents[0]  # Consume the line
-                if textLines[-1:][0].lower().endswith("</"+s+">") or textLines[-1:][0].lower().endswith("<"+s+">"):
-                    break
+        if len(contents) > 0:
+            s=s.lower()
+            if contents[0].lower().startswith("<"+s+">"):
+                while True:
+                    found=True
+                    textLines.append(contents[0])
+                    del contents[0]  # Consume the line
+                    if textLines[-1:][0].lower().endswith("</"+s+">") or textLines[-1:][0].lower().endswith("<"+s+">"):
+                        break
         return found
 
     # ---------------------------------
