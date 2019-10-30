@@ -492,7 +492,8 @@ class MainWindow(GUIClass):
         #   or a capitalized word, then a letter followed by a period, then a capitalized word  (e.g., "John W. Campbell")
         #   or a capitalized word followed by a number
         pattern=(
-            "[sS](can by|cans by|canned by|canned at|canning by) ([A-Z][a-z]+) ("
+            "[sS](can by|cans by|canned by|canned at|canning by) ([A-Z][a-z]+) ("   # A variation of "scanned by" followed by a first name;
+            #   This all followed by one of these:
             "(?:Mc|Mac|O')[A-Z][a-z]+|"     # Celtic names
             "[A-Z]\.[A-Z][a-z]+|"   # Middle initial
             "[A-Z][a-z]+|" # This needs to go last because it will ignore characters after it finds a match (with "Sam McDonald" it matches "Sam Mc")
