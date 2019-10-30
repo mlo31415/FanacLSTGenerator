@@ -295,6 +295,7 @@ class MainWindow(GUIClass):
                 for row in self.lstData.Rows:
                     note=row[self.rightClickedColumn-1].lower()
                     if "scan by" in note or \
+                            "scans by" in note or \
                             "scanned by" in note or \
                             "scanning by" in note or \
                             "scanned at" in note:
@@ -483,8 +484,20 @@ class MainWindow(GUIClass):
             notesCol=notesCol
 
         # Now parse the notes looking for scanning information
-        # Scanning Info will look like one of the four prefixes (Scan by, Scanned by, Scanned at, Scanning by) followed by two capitalized words or a capitalized work followed by a number
-        pattern="[sS](can by|canned by|canned at|canning by) ([A-Z][a-z]+) ([A-Z][a-z]+|[0-9]+)"
+        # Scanning Info will look like one of the four prefixes (Scan by, Scanned by, Scanned at, Scanning by) followed by
+        #   two capitalized words
+        #   or a capitalized word, then "Mc", then a capitalized word  (e.g., "Sam McDonald")
+        #   or a capitalized word, then "Mac", then a capitalized word  (e.g., "Anne MacCaffrey")
+        #   or "O'Neill"
+        #   or a capitalized word, then a letter followed by a period, then a capitalized word  (e.g., "John W. Campbell")
+        #   or a capitalized word followed by a number
+        pattern=(
+            "[sS](can by|cans by|canned by|canned at|canning by) ([A-Z][a-z]+) ("
+            "(?:Mc|Mac|O')[A-Z][a-z]+|"     # Celtic names
+            "[A-Z]\.[A-Z][a-z]+|"   # Middle initial
+            "[A-Z][a-z]+|" # This needs to go last because it will ignore characters after it finds a match (with "Sam McDonald" it matches "Sam Mc")
+            "[0-9]+)"       # Boskone 23
+        )
         for i in range(0, len(self.lstData.Rows)):
             row=self.lstData.Rows[i]
             note=row[notesCol+1]
