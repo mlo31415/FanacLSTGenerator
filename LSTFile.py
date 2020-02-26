@@ -3,6 +3,7 @@ import re
 
 from HelpersPackage import CanonicizeColumnHeaders, ConsumeHTML, Bailout
 from FanzineIssueSpecPackage import FanzineDate
+from Log import Log
 
 #----------------------------------
 def InterpretIssueSpec(s: str):
@@ -187,6 +188,10 @@ class LSTFile:
     def Read(self, filename: str) -> None:
 
         # Open the file, read the lines in it and strip leading and trailing whitespace (including '\n')
+        try:
+            fop=open(filename, "r")
+        except Exception as e:
+            Bailout(e, "Couldn't open "+filename+" for reading", "LST.read")
         contents=list(open(filename))
         contents=[l.strip() for l in contents]
 

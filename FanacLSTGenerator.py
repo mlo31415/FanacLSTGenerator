@@ -7,6 +7,7 @@ from GUIClass import GUIClass
 from LSTFile import *
 from LSTFile import CanonicizeColumnHeaders
 from HelpersPackage import Bailout
+from Log import LogOpen
 
 class MainWindow(GUIClass):
     def __init__(self, parent, title):
@@ -628,6 +629,7 @@ class MainWindow(GUIClass):
 
 
 # Start the GUI and run the event loop
+LogOpen("Log -- FanacLSTGenerator.txt", "Log (Errors) -- FanacLSTGenerator.txt")
 app = wx.App(False)
 frame = MainWindow(None, "Sample editor")
 app.MainLoop()
