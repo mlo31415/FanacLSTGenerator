@@ -3,14 +3,10 @@ import wx
 import wx.grid
 import math
 import sys
-import re
 from GUIClass import GUIClass
 from LSTFile import *
 from LSTFile import CanonicizeColumnHeaders
-
-def Bailout(e, s: str):
-    ctypes.windll.user32.MessageBoxW(0, s, "Main error", 1)
-    raise
+from HelpersPackage import Bailout
 
 class MainWindow(GUIClass):
     def __init__(self, parent, title):
@@ -57,11 +53,11 @@ class MainWindow(GUIClass):
         dlg.Destroy()
 
         # Read the lst file
+        pathname=os.path.join(self.dirname, self.lstFilename)
         try:
-            pathname=os.path.join(self.dirname, self.lstFilename)
             self.lstData.Read(pathname)
         except Exception as e:
-            Bailout(e, "MainWindow: Failure reading LST file '"+pathname+"'")
+            Bailout(e, "MainWindow: Failure reading LST file '"+pathname+"'", "LSTError")
 
         # Fill in the upper stuff
         self.tTopMatter.SetValue(self.lstData.FirstLine)
@@ -143,10 +139,10 @@ class MainWindow(GUIClass):
     #------------------
     # Save an LSTFile object to disk.
     def OnSaveLSTFile(self, event):
+        # Rename the old file
+        oldname=os.path.join(self.dirname, self.lstFilename)
+        newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
         try:
-            # Rename the old file
-            oldname=os.path.join(self.dirname, self.lstFilename)
-            newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
             i=0
             while os.path.exists(newname):
                 i+=1
@@ -154,12 +150,12 @@ class MainWindow(GUIClass):
 
             os.rename(oldname, newname)
         except:
-            Bailout(PermissionError, "OnSaveLSTFile fails when trying to rename "+oldname+" to "+newname)
+            Bailout(PermissionError, "OnSaveLSTFile fails when trying to rename "+oldname+" to "+newname, "LSTError")
 
         try:
             self.lstData.Save(oldname)
         except:
-            Bailout(PermissionError, "OnSaveLSTFile fails when trying to write file "+newname)
+            Bailout(PermissionError, "OnSaveLSTFile fails when trying to write file "+newname, "LSTError")
 
 
     #------------------
@@ -199,7 +195,7 @@ class MainWindow(GUIClass):
         # Start by dividing on the "$$"
         sections=filename.split("$$")
         if len(sections) != 2:
-            Bailout(ValueError, "FanacLSTGenerator.DecodeIssueFileName: Missing $$ in '"+filename+"'")
+            Bailout(ValueError, "FanacLSTGenerator.DecodeIssueFileName: Missing $$ in '"+filename+"'", "LSTError")
         namePrefix=sections[0].strip()
 
         # Now remove the extension and divide the balance of the name by spaces
@@ -408,7 +404,7 @@ class MainWindow(GUIClass):
         num=pasteRight-len(self.lstData.Rows[0])-1
         if num > 0:
             for row in self.lstData.Rows:
-                row.extend(["" for x in range(num)])
+                row.extend([""]*num)
 
         # Copy the cells from the clipboard to the grid in lstData.
         i=pasteTop

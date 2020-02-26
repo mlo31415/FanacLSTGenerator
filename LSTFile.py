@@ -1,87 +1,10 @@
 from dataclasses import dataclass
-import ctypes
-import FanacDates
 import re
 
-def Bailout(e, s: str):
-    ctypes.windll.user32.MessageBoxW(0, s, "LSTFile error", 1)
-    raise e(s)
+from HelpersPackage import CanonicizeColumnHeaders, ConsumeHTML, Bailout
+from FanzineIssueSpecPackage import FanzineDate
 
-# -------------------------------------------------------------
-def CanonicizeColumnHeaders(header: str) -> str:
-    # 2nd item is the canonical form
-    translationTable={
-        "published": "date",
-        "editors": "editor",
-        "zine": "W",
-        "fanzine": "W",
-        "mo.": "M",
-        "mon": "M",
-        "month": "M",
-        "notes": "notes",
-        "no.": "N",
-        "no,": "N",
-        "num": "N",
-        "#": "N",
-        "page": "P",
-        "pages": "P",
-        "pp,": "P",
-        "pub": "publisher",
-        "vol": "V",
-        "volume": "V",
-        "wholenum": "W",
-        "year": "Y",
-        "day": "D",
-    }
-    try:
-        # If we find a single upper case character as the cannonical form, return it.
-        val=translationTable[header.replace(" ", "").replace("/", "").lower()]
-        if len(val) == 1 and val.isupper():
-            return val
-    except:
-        pass
-    # Otherwise, return the input
-    return header
-
-# -------------------------------------------------------------
-# This takes a LST file column header and returns the preferred, human-readable form.
-def PreferredColumnHeaders(header: str) -> str:
-    # 2nd item is the canonical form
-    # a->A transformations are in place to ensure proper capitalization
-    translationTable={
-        "published": "Date",
-        "date": "Date",
-        "editors": "Editor",
-        "editor": "Editor",
-        "zine": "WholeNum",
-        "fanzine": "WholeNum",
-        "whole": "WholeNum",
-        "wholenum": "WholeNum",
-        "mo.": "Month",
-        "mon": "Month",
-        "month": "Month",
-        "no.": "Num",
-        "no,": "Num",
-        "#": "Num",
-        "num": "Num",
-        "page": "Pages",
-        "pages": "Pages",
-        "pp,": "Pages",
-        "pp": "Pages",
-        "pp.": "Pages",
-        "pub": "Publisher",
-        "publisher": "Publisher",
-        "volume": "Vol",
-        "v": "Vol",
-        "vol": "Vol",
-    }
-    try:
-        # If it's in the table, return the preferred version
-        return translationTable[header.replace(" ", "").replace("/", "").lower()]
-    except:
-        # Otherwise, just return whatever-it-was that was passed in.
-        return header
-
+#----------------------------------
 def InterpretIssueSpec(s: str):
     if s is None:
         return 0
@@ -101,7 +24,8 @@ def InterpretIssueSpec(s: str):
             except:
                 # That also failed.  Just fall through to the ignominious end.
                 pass
-    Bailout(ValueError, "LSTFile.InterpretIssueSpec can't interpret '"+s+"'")
+    Bailout(ValueError, "LSTFile.InterpretIssueSpec can't interpret '"+s+"'", "LSTError")
+
 
 
 @dataclass(order=False)
@@ -125,20 +49,20 @@ class LSTFile:
         #   VN -- use volume and number
         #   W -- use whole number
         #   "" -- use the title
-        if bestCols == "W":
-            if "W" not in self.ColumnHeaderTypes:
-                Bailout(ValueError, "LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
-            col=self.ColumnHeaderTypes.index("W")
+        if bestCols == "Whole":
+            if "Whole" not in self.ColumnHeaderTypes:
+                Bailout(ValueError, "LSTFile: GetBestRowIndex - can't find columnheader="+bestCols, "LSTError")
+            col=self.ColumnHeaderTypes.index("Whole")
             for i in range(0, len(self.Rows)):
                 if InterpretIssueSpec(self.Rows[i][col]) > InterpretIssueSpec(newRow[col]):
                     return i+0.5
             return len(self.Rows)+1
 
-        if bestCols == "VN":
-            if "V" not in self.ColumnHeaderTypes or "N" not in self.ColumnHeaderTypes:
-                Bailout(ValueError, "LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
-            colV=self.ColumnHeaderTypes.index("V")
-            colN=self.ColumnHeaderTypes.index("N")
+        if bestCols == "Vol+Num":
+            if "Volume" not in self.ColumnHeaderTypes or "Number" not in self.ColumnHeaderTypes:
+                Bailout(ValueError, "LSTFile: GetBestRowIndex - can't find columnheader="+bestCols, "LSTError")
+            colV=self.ColumnHeaderTypes.index("Volume")
+            colN=self.ColumnHeaderTypes.index("Number")
             for i in range(0, len(self.Rows)):
                 if InterpretIssueSpec(self.Rows[i][colV]) > InterpretIssueSpec(newRow[colV]):
                     return i+0.5
@@ -146,14 +70,17 @@ class LSTFile:
                     return i+0.5
             return len(self.Rows)+1
 
-        if bestCols == "YM":
-            if "Y" not in self.ColumnHeaderTypes:   # We don't actually need a month in every column for this to be useful
-                Bailout(ValueError, "LSTFile: GetBestRowIndex - can't find columnheader="+bestCols)
-            colY=self.ColumnHeaderTypes.index("Y")
-            colM=self.ColumnHeaderTypes.index("M")
-            val=FanacDates.ParseYM(newRow[colY], newRow[colM]).AsFloat()
+        if bestCols == "Year&Month":
+            if "Year" not in self.ColumnHeaderTypes:   # We don't actually need a month in every column for this to be useful
+                Bailout(ValueError, "LSTFile: GetBestRowIndex - can't find columnheader="+bestCols, "LSTError")
+            colY=self.ColumnHeaderTypes.index("Year")
+            colM=self.ColumnHeaderTypes.index("Month")
+            fd=FanzineDate.ParseGeneralDateString(newRow[colM]+" "+newRow[colY])
+            y=fd.Year
+            m=fd.Month
             for i in range(0, len(self.Rows)):
-                if FanacDates.ParseYM(self.Rows[i][colY], self.Rows[i][colM]).AsFloat() > val:
+                fd=FanzineDate.ParseGeneralDateString(self.Rows[i][colM]+" "+self.Rows[i][colY])
+                if fd.Year > y or (fd.Year == y and fd.Month > m):
                     return i+0.5
             return len(self.Rows)+1
 
@@ -176,10 +103,10 @@ class LSTFile:
             self.ColumnHeaderTypes.append(CanonicizeColumnHeaders(header))
 
         # In cases where we have a num *and* a vol, the num is treated as the issue's volume number; else its treated as the issue's whole number
-        if "V" not in self.ColumnHeaderTypes:
+        if "Volume" not in self.ColumnHeaderTypes:
             for i in range(0, len(self.ColumnHeaderTypes)):
-                if self.ColumnHeaderTypes[i] == "N":
-                    self.ColumnHeaderTypes[i]="W"
+                if self.ColumnHeaderTypes[i] == "Number":
+                    self.ColumnHeaderTypes[i]="Whole"
 
         # Now gather statistics on what columns have data.  This will be needed to determine the best colums to use for inserting new data
         self.MeasureSortColumns()
@@ -189,27 +116,27 @@ class LSTFile:
     # Take the supplied header types and use the row statistics to determine what column to use to do an insertion.
     def GetInsertCol(self, row: list) -> str:
         if self.SortColumn is None:
-            Bailout(ValueError, "class LSTFile: GetInsertCol called while SortColumn is None")
+            Bailout(ValueError, "class LSTFile: GetInsertCol called while SortColumn is None", "LSTError")
 
         # ColumnHeaderTypes is a list of the type letters for which this issue has data.
         possibleCols={}
-        if "W" in self.ColumnHeaderTypes:
-            i=self.ColumnHeaderTypes.index("W")
+        if "Whole" in self.ColumnHeaderTypes:
+            i=self.ColumnHeaderTypes.index("Whole")
             if row[i] is not None and row[i] != "":
-                if self.SortColumn["W"] > .75:
-                    possibleCols["W"]=self.SortColumn["W"]
-        if "V" in self.ColumnHeaderTypes and "N" in self.ColumnHeaderTypes:
-            i=self.ColumnHeaderTypes.index("V")
+                if self.SortColumn["Whole"] > .75:
+                    possibleCols["Whole"]=self.SortColumn["Whole"]
+        if "Volume" in self.ColumnHeaderTypes and "Number" in self.ColumnHeaderTypes:
+            i=self.ColumnHeaderTypes.index("Volume")
             if row[i] is not None and row[i] != "":
-                i=self.ColumnHeaderTypes.index("N")
+                i=self.ColumnHeaderTypes.index("Number")
                 if row[i] is not None and row[i] != "":
-                    if self.SortColumn["VN"] > .75:
-                        possibleCols["VN"]=self.SortColumn["VN"]
-        if "Y" in self.ColumnHeaderTypes and "M" in self.ColumnHeaderTypes:
-            i=self.ColumnHeaderTypes.index("Y")
+                    if self.SortColumn["volnum"] > .75:
+                        possibleCols["VN"]=self.SortColumn["volnum"]
+        if "Year" in self.ColumnHeaderTypes and "Month" in self.ColumnHeaderTypes:
+            i=self.ColumnHeaderTypes.index("Year")
             if row[i] is not None and row[i] != "":
-                if self.SortColumn["YM"] > .75:
-                    possibleCols["YM"]=self.SortColumn["YM"]
+                if self.SortColumn["Year&Month"] > .75:
+                    possibleCols["Year&Month"]=self.SortColumn["Year&Month"]
 
         if len(possibleCols) == 0:
             return ""
@@ -230,13 +157,13 @@ class LSTFile:
     def MeasureSortColumns(self) -> None:
         # A sort column must either be the title or have a type code
         # Start by looking through the columns that have a type code and seeing which are mostly or completely filled.  Do it in order of perceived importance.
-        fW=self.CountFilledCells("W")
-        fV=self.CountFilledCells("V")
-        fN=self.CountFilledCells("N")
-        fY=self.CountFilledCells("Y")
-        fM=self.CountFilledCells("M")
+        fW=self.CountFilledCells("Whole")
+        fV=self.CountFilledCells("Volume")
+        fN=self.CountFilledCells("Number")
+        fY=self.CountFilledCells("Year")
+        fM=self.CountFilledCells("Month")
 
-        self.SortColumn={"W": fW, "VN": fV*fN, "YM": fY*fM}
+        self.SortColumn={"Whole": fW, "Vol+Num": fV*fN, "Year&Month": fY*fM}
 
     #---------------------------------
     # Count the number of filled cells in the column with the specified type code
@@ -288,8 +215,8 @@ class LSTFile:
         # Collect them.
         topTextLines=[]
         while len(contents) > 0:
-            pFound=self.ConsumeHTML(contents, topTextLines, "p")
-            h3Found=self.ConsumeHTML(contents, topTextLines, "h3")
+            pFound=ConsumeHTML(contents, topTextLines, "p")
+            h3Found=ConsumeHTML(contents, topTextLines, "h3")
             if not pFound and not h3Found:
                 break
 
@@ -307,8 +234,8 @@ class LSTFile:
 
         bottomTextLines=[]
         while len(contents) > 0:
-            pFound=self.ConsumeHTML(contents, bottomTextLines, "p")
-            h3Found=self.ConsumeHTML(contents, bottomTextLines, "h3")
+            pFound=ConsumeHTML(contents, bottomTextLines, "p")
+            h3Found=ConsumeHTML(contents, bottomTextLines, "h3")
             if not pFound and not h3Found:
                 break
 
@@ -318,7 +245,7 @@ class LSTFile:
         self.BottomTextLines=bottomTextLines
 
         # We need to parse the column headers
-        self.ColumnHeaders=[PreferredColumnHeaders(h.strip()) for h in colHeaderLine.split(";")]
+        self.ColumnHeaders=[CanonicizeColumnHeaders(h.strip()) for h in colHeaderLine.split(";")]
 
         # And likewise the rows
         # Note that we have the funny structure (filename>displayname) of the first column. We treat the ">" as a ";" for the purposes of the spreadsheet. (We'll undo this on save.)
@@ -337,20 +264,6 @@ class LSTFile:
             # Split the row on ";"
             self.Rows.append([h.strip() for h in row.split(";")])
 
-    #----------------------------------
-    def ConsumeHTML(self, contents: list, textLines: list, s: str):
-        found=False
-        if len(contents) > 0:
-            s=s.lower()
-            if contents[0].lower().startswith("<"+s+">"):
-                while True:
-                    found=True
-                    textLines.append(contents[0])
-                    del contents[0]  # Consume the line
-                    if textLines[-1:][0].lower().endswith("</"+s+">") or textLines[-1:][0].lower().endswith("<"+s+">"):
-                        break
-        return found
-
     # ---------------------------------
     # Save an LST file back to disk
     def Save(self, filename: str) -> None:
@@ -363,7 +276,7 @@ class LSTFile:
 
         # Next we determine the last column to have non-blank content in any cell (including the header)
         # Helper function
-        def Length(row: list):
+        def Length(row: list) -> int:
             temp=row
             while len(temp) > 0 and len(temp[-1:][0].strip()) == 0:
                 temp=temp[:-1]
