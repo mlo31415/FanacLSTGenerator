@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import re
 
-from HelpersPackage import CanonicizeColumnHeaders, ConsumeHTML, Bailout
+from HelpersPackage import CanonicizeColumnHeaders, CaseInsensitiveReplace, Bailout
 from FanzineIssueSpecPackage import FanzineDate
 from Log import Log
 
@@ -76,11 +76,11 @@ class LSTFile:
                 Bailout(ValueError, "LSTFile: GetBestRowIndex - can't find columnheader="+bestCols, "LSTError")
             colY=self.ColumnHeaderTypes.index("Year")
             colM=self.ColumnHeaderTypes.index("Month")
-            fd=FanzineDate.ParseGeneralDateString(newRow[colM]+" "+newRow[colY])
+            fd=FanzineDate().ParseGeneralDateString(newRow[colM]+" "+newRow[colY])
             y=fd.Year
             m=fd.Month
             for i in range(0, len(self.Rows)):
-                fd=FanzineDate.ParseGeneralDateString(self.Rows[i][colM]+" "+self.Rows[i][colY])
+                fd=FanzineDate().ParseGeneralDateString(self.Rows[i][colM]+" "+self.Rows[i][colY])
                 if fd.Year > y or (fd.Year == y and fd.Month > m):
                     return i+0.5
             return len(self.Rows)+1
@@ -189,60 +189,90 @@ class LSTFile:
 
         # Open the file, read the lines in it and strip leading and trailing whitespace (including '\n')
         try:
-            fop=open(filename, "r")
+            open(filename, "r")
         except Exception as e:
             Bailout(e, "Couldn't open "+filename+" for reading", "LST.read")
         contents=list(open(filename))
         contents=[l.strip() for l in contents]
 
-        if contents is None or len(contents) == 0:
+        if contents is None:
+            return
+
+        # Collapse all runs of empty lines down to a single empty line
+        output=[]
+        lastlinemepty=False
+        for c in contents:
+            if len(c) == 0:
+                if lastlinemepty:
+                    continue        # Skip the line
+                lastlinemepty=True
+            else:
+                lastlinemepty=False
+            output.append(c)
+        contents=output
+        if len(contents) == 0:
             return
 
         # The structure of an LST file is
         #   Header line
         #   (blank line)
         #   Repeated 0 or more times:
-        #       <P>line...</P>
-        #           (This may extend ove many lines)
+        #       <P>line...</P> blah, blah, blah
+        #           (This may extend over many lines)
         #       (blank line)
         #   Index table headers
         #   (blank line)
         #   Repeated 0 or more times:
         #       Index table line
 
-        # I will not enforce the blank lines unless forced to. So for now, remove all empty lines
-        contents=[l for l in contents if len(l)>0]
-
+        # The first line is the first line
         firstLine=contents[0]
         contents=contents[1:]   # Drop the first line, as it has been processed
 
-        # The top text lines are contained in <p>...</p> pairs
-        # Collect them.
+        # Now we have an empty line which we ignore
+        if len(contents[0]) > 0:
+            Bailout(ValueError, "Second line isn't empty", "LST Generator: Read LST file")
+        contents=contents[1:]
+
+        def IsColHeaderOrRow(s: str) -> bool:
+            # Column header pattern is four repetitions of (a span of at least one character followed by a semicolon)
+            return re.search(".+;.+;.+;.+;", s) is not None
+        # The next lines are either column headers or a block of text terminated by an empty line
         topTextLines=[]
-        while len(contents) > 0:
-            pFound=ConsumeHTML(contents, topTextLines, "p")
-            h3Found=ConsumeHTML(contents, topTextLines, "h3")
-            if not pFound and not h3Found:
-                break
+        if IsColHeaderOrRow(contents[0]):
+            colHeaderLine=contents[0]
+            contents=contents[1:]  # Drop them so we can read the rest later.
+        else:   # Ok, we seem to have the top text block
+            while len(contents) > 0 and len(contents[0]) > 0 and not IsColHeaderOrRow(contents[0]):
+                topTextLines.append(contents[0])
+                contents=contents[1:]
+            # skip the empty line
+            if len(contents) == 0:
+                Bailout(ValueError, "Missing empty line after top text block", "LST Generator: Read LST file")
+            contents=contents[1:]
+            # Now we must have a column headers line
+            if not IsColHeaderOrRow(contents[0]):
+                Bailout(ValueError, "Missing column header line", "LST Generator: Read LST file")
+            colHeaderLine=contents[0]
+            contents=contents[1:]  # Drop them so we can read the rest later.
 
-        # The column headers are in the first line
-        colHeaderLine=contents[0]
-        contents=contents[1:]   # Drop them so we can read the rest later.
-
-        rowLines=[]
-        while len(contents) > 0:
-            # There may be <p>-bracketed bumpf on the bottom, also.  Check for this and bail if found.
-            if contents[0].lower().startswith("<p>"):
-                break
-            rowLines.append(contents[0])
+        # There may be an empty line after the column headers.  If so, ignore it.
+        if len(contents) > 0 and (contents[0]) == 0:
             contents=contents[1:]
 
-        bottomTextLines=[]
+        # OK. The remainder should be rows, possibly followed by bottom bumpf
+        rowLines=[]
         while len(contents) > 0:
-            pFound=ConsumeHTML(contents, bottomTextLines, "p")
-            h3Found=ConsumeHTML(contents, bottomTextLines, "h3")
-            if not pFound and not h3Found:
+            if IsColHeaderOrRow(contents[0]):
+                rowLines.append(contents[0])
+                contents=contents[1:]
+            elif len(contents[0]) == 0:
+                contents=contents[1:]
+            else:
                 break
+
+        # What's left must be bottom text lines
+        bottomTextLines=contents
 
         # The firstLine and the topTestLines and bottomTextLines are usable as-is, so we just store them
         self.FirstLine=firstLine
@@ -253,19 +283,37 @@ class LSTFile:
         self.ColumnHeaders=[CanonicizeColumnHeaders(h.strip()) for h in colHeaderLine.split(";")]
 
         # And likewise the rows
-        # Note that we have the funny structure (filename>displayname) of the first column. We treat the ">" as a ";" for the purposes of the spreadsheet. (We'll undo this on save.)
+        # We need to do some specoial processing on the first column
+        # There are three formats that I've found so far.
+        # (1) The most common format has (filename>displayname) in the first column. We treat the ">" as a ";" for the purposes of the spreadsheet. (We'll undo this on save.)
+        #   This format is to a specific issue of a fanzine.
+        # (2) An especially annoying one is where fanzine data has been entered, but there's no actual scan.
+        #   We deal with this by adding a ">" at the start of the line and then handling it like case (1)
+        # (3) A less common format is has "<a HREF="http://fanac.org/fanzines/abc/">xyz" where abc is the directory name of the target index.html, and xyz is the display name.
+        #   Normally, abc seems to be the same as xyz, but we'll make allowance for the possibility it me be different.
+        #   In this second case, the whole HREF is too big, so we'll hide it and just show "<abc>" in col 1
+        #   (There's scatually two version fo case (3), with and without 'www.' preceeding the URL
         self.Rows=[]
         for row in rowLines:
-            # Turn the first ">" before the first ";" into a ";"
-            # if there is none, insert one at the start of the line.
-            #       (This is one of those bozo rows without scans and will need to be dealt with on write-out, also.)
-            if row.find(">") == -1 or (row.find(">") > row.find(";")):  # Case 1 is no '>', case 2 is '>' follows ';', so it's text not delimiter
+            # Look for case (2), and add the ">" to make it case 1
+            if row.find(">") == -1 or (row.find(">") > row.find(";")):  # The first find is no '>', the second find is '>' following a ';', so it's text not a 1st col delimiter
                 row=">"+row
-            if row.find(">") != -1 and row.find(">") < row.find(";"):
+            # The characteristic of Case (3) is that it starts "<a href...".  Look for that and handle it, turning it into Case (1)
+            r=CaseInsensitiveReplace(row, '<a href="http://fanac.org/fanzines/', "<")
+            r=CaseInsensitiveReplace(r, '<a href="http://www.fanac.org/fanzines/', "<")
+            if len(row) != len(r):
+                row=r.replace('">', '>>')      # Get rid of the trailing double quote in the URL and add in an extra '>' to designate that it's Case 3
+
+            # Now we can handle them all as case (1)
+            if row.find(">>") != -1 and row.find(">>") < row.find(";"):
+                row=row[:row.find(">>")]+">;"+row[row.find(">>")+2:]
+            elif row.find(">") != -1 and row.find(">") < row.find(";"):
                 row=row[:row.find(">")]+";"+row[row.find(">")+1:]
+
             # If the line has no content (other than ">" and ";" and whitespace, skip it.
             if re.match("^[>;\s]*$", row):
                 continue
+
             # Split the row on ";"
             self.Rows.append([h.strip() for h in row.split(";")])
 
@@ -307,11 +355,16 @@ class LSTFile:
             if len(row) > maxlen:
                 row=row[:maxlen]    # Truncate if necessary
 
-            # We have to join the first two elements of row into a single element to deal with the LST's odd format
+            # We have to join the first two elements of row into a single element to deal with the LST's odd format. (See the reading code, above.)
+            # We also have to be aware of the input Case (3) and handle that correctly
             if len(row[0]) == 0 and len(row[1]) > 0:
-                out=row[1]    # If the first column is empty, then we have a bozo row with no link and need to fudge it a bit.
+                out=row[1]    # If the first column is empty, then we have a case (2) row with no link and need to fudge it a bit.
             elif len(row[0]) > 0:
-                out=row[0] + ">" + row[1]   # The normal case
+                # Case (3) is marked by the first column beginning and ending with pointy brackets
+                if row[0][0] == "<" and row[0][-1:] == ">":
+                    out='<a href="http://fanac.org/fanzines/'+row[0][1:-1]+'">'+row[1]
+                else:
+                    out=row[0] + ">" + row[1]   # Case (1)
             else:
                 out=" "     # Leave the first column entirely blank. (Shouldn't happen, but...)
             # Now append the rest of the columns
