@@ -192,7 +192,17 @@ class LSTFile:
             open(filename, "r")
         except Exception as e:
             Bailout(e, "Couldn't open "+filename+" for reading", "LST.read")
-        contents=list(open(filename))
+
+        # This is really ugly!  One LST file (that I know of) has the character 0x92 (a curly quote) which is somehow bogus (unclear how)
+        # I prefer to use just plain-old-Python for reading the LST file, but it triggers an exception on the 0x92
+        # In that case, I read the file using cp1252, a Windows character set which is OK with 0x92.
+        try:
+            contents=list(open(filename))
+        except:
+            f=open(filename, mode="rb")
+            contents=f.read()
+            f.close()
+            contents=contents.decode("cp1252").split("\r\n")
         contents=[l.strip() for l in contents]
 
         if contents is None:
