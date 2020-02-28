@@ -576,7 +576,6 @@ class MainWindow(GUIClass):
             row=self.lstData.Rows[i]
             row=row[:left-1]+[""]+row[left-1:right]+row[right+1:]
             self.lstData.Rows[i]=row
-        ch=self.lstData.ColumnHeaders
 
         # Move the selection along with it
         self.gRowGrid.SelectBlock(top, left+1, bottom, right+1)
@@ -593,7 +592,6 @@ class MainWindow(GUIClass):
             row=self.lstData.Rows[i]
             row=row[:left-2]+row[left-1:right]+[""]+row[right:]
             self.lstData.Rows[i]=row
-        ch=self.lstData.ColumnHeaders
 
         # Move the selection along with it
         self.gRowGrid.SelectBlock(top, left-1, bottom, right-1)
