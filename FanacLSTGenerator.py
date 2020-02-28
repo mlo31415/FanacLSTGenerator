@@ -645,8 +645,11 @@ class MainWindow(GUIClass):
 
         # Ordinary columns
         if col > 0:
+            self.gRowGrid.EvtHandlerEnabled=False
             self.lstData.Rows[row-1][col-1]=newVal
             self.ColorCellByValue()
+            self.gRowGrid.AutoSizeColumns()
+            self.gRowGrid.EvtHandlerEnabled=True
             return
 
         # What's left is column zero and thus the user is editing a row number
