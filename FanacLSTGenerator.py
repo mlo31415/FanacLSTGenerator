@@ -5,8 +5,8 @@ import math
 import sys
 from GUIClass import GUIClass
 from LSTFile import *
-from LSTFile import CanonicizeColumnHeaders
-from HelpersPackage import Bailout
+from HelpersPackage import Bailout, CanonicizeColumnHeaders
+from FanzineIssueSpecPackage import ValidateData
 from Log import LogOpen
 
 class MainWindow(GUIClass):
@@ -85,6 +85,14 @@ class MainWindow(GUIClass):
         self.LoadLSTFile()
         pass
 
+    # Define some RGB color constants
+    labelGray=wx.Colour(230, 230, 230)
+    pink=wx.Colour(255, 230, 230)
+    lightGreen=wx.Colour(240, 255, 240)
+    lightBlue=wx.Colour(240, 230, 255)
+    white=wx.Colour(255, 255, 255)
+
+
     #------------------
     # The LSTFile object has the official information. This function refreshes the display from it.
     def RefreshGridFromLSTData(self):
@@ -96,25 +104,24 @@ class MainWindow(GUIClass):
 
         # Color all the column headers white before coloring the ones that actually exist gray.  (This handles cases where a column has been deleted.)
         for i in range(0, self.gRowGrid.NumberCols-1):
-            self.gRowGrid.SetCellBackgroundColour(0, i, wx.WHITE)
+            self.gRowGrid.SetCellBackgroundColour(0, i, self.white)
 
-        labelGray=wx.Colour(230, 230, 230)
         # Add the column headers
         self.gRowGrid.SetCellValue(0, 0, "")
         self.gRowGrid.SetCellValue(0, 1, "First Page")
         i=2
         for colhead in self.lstData.ColumnHeaders:
-            self.gRowGrid.SetCellValue(0, i, colhead)
-            self.gRowGrid.SetCellBackgroundColour(0, i, labelGray)
+            self.gRowGrid.SetCellValue(0, i, colhead)               # Set the column header number
+            self.gRowGrid.SetCellBackgroundColour(0, i, self.labelGray)  # Set the column header background
             i+=1
-        self.gRowGrid.SetCellBackgroundColour(0, 0, labelGray)
-        self.gRowGrid.SetCellBackgroundColour(0, 1, labelGray)
+        self.gRowGrid.SetCellBackgroundColour(0, 0, self.labelGray)
+        self.gRowGrid.SetCellBackgroundColour(0, 1, self.labelGray)
 
         # Make the first grid column contain editable row numbers
         for i in range(1, grid.GetNumberRows()):
             grid.SetCellValue(i, 0, str(i))
-            grid.SetCellBackgroundColour(i, 0, labelGray)
-        grid.SetCellBackgroundColour(0, 0, labelGray)
+            grid.SetCellBackgroundColour(i, 0, self.labelGray)
+        grid.SetCellBackgroundColour(0, 0, self.labelGray)
 
         # Now insert the row data
         grid.AppendRows(len(self.lstData.Rows))
@@ -126,16 +133,27 @@ class MainWindow(GUIClass):
                 j+=1
             i+=1
 
-        # Set the proper highlighting.
-        for i in range(0, len(self.lstData.Rows)):
-            cellcolor=wx.Colour(255, 240, 240) if grid.GetCellValue(i+1, 2) in self.highlightRows else wx.Colour(255, 255, 255)
-            for j in range(0, grid.GetNumberCols()):
-                grid.SetCellBackgroundColour(i+1, j+1, cellcolor)
-
+        self.ColorCellByValue()
         grid.ForceRefresh()
         grid.AutoSizeColumns()
         grid.EvtHandlerEnabled=True
 
+
+    def ColorCellByValue(self):
+        # Analyze the data and highlight cells where the data type doesn't match the header.  (E.g., Volume='August', Month='17', year='20')
+        # We walk the columns.  For each column we decide on the proper type. Then we ewalk the rows checking the type of data in that column.
+        for iCol in range(0, len(self.lstData.ColumnHeaders)+1):        # Because of that damned doubled 1st column...
+            colhead=self.lstData.ColumnHeaders[iCol-1]      # Because of that damned doubled 1st column...
+            coltype=CanonicizeColumnHeaders(colhead)
+            for iRow in range(0, len(self.lstData.Rows)):
+                row=self.lstData.Rows[iRow]
+                if iCol >= len(row):
+                    continue
+                cell=row[iCol]
+                color=self.white
+                if len(cell) > 0 and not  ValidateData(cell, coltype):
+                    color=self.pink
+                self.gRowGrid.SetCellBackgroundColour(iRow+1, iCol+1, color)
 
     #------------------
     # Save an LSTFile object to disk.
@@ -628,6 +646,7 @@ class MainWindow(GUIClass):
         # Ordinary columns
         if col > 0:
             self.lstData.Rows[row-1][col-1]=newVal
+            self.ColorCellByValue()
             return
 
         # What's left is column zero and thus the user is editing a row number
