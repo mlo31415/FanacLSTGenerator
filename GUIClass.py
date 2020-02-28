@@ -105,6 +105,10 @@ class GUIClass(wx.Frame):
         self.m_popupMenu1.Append        (self.m_menuItemMoveColRight)
         self.m_menuItemMoveColLeft=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Move Column Left", wx.EmptyString, wx.ITEM_NORMAL)
         self.m_popupMenu1.Append        (self.m_menuItemMoveColLeft)
+        self.m_menuItemMoveSelectionRight=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Move Selection Right", wx.EmptyString, wx.ITEM_NORMAL)
+        self.m_popupMenu1.Append        (self.m_menuItemMoveSelectionRight)
+        self.m_menuItemMoveSelectionLeft=wx.MenuItem(self.m_popupMenu1, wx.ID_ANY, u"Move Selection Left", wx.EmptyString, wx.ITEM_NORMAL)
+        self.m_popupMenu1.Append        (self.m_menuItemMoveSelectionLeft)
         self.gRowGrid.Bind(wx.EVT_RIGHT_DOWN, self.gRowGridOnContextMenu)
 
         theIssueGrid.Add(self.gRowGrid, 0, wx.ALL|wx.EXPAND, 5)
@@ -133,6 +137,8 @@ class GUIClass(wx.Frame):
         self.Bind(wx.EVT_MENU, self.OnPopupExtractScanner, id=self.m_menuItemExtractScanner.GetId())
         self.Bind(wx.EVT_MENU, self.OnPopupMoveColRight, id=self.m_menuItemMoveColRight.GetId())
         self.Bind(wx.EVT_MENU, self.OnPopupMoveColLeft, id=self.m_menuItemMoveColLeft.GetId())
+        self.Bind(wx.EVT_MENU, self.OnPopupMoveSelectionRight, id=self.m_menuItemMoveSelectionRight.GetId())
+        self.Bind(wx.EVT_MENU, self.OnPopupMoveSelectionLeft, id=self.m_menuItemMoveSelectionLeft.GetId())
 
     def __del__(self):
         pass
@@ -181,6 +187,12 @@ class GUIClass(wx.Frame):
         event.Skip()
 
     def OnPopupMoveColLeft(self, event):
+        event.Skip()
+
+    def OnPopupMoveSelectionRight(self, event):
+        event.Skip()
+
+    def OnPopupMoveSelectionLeft(self, event):
         event.Skip()
 
     def gRowGridOnContextMenu(self, event):

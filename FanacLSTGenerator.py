@@ -290,13 +290,26 @@ class MainWindow(GUIClass):
             if self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes":
                 # We only want to enable the Notes column if it contains scanned by information
                 for row in self.lstData.Rows:
-                    note=row[self.rightClickedColumn-1].lower()
-                    if "scan by" in note or \
-                            "scans by" in note or \
-                            "scanned by" in note or \
-                            "scanning by" in note or \
-                            "scanned at" in note:
-                        mi.Enable(True)
+                    if len(row) > self.rightClickedColumn-1:
+                        note=row[self.rightClickedColumn-1].lower()
+                        if "scan by" in note or \
+                                "scans by" in note or \
+                                "scanned by" in note or \
+                                "scanning by" in note or \
+                                "scanned at" in note:
+                            mi.Enable(True)
+
+        # We enable the move selection right and left commands only if there is a selection that begins in col 2 or later
+        # Enable the MoveColRight item if we're in the 2nd data column or later
+        top, left, bottom, right=self.LocateSelection()
+        if self.HasSelection():
+            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Selection Right"))
+            mi.Enable(True)
+
+        # Enable the MoveColLeft item if we're in the 2nd data column or later
+        if left > 1 and self.HasSelection():
+            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Selection Left"))
+            mi.Enable(True)
 
         # Pop the menu up.
         self.PopupMenu(self.m_popupMenu1)
@@ -307,7 +320,7 @@ class MainWindow(GUIClass):
     # There are three cases, in descending order of preference:
     #   There is a selection block defined
     #   There is a SelectedCells defined
-    #   There is a GridCurso location
+    #   There is a GridCursor location
     def LocateSelection(self):
         if len(self.gRowGrid.SelectionBlockTopLeft) > 0 and len(self.gRowGrid.SelectionBlockBottomRight) > 0:
             top, left=self.gRowGrid.SelectionBlockTopLeft[0]
@@ -319,6 +332,14 @@ class MainWindow(GUIClass):
             left=right=self.gRowGrid.GridCursorCol
             top=bottom=self.gRowGrid.GridCursorRow
         return top, left, bottom, right
+
+    def HasSelection(self):
+        if len(self.gRowGrid.SelectionBlockTopLeft) > 0 and len(self.gRowGrid.SelectionBlockBottomRight) > 0:
+            return True
+        if len(self.gRowGrid.SelectedCells) > 0:
+            return True
+
+        return False
 
 
     #-------------------
@@ -376,6 +397,14 @@ class MainWindow(GUIClass):
     #------------------
     def OnPopupMoveColLeft(self, event):
         self.MoveColLeft(self.rightClickedColumn)
+
+    # ------------------
+    def OnPopupMoveSelectionRight(self, event):
+        self.MoveSelectionRight(self.rightClickedColumn)
+
+    # ------------------
+    def OnPopupMoveSelectionLeft(self, event):
+        self.MoveSelectionLeft(self.rightClickedColumn)
 
     #------------------
     def CopyCells(self, top, left, bottom, right):
@@ -536,6 +565,39 @@ class MainWindow(GUIClass):
             self.lstData.Rows[i]=row
         ch=self.lstData.ColumnHeaders
         self.lstData.ColumnHeaders=ch[:col-1]+ch[col:col+1]+ch[col-1:col]+ch[col+1:]
+        # And redisplay
+        self.RefreshGridFromLSTData()
+
+    #------------------
+    def MoveSelectionRight(self, rightClickedColumn):
+        top, left, bottom, right=self.LocateSelection()
+
+        for i in range(top-1, bottom):
+            row=self.lstData.Rows[i]
+            row=row[:left-1]+[""]+row[left-1:right]+row[right+1:]
+            self.lstData.Rows[i]=row
+        ch=self.lstData.ColumnHeaders
+
+        # Move the selection along with it
+        self.gRowGrid.SelectBlock(top, left+1, bottom, right+1)
+
+        # And redisplay
+        self.RefreshGridFromLSTData()
+
+    #------------------
+    # Move the selection one column to the left.  The vacated cells to the right are filled with blanks
+    def MoveSelectionLeft(self, rightClickedColumn):
+        top, left, bottom, right=self.LocateSelection()
+
+        for i in range(top-1, bottom):
+            row=self.lstData.Rows[i]
+            row=row[:left-2]+row[left-1:right]+[""]+row[right:]
+            self.lstData.Rows[i]=row
+        ch=self.lstData.ColumnHeaders
+
+        # Move the selection along with it
+        self.gRowGrid.SelectBlock(top, left-1, bottom, right-1)
+
         # And redisplay
         self.RefreshGridFromLSTData()
 
