@@ -3,15 +3,15 @@ import wx
 import wx.grid
 import math
 import sys
-from GUIClass import GUIClass
+from GUIClass import MainFrame
 from LSTFile import *
 from HelpersPackage import Bailout, CanonicizeColumnHeaders
 from FanzineIssueSpecPackage import ValidateData
 from Log import LogOpen
 
-class MainWindow(GUIClass):
+class MainWindow(MainFrame):
     def __init__(self, parent, title):
-        GUIClass.__init__(self, parent)
+        MainFrame.__init__(self, parent)
 
         self.highlightRows=[]       # A List of the names of fanzines in highlighted rows
         self.clipboard=None         # The grid's clipboard
@@ -265,7 +265,7 @@ class MainWindow(GUIClass):
         self.rightClickedColumn=event.GetCol()
 
         # Set everything to disabled.
-        for mi in self.m_popupMenu1.GetMenuItems():
+        for mi in self.m_CellPopupMenu.GetMenuItems():
             mi.Enable(False)
 
         # Everything remains disabled when we're outside the defined columns
@@ -274,36 +274,41 @@ class MainWindow(GUIClass):
 
         # We enable the Delete Column item if we're on a deletable column
         if self.rightClickedColumn > 1 and self.rightClickedColumn < len(self.lstData.ColumnHeaders)+1:
-            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Delete Column"))
-            mi.Enable(True)
+            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Delete Column"))
+            if mi is not None:
+                mi.Enable(True)
 
         # Enable the MoveColRight item if we're in the 2nd data column or later
         if self.rightClickedColumn > 2:
-            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Column Right"))
-            mi.Enable(True)
+            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Move Column Right"))
+            if mi is not None:
+                mi.Enable(True)
 
         # Enable the MoveColLeft item if we're in the 2nd data column or later
         if self.rightClickedColumn > 2:
-            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Column Left"))
-            mi.Enable(True)
+            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Move Column Left"))
+            if mi is not None:
+                mi.Enable(True)
 
         # We enable the Copy item if have a selection
         sel=self.LocateSelection()
         if sel[0] != 0 or sel[1] != 0 or sel[2] != 0 or sel[3] != 0:
-            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Copy"))
-            mi.Enable(True)
+            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Copy"))
+            if mi is not None:
+                mi.Enable(True)
 
         # We enable the Add Column to Left item if we're on a column to the left of the first -- it can be off the right and a column will be added to the right
         if self.rightClickedColumn > 1:
-            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Insert Column to Left"))
-            mi.Enable(True)
+            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Insert Column to Left"))
+            if mi is not None:
+                mi.Enable(True)
 
         # We enable the Paste popup menu item if there is something to paste
-        mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Paste"))
+        mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Paste"))
         mi.Enabled=self.clipboard is not None and len(self.clipboard) > 0 and len(self.clipboard[0]) > 0  # Enable only if the clipboard contains actual content
 
         # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
-        mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Extract Scanner"))
+        mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Extract Scanner"))
         if self.rightClickedColumn < len(self.lstData.ColumnHeaders)+2:
             if self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes":
                 # We only want to enable the Notes column if it contains scanned by information
@@ -321,16 +326,18 @@ class MainWindow(GUIClass):
         # Enable the MoveColRight item if we're in the 2nd data column or later
         top, left, bottom, right=self.LocateSelection()
         if self.HasSelection():
-            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Selection Right"))
-            mi.Enable(True)
+            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Move Selection Right"))
+            if mi is not None:
+                mi.Enable(True)
 
         # Enable the MoveColLeft item if we're in the 2nd data column or later
         if left > 1 and self.HasSelection():
-            mi=self.m_popupMenu1.FindItemById(self.m_popupMenu1.FindItem("Move Selection Left"))
-            mi.Enable(True)
+            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Move Selection Left"))
+            if mi is not None:
+                mi.Enable(True)
 
         # Pop the menu up.
-        self.PopupMenu(self.m_popupMenu1)
+        self.PopupMenu(self.m_CellPopupMenu)
 
 
     #-------------------
@@ -394,12 +401,12 @@ class MainWindow(GUIClass):
         event.Skip()
 
     #------------------
-    def OnPopupDeleteColumn(self, event):
+    def OnPopupDelCol(self, event):
         self.DeleteColumn(self.rightClickedColumn)
         event.Skip()
 
     #------------------
-    def OnPopupAddColumnToLeft(self, event):
+    def OnPopupInsertColLeft(self, event):
         self.AddColumnToLeft(self.rightClickedColumn)
         event.Skip()
 
@@ -417,11 +424,11 @@ class MainWindow(GUIClass):
         self.MoveColLeft(self.rightClickedColumn)
 
     # ------------------
-    def OnPopupMoveSelectionRight(self, event):
+    def OnPopupMoveSelRight(self, event):
         self.MoveSelectionRight(self.rightClickedColumn)
 
     # ------------------
-    def OnPopupMoveSelectionLeft(self, event):
+    def OnPopupMoveSelLeft(self, event):
         self.MoveSelectionLeft(self.rightClickedColumn)
 
     #------------------
