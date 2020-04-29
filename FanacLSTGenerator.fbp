@@ -696,6 +696,7 @@
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
                                 <property name="window_style"></property>
+                                <event name="OnGridCellChange">OnGridCellChange</event>
                                 <event name="OnGridCellRightClick">OnGridCellRightClick</event>
                                 <event name="OnKeyDown">OnKeyDown</event>
                                 <event name="OnKeyUp">OnKeyUp</event>
@@ -739,7 +740,7 @@
             </object>
             <object class="wxMenu" expanded="1">
                 <property name="label">MyMenu</property>
-                <property name="name">m_menuCellRMB</property>
+                <property name="name">m_CellPopupMenu</property>
                 <property name="permission">protected</property>
                 <object class="wxMenuItem" expanded="0">
                     <property name="bitmap"></property>
@@ -777,7 +778,7 @@
                     <property name="id">wxID_ANY</property>
                     <property name="kind">wxITEM_NORMAL</property>
                     <property name="label">Delete Column</property>
-                    <property name="name">m_menuItemPopulDelCol</property>
+                    <property name="name">m_menuItemPopupDelCol</property>
                     <property name="permission">none</property>
                     <property name="shortcut"></property>
                     <property name="unchecked_bitmap"></property>
@@ -790,12 +791,12 @@
                     <property name="help"></property>
                     <property name="id">wxID_ANY</property>
                     <property name="kind">wxITEM_NORMAL</property>
-                    <property name="label">Insert Colum to Left</property>
+                    <property name="label">Insert Column to Left</property>
                     <property name="name">m_menuItemPopupInsertColLeft</property>
                     <property name="permission">none</property>
                     <property name="shortcut"></property>
                     <property name="unchecked_bitmap"></property>
-                    <event name="OnMenuSelection">OnPopupColLeft</event>
+                    <event name="OnMenuSelection">OnPopupInsertColLeft</event>
                 </object>
                 <object class="wxMenuItem" expanded="0">
                     <property name="bitmap"></property>
@@ -823,7 +824,7 @@
                     <property name="permission">none</property>
                     <property name="shortcut"></property>
                     <property name="unchecked_bitmap"></property>
-                    <event name="OnMenuSelection">OnPopulMoveColRight</event>
+                    <event name="OnMenuSelection">OnPopupMoveColRight</event>
                 </object>
                 <object class="wxMenuItem" expanded="0">
                     <property name="bitmap"></property>
@@ -837,7 +838,7 @@
                     <property name="permission">none</property>
                     <property name="shortcut"></property>
                     <property name="unchecked_bitmap"></property>
-                    <event name="OnMenuSelection">OnPopulMoveColLeft</event>
+                    <event name="OnMenuSelection">OnPopupMoveColLeft</event>
                 </object>
                 <object class="wxMenuItem" expanded="0">
                     <property name="bitmap"></property>
@@ -851,7 +852,7 @@
                     <property name="permission">none</property>
                     <property name="shortcut"></property>
                     <property name="unchecked_bitmap"></property>
-                    <event name="OnMenuSelection">OnPopulMoveSelRight</event>
+                    <event name="OnMenuSelection">OnPopupMoveSelRight</event>
                 </object>
                 <object class="wxMenuItem" expanded="0">
                     <property name="bitmap"></property>
