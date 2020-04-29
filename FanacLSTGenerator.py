@@ -625,7 +625,7 @@ class MainWindow(MainFrame):
         self.RefreshGridFromLSTData()
 
     #------------------
-    def OnGridCellChanged(self, event):
+    def OnGridCellChange(self, event):
         row=event.GetRow()
         col=event.GetCol()
         newVal=self.gRowGrid.GetCellValue(row, col)

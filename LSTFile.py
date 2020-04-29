@@ -293,7 +293,7 @@ class LSTFile:
         self.ColumnHeaders=[CanonicizeColumnHeaders(h.strip()) for h in colHeaderLine.split(";")]
 
         # And likewise the rows
-        # We need to do some specoial processing on the first column
+        # We need to do some special processing on the first column
         # There are three formats that I've found so far.
         # (1) The most common format has (filename>displayname) in the first column. We treat the ">" as a ";" for the purposes of the spreadsheet. (We'll undo this on save.)
         #   This format is to a specific issue of a fanzine.
@@ -302,16 +302,19 @@ class LSTFile:
         # (3) A less common format is has "<a HREF="http://fanac.org/fanzines/abc/">xyz" where abc is the directory name of the target index.html, and xyz is the display name.
         #   Normally, abc seems to be the same as xyz, but we'll make allowance for the possibility it me be different.
         #   In this second case, the whole HREF is too big, so we'll hide it and just show "<abc>" in col 1
-        #   (There's scatually two version fo case (3), with and without 'www.' preceeding the URL
+        #   (There's actually two versions of case (3), with and without 'www.' preceding the URL
         self.Rows=[]
         for row in rowLines:
+            col1=row.split(";", 1)[0]
             # Look for case (2), and add the ">" to make it case 1
-            if row.find(">") == -1 or (row.find(">") > row.find(";")):  # The first find is no '>', the second find is '>' following a ';', so it's text not a 1st col delimiter
+            if col1.find(">") == -1:    #If there's no ">" in col1, put it there.
                 row=">"+row
+                col1=row.split(";", 1)[0]
+
             # The characteristic of Case (3) is that it starts "<a href...".  Look for that and handle it, turning it into Case (1)
-            r=CaseInsensitiveReplace(row, '<a href="http://fanac.org/fanzines/', "<")
+            r=CaseInsensitiveReplace(col1, '<a href="http://fanac.org/fanzines/', "<")
             r=CaseInsensitiveReplace(r, '<a href="http://www.fanac.org/fanzines/', "<")
-            if len(row) != len(r):
+            if len(col1) != len(r):
                 row=r.replace('">', '>>')      # Get rid of the trailing double quote in the URL and add in an extra '>' to designate that it's Case 3
 
             # Now we can handle them all as case (1)
