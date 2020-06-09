@@ -234,63 +234,53 @@ class LSTFile:
         #   (blank line)
         #   Repeated 0 or more times:
         #       Index table line
+        # The table contains *only* tablelines (see below) and empty lines
+        # Then maybe some more random bottom text lines
+
+
+        # The header is ill-defined stuff
+        # ALL table lines consist of one instance of either of the characters ">" or ";" and two more of ";", all separated by spans of other stuff.
+        # No lines of that sort appear in the toplines section
 
         # The first line is the first line
-        firstLine=contents[0]
+        self.FirstLine=contents[0]
         contents=contents[1:]   # Drop the first line, as it has been processed
 
-        # Now we have an empty line which we ignore
-        if len(contents[0]) > 0:
-            Bailout(ValueError, "Second line isn't empty", "LST Generator: Read LST file")
-        contents=contents[1:]
-
-        def IsColHeaderOrRow(s: str) -> bool:
+        def IsTableLine(s: str) -> bool:
             # Column header pattern is four repetitions of (a span of at least one character followed by a semicolon)
-            return re.search(".+;.+;.+;.+;", s) is not None
-        # The next lines are either column headers or a block of text terminated by an empty line
-        topTextLines=[]
-        if IsColHeaderOrRow(contents[0]):
-            colHeaderLine=contents[0]
-            contents=contents[1:]  # Drop them so we can read the rest later.
-        else:   # Ok, we seem to have the top text block
-            while len(contents) > 0 and len(contents[0]) > 0 and not IsColHeaderOrRow(contents[0]):
-                topTextLines.append(contents[0])
-                contents=contents[1:]
-            # skip the empty line
-            if len(contents) == 0:
-                Bailout(ValueError, "Missing empty line after top text block", "LST Generator: Read LST file")
-            contents=contents[1:]
-            # Now we must have a column headers line
-            if not IsColHeaderOrRow(contents[0]):
-                Bailout(ValueError, "Missing column header line", "LST Generator: Read LST file")
-            colHeaderLine=contents[0]
-            contents=contents[1:]  # Drop them so we can read the rest later.
+            return re.search(".+[\>;].+;.+;.+;", s) is not None
 
-        # There may be an empty line after the column headers.  If so, ignore it.
-        if len(contents) > 0 and (contents[0]) == 0:
-            contents=contents[1:]
-
-        # OK. The remainder should be rows, possibly followed by bottom bumpf
+        # Go through the lines one-by-one, looking for a table line. Until that is found, accumulate toptext lines
+        self.TopTextLines=[]
+        self.BottomTextLines=[]
         rowLines=[]
-        while len(contents) > 0:
-            if IsColHeaderOrRow(contents[0]):
-                rowLines.append(contents[0])
-                contents=contents[1:]
-            elif len(contents[0]) == 0:
-                contents=contents[1:]
+        pasttable=False
+        for line in contents:
+            line=line.strip()
+            if len(rowLines) > 0 and not pasttable and len(line) == 0:
+                continue    # Skip blank lines within the table
+            if IsTableLine(line):
+                rowLines.append(line)
             else:
-                break
+                if len(rowLines) == 0:  # Non table lines go in top text lines until the table has been found; then they go in bottom text lines
+                    self.TopTextLines.append(line)
+                else:
+                    self.BottomTextLines.append(line)
+                    pasttable=True  # Now we can't go back to adding on table lines
 
-        # What's left must be bottom text lines
-        bottomTextLines=contents
+        if len(self.TopTextLines) == 0:
+            Bailout(ValueError, "No top text lines found", "LST Generator: Read LST file")
+        if len(rowLines) == 0:
+            Bailout(ValueError, "No row lines found", "LST Generator: Read LST file")
+        if len(rowLines) == 1:
+            Bailout(ValueError, "Only one row line found -- either header or contents missing", "LST Generator: Read LST file")
 
-        # The firstLine and the topTestLines and bottomTextLines are usable as-is, so we just store them
-        self.FirstLine=firstLine
-        self.TopTextLines=topTextLines
-        self.BottomTextLines=bottomTextLines
+        # The column headers are in the first table line
+        colHeaderLine=rowLines[0]
+        rowLines=rowLines[1:]
 
         # We need to parse the column headers
-        self.ColumnHeaders=[CanonicizeColumnHeaders(h.strip()) for h in colHeaderLine.split(";")]
+        self.ColumnHeaders=[CanonicizeColumnHeaders(h.strip()) for h in colHeaderLine.split(";") if len(h) > 0]
 
         # And likewise the rows
         # We need to do some special processing on the first column
