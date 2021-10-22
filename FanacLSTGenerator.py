@@ -3,7 +3,10 @@ import wx
 import wx.grid
 import math
 import sys
-from GUIClass import MainFrame
+
+from GenGUIClass import MainFrame
+
+from WxDataGrid import DataGrid
 from LSTFile import *
 from HelpersPackage import Bailout, CanonicizeColumnHeaders
 from FanzineIssueSpecPackage import ValidateData
@@ -13,10 +16,10 @@ class MainWindow(MainFrame):
     def __init__(self, parent, title):
         MainFrame.__init__(self, parent)
 
-        self.highlightRows=[]       # A List of the names of fanzines in highlighted rows
+        self.highlightRows: list[str]=[]       # A List of the names of fanzines in highlighted rows
         self.clipboard=None         # The grid's clipboard
         self.userSelection=None
-        self.cntlDown=False
+        self.cntlDown: bool=False
         self.rightClickedColumn=None
 
         self.dirname=''
@@ -717,8 +720,13 @@ class MainWindow(MainFrame):
         self.lstData.Rows=newrows
 
 
-# Start the GUI and run the event loop
-LogOpen("Log -- FanacLSTGenerator.txt", "Log (Errors) -- FanacLSTGenerator.txt")
-app = wx.App(False)
-frame = MainWindow(None, "Sample editor")
-app.MainLoop()
+
+def main():
+    # Start the GUI and run the event loop
+    LogOpen("Log -- FanacLSTGenerator.txt", "Log (Errors) -- FanacLSTGenerator.txt")
+    app=wx.App(False)
+    frame=MainWindow(None, "Sample editor")
+    app.MainLoop()
+
+if __name__ == "__main__":
+    main()
