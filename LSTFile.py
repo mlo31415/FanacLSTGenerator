@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Union, Optional
 import re
 
 from HelpersPackage import CanonicizeColumnHeaders, CaseInsensitiveReplace, Bailout
@@ -109,7 +110,7 @@ class LSTFile:
                 if self.ColumnHeaderTypes[i] == "Number":
                     self.ColumnHeaderTypes[i]="Whole"
 
-        # Now gather statistics on what columns have data.  This will be needed to determine the best colums to use for inserting new data
+        # Now gather statistics on what columns have data.  This will be needed to determine the best columns to use for inserting new data
         self.MeasureSortColumns()
 
 

@@ -1,20 +1,27 @@
+from __future__ import annotations
+from typing import Union, Optional
+from dataclasses import dataclass
 import os
 import wx
 import wx.grid
 import math
+import json
 import sys
+from collections import defaultdict
 
 from GenGUIClass import MainFrame
 
-from WxDataGrid import DataGrid
+from WxDataGrid import DataGrid, GridDataSource, Color, GridDataSource
 from LSTFile import *
-from HelpersPackage import Bailout, CanonicizeColumnHeaders
+from HelpersPackage import Bailout, Int, CanonicizeColumnHeaders
 from FanzineIssueSpecPackage import ValidateData
 from Log import LogOpen
 
 class MainWindow(MainFrame):
     def __init__(self, parent, title):
         MainFrame.__init__(self, parent)
+        self._grid: DataGrid=DataGrid(self.gRowGrid)
+        self._grid.Datasource=FanzineTablePage()
 
         self.highlightRows: list[str]=[]       # A List of the names of fanzines in highlighted rows
         self.clipboard=None         # The grid's clipboard
@@ -26,6 +33,30 @@ class MainWindow(MainFrame):
         if len(sys.argv) > 1:
             self.dirname=os.getcwd()
 
+        stdColHeader: defaultdict[str, ColHeader]=defaultdict()
+        stdColHeader["Link"]=ColHeader("Link", type="str")
+        stdColHeader["Issue"]=ColHeader("Issue", type="str")
+        stdColHeader["Title"]=ColHeader("Title", type="str", preferred="Issue")
+        stdColHeader["Whole"]=ColHeader("Whole", type="int", width=75)
+        stdColHeader["WholeNum"]=ColHeader("WholeNum", type="int", width=75, preferred="Whole")
+        stdColHeader["Vol"]=ColHeader("Vol", type="int", width=50)
+        stdColHeader["Volume"]=ColHeader("Volume", type="int", width=50, preferred="Vol")
+        stdColHeader["Num"]=ColHeader("Num", type="int", width=50)
+        stdColHeader["Number"]=ColHeader("Numver", type="int", width=50, preferred="Num")
+        stdColHeader["Month"]=ColHeader("Month", type="str", width=75)
+        stdColHeader["Day"]=ColHeader("Day", type="int", width=50)
+        stdColHeader["Year"]=ColHeader("Year", type="int", width=50)
+        stdColHeader["Pages"]=ColHeader("Pages", type="int", width=50)
+        stdColHeader["PDF"]=ColHeader("PDF", type="str", width=50)
+        stdColHeader["Notes"]=ColHeader("Notes", type="str", width=120)
+        stdColHeader["Scanned"]=ColHeader("Scanned", type="str", width=100)
+        stdColHeader["APA"]=ColHeader("APA", type="str", width=100)
+        stdColHeader["Country"]=ColHeader("Country", type="str", width=50)
+        stdColHeader["Editor"]=ColHeader("Editor", type="str", width=75)
+        stdColHeader["Author"]=ColHeader("Author", type="str", width=75)
+        stdColHeader["Repro"]=ColHeader("Repro", type="str", width=75)
+        self.stdColHeader=stdColHeader
+
         # Read the LST file
         self.LoadLSTFile()
 
@@ -34,7 +65,6 @@ class MainWindow(MainFrame):
     #------------------
     # Given a LST file of disk load it into self
     def LoadLSTFile(self):
-
         # Clear out any old information
         self.lstData=LSTFile()
         self.tTopMatter.SetValue("")
@@ -74,13 +104,69 @@ class MainWindow(MainFrame):
         # The row and column labels are actually the (editable) 1st column and 1st row of the spreadsheet (they're colored gray)
         # and the "real" row and column labels are hidden.
         self.gRowGrid.HideRowLabels()
-        self.gRowGrid.HideColLabels()
+        #self.gRowGrid.HideColLabels()
 
         # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
         self.lstData.IdentifyColumnHeaders()
 
-        # Insert the row data into the grid
+        # Define the grid's columns
+        # First add the invisible column which is actually the link destination
+        # It's the first part of the funny xxxxx>yyyyy thing in the LST file's 1st column
+        sch=self.stdColHeader["Link"]
+        self._grid.Datasource._colheaders.append(sch.Preferred)
+        self._grid.Datasource._colminwidths.append(sch.width)
+        self._grid.Datasource._coldatatypes.append(sch.type)
+        self._grid.Datasource._coleditable.append(sch.editable)
+        # Followed by the headers defined in the LST file
+        for i in range(len(self.lstData.ColumnHeaders)):
+            name=self.lstData.ColumnHeaders[i]
+            name=self.stdColHeader[name].Preferred
+            sch=self.stdColHeader[name]
+            self._grid.Datasource._colheaders.append(sch.Preferred)
+            self._grid.Datasource._colminwidths.append(sch.width)
+            self._grid.Datasource._coldatatypes.append(sch.type)
+            self._grid.Datasource._coleditable.append(sch.editable)
+            # Fill in the column definitions with the new data
+
+        self._grid.SetColHeaders(self._grid.Datasource._colheaders)
+
+        # Copy the row data over
+        FTRList: list[FanzineTableRow]=[]
+        for row in self.lstData.Rows:
+            if len(row) != len(self._grid.Datasource._colheaders):
+                Log(f"Mismatched column count for Row={row}")
+                continue
+            FTRList.append(FanzineTableRow(row))
+        self._grid.Datasource._fanzineList=FTRList
+
+
         self.RefreshGridFromLSTData()
+        self.MarkAsSaved()
+        self.RefreshWindow()
+
+        i=0
+
+    # ------------------
+    # The LSTFile object has the official information. This function refreshes the display from it.
+    def RefreshGridFromLSTData(self):
+        grid=self.gRowGrid
+        grid.EvtHandlerEnabled=False
+        grid.ClearGrid()
+
+        # Now insert the row data
+        grid.AppendRows(len(self.lstData.Rows))
+        i=0
+        for row in self.lstData.Rows:
+            j=0
+            for cell in row:
+                grid.SetCellValue(i, j, cell)
+                j+=1
+            i+=1
+
+        #self.ColorCellByValue()
+        grid.ForceRefresh()
+        grid.AutoSizeColumns()
+        grid.EvtHandlerEnabled=True
 
 
     #------------------
@@ -94,69 +180,6 @@ class MainWindow(MainFrame):
     lightGreen=wx.Colour(240, 255, 240)
     lightBlue=wx.Colour(240, 230, 255)
     white=wx.Colour(255, 255, 255)
-
-
-    #------------------
-    # The LSTFile object has the official information. This function refreshes the display from it.
-    def RefreshGridFromLSTData(self):
-        grid=self.gRowGrid
-        grid.EvtHandlerEnabled=False
-        grid.ClearGrid()
-
-        # In effect, this makes all row and col references to data (as opposed to the labels) to be 1-based
-
-        # Color all the column headers white before coloring the ones that actually exist gray.  (This handles cases where a column has been deleted.)
-        for i in range(0, self.gRowGrid.NumberCols-1):
-            self.gRowGrid.SetCellBackgroundColour(0, i, self.white)
-
-        # Add the column headers
-        self.gRowGrid.SetCellValue(0, 0, "")
-        self.gRowGrid.SetCellValue(0, 1, "First Page")
-        i=2
-        for colhead in self.lstData.ColumnHeaders:
-            self.gRowGrid.SetCellValue(0, i, colhead)               # Set the column header number
-            self.gRowGrid.SetCellBackgroundColour(0, i, self.labelGray)  # Set the column header background
-            i+=1
-        self.gRowGrid.SetCellBackgroundColour(0, 0, self.labelGray)
-        self.gRowGrid.SetCellBackgroundColour(0, 1, self.labelGray)
-
-        # Make the first grid column contain editable row numbers
-        for i in range(1, grid.GetNumberRows()):
-            grid.SetCellValue(i, 0, str(i))
-            grid.SetCellBackgroundColour(i, 0, self.labelGray)
-        grid.SetCellBackgroundColour(0, 0, self.labelGray)
-
-        # Now insert the row data
-        grid.AppendRows(len(self.lstData.Rows))
-        i=1
-        for row in self.lstData.Rows:
-            j=1
-            for cell in row:
-                grid.SetCellValue(i, j, cell)
-                j+=1
-            i+=1
-
-        self.ColorCellByValue()
-        grid.ForceRefresh()
-        grid.AutoSizeColumns()
-        grid.EvtHandlerEnabled=True
-
-
-    def ColorCellByValue(self):
-        # Analyze the data and highlight cells where the data type doesn't match the header.  (E.g., Volume='August', Month='17', year='20')
-        # We walk the columns.  For each column we decide on the proper type. Then we ewalk the rows checking the type of data in that column.
-        for iCol in range(0, len(self.lstData.ColumnHeaders)+1):        # Because of that damned doubled 1st column...
-            colhead=self.lstData.ColumnHeaders[iCol-1]      # Because of that damned doubled 1st column...
-            coltype=CanonicizeColumnHeaders(colhead)
-            for iRow in range(0, len(self.lstData.Rows)):
-                row=self.lstData.Rows[iRow]
-                if iCol >= len(row):
-                    continue
-                cell=row[iCol]
-                color=self.white
-                if len(cell) > 0 and not  ValidateData(cell, coltype):
-                    color=self.pink
-                self.gRowGrid.SetCellBackgroundColour(iRow+1, iCol+1, color)
 
     #------------------
     # Save an LSTFile object to disk.
@@ -242,6 +265,22 @@ class MainWindow(MainFrame):
         return row
 
 
+    def RefreshWindow(self)-> None:
+        self._grid.RefreshGridFromData()
+
+    # ----------------------------------------------
+    # Used to determine if anything has been updated
+    def Signature(self) -> int:
+        #stuff=self.ConInstanceName.strip()+self.ConInstanceTopText.strip()+self.ConInstanceFancyURL.strip()+self.Credits.strip()
+        #return hash(stuff)+self._grid.Signature()
+        return self._grid.Signature()
+
+    def MarkAsSaved(self):
+        self._signature=self.Signature()
+
+    def NeedsSaving(self):
+        return self._signature != self.Signature()
+
     #------------------
     def OnTextTopMatter(self, event):
         self.lstData.FirstLine=self.tTopMatter.GetValue()
@@ -255,262 +294,13 @@ class MainWindow(MainFrame):
         else:
             self.lstData.TopTextLines=self.tPText.GetValue().split("\n")
 
-    #------------------
-    def OnGridCellDoubleclick(self, event):
-        if event.GetRow() == 0 and event.GetCol() == 0:
-            self.gRowGrid.AutoSize()
-            return
-        if event.GetRow() == 0 and event.GetCol() > 0:
-            self.gRowGrid.AutoSizeColumn(event.GetCol())
-
-    #------------------
-    def OnGridCellRightClick(self, event):
-        self.rightClickedColumn=event.GetCol()
-
-        # Set everything to disabled.
-        for mi in self.m_CellPopupMenu.GetMenuItems():
-            mi.Enable(False)
-
-        # Everything remains disabled when we're outside the defined columns
-        if self.rightClickedColumn > len(self.lstData.ColumnHeaders)+1 or self.rightClickedColumn == 0:
-            return
-
-        # We enable the Delete Column item if we're on a deletable column
-        if self.rightClickedColumn > 1 and self.rightClickedColumn < len(self.lstData.ColumnHeaders)+1:
-            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Delete Column"))
-            if mi is not None:
-                mi.Enable(True)
-
-        # Enable the MoveColRight item if we're in the 2nd data column or later
-        if self.rightClickedColumn > 2:
-            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Move Column Right"))
-            if mi is not None:
-                mi.Enable(True)
-
-        # Enable the MoveColLeft item if we're in the 2nd data column or later
-        if self.rightClickedColumn > 2:
-            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Move Column Left"))
-            if mi is not None:
-                mi.Enable(True)
-
-        # We enable the Copy item if have a selection
-        sel=self.LocateSelection()
-        if sel[0] != 0 or sel[1] != 0 or sel[2] != 0 or sel[3] != 0:
-            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Copy"))
-            if mi is not None:
-                mi.Enable(True)
-
-        # We enable the Add Column to Left item if we're on a column to the left of the first -- it can be off the right and a column will be added to the right
-        if self.rightClickedColumn > 1:
-            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Insert Column to Left"))
-            if mi is not None:
-                mi.Enable(True)
-
-        # We enable the Paste popup menu item if there is something to paste
-        mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Paste"))
-        mi.Enabled=self.clipboard is not None and len(self.clipboard) > 0 and len(self.clipboard[0]) > 0  # Enable only if the clipboard contains actual content
-
-        # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
-        mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Extract Scanner"))
-        if self.rightClickedColumn < len(self.lstData.ColumnHeaders)+2:
-            if self.lstData.ColumnHeaders[self.rightClickedColumn-2] == "Notes":
-                # We only want to enable the Notes column if it contains scanned by information
-                for row in self.lstData.Rows:
-                    if len(row) > self.rightClickedColumn-1:
-                        note=row[self.rightClickedColumn-1].lower()
-                        if "scan by" in note or \
-                                "scans by" in note or \
-                                "scanned by" in note or \
-                                "scanning by" in note or \
-                                "scanned at" in note:
-                            mi.Enable(True)
-
-        # We enable the move selection right and left commands only if there is a selection that begins in col 2 or later
-        # Enable the MoveColRight item if we're in the 2nd data column or later
-        top, left, bottom, right=self.LocateSelection()
-        if self.HasSelection():
-            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Move Selection Right"))
-            if mi is not None:
-                mi.Enable(True)
-
-        # Enable the MoveColLeft item if we're in the 2nd data column or later
-        if left > 1 and self.HasSelection():
-            mi=self.m_CellPopupMenu.FindItemById(self.m_CellPopupMenu.FindItem("Move Selection Left"))
-            if mi is not None:
-                mi.Enable(True)
-
-        # Pop the menu up.
-        self.PopupMenu(self.m_CellPopupMenu)
-
-
-    #-------------------
-    # Locate the selection, real or implied
-    # There are three cases, in descending order of preference:
-    #   There is a selection block defined
-    #   There is a SelectedCells defined
-    #   There is a GridCursor location
-    def LocateSelection(self):
-        if len(self.gRowGrid.SelectionBlockTopLeft) > 0 and len(self.gRowGrid.SelectionBlockBottomRight) > 0:
-            top, left=self.gRowGrid.SelectionBlockTopLeft[0]
-            bottom, right=self.gRowGrid.SelectionBlockBottomRight[0]
-        elif len(self.gRowGrid.SelectedCells) > 0:
-            top, left=self.gRowGrid.SelectedCells[0]
-            bottom, right=top, left
-        else:
-            left=right=self.gRowGrid.GridCursorCol
-            top=bottom=self.gRowGrid.GridCursorRow
-        return top, left, bottom, right
-
-    def HasSelection(self):
-        if len(self.gRowGrid.SelectionBlockTopLeft) > 0 and len(self.gRowGrid.SelectionBlockBottomRight) > 0:
-            return True
-        if len(self.gRowGrid.SelectedCells) > 0:
-            return True
-
-        return False
-
-
     #-------------------
     def OnKeyDown(self, event):
-        top, left, bottom, right=self.LocateSelection()
-
-        if event.KeyCode == 67 and self.cntlDown:   # cntl-C
-            self.CopyCells(top, left, bottom, right)
-        elif event.KeyCode == 86 and self.cntlDown and self.clipboard is not None and len(self.clipboard) > 0: # cntl-V
-            self.PasteCells(top, left)
-        elif event.KeyCode == 308:                  # cntl
-            self.cntlDown=True
-        elif event.KeyCode == 68:                   # Kludge to be able to force a refresh
-            self.RefreshGridFromLSTData()
-        event.Skip()
+        self._grid.OnKeyDown(event) # Pass event to WxDataGrid to handle
 
     #-------------------
     def OnKeyUp(self, event):
-        if event.KeyCode == 308:                    # cntl
-            self.cntlDown=False
-
-    #------------------
-    def OnPopupCopy(self, event):
-        # We need to copy the selected cells into the clipboard object.
-        # (We can't simply store the coordinates because the user might edit the cells before pasting.)
-        top, left, bottom, right=self.LocateSelection()
-        self.CopyCells(top, left, bottom, right)
-        event.Skip()
-
-    #------------------
-    def OnPopupPaste(self, event):
-        top, left, bottom, right=self.LocateSelection()
-        self.PasteCells(top, left)
-        event.Skip()
-
-    #------------------
-    def OnPopupDelCol(self, event):
-        self.DeleteColumn(self.rightClickedColumn)
-        event.Skip()
-
-    #------------------
-    def OnPopupInsertColLeft(self, event):
-        self.AddColumnToLeft(self.rightClickedColumn)
-        event.Skip()
-
-    #------------------
-    def OnPopupExtractScanner(self, event):
-        self.ExtractScanner(self.rightClickedColumn)
-        event.Skip()
-
-    #------------------
-    def OnPopupMoveColRight(self, event):
-        self.MoveColRight(self.rightClickedColumn)
-
-    #------------------
-    def OnPopupMoveColLeft(self, event):
-        self.MoveColLeft(self.rightClickedColumn)
-
-    # ------------------
-    def OnPopupMoveSelRight(self, event):
-        self.MoveSelectionRight(self.rightClickedColumn)
-
-    # ------------------
-    def OnPopupMoveSelLeft(self, event):
-        self.MoveSelectionLeft(self.rightClickedColumn)
-
-    #------------------
-    def CopyCells(self, top, left, bottom, right):
-        self.clipboard=[]
-        # We must remember that the first two data columns map to a single LST column.
-        for row in self.lstData.Rows[top-1: bottom]:
-            self.clipboard.append(row[left-1: right])
-
-    #------------------
-    def PasteCells(self, top, left):
-        # We paste the clipboard data into the block of the same size with the upper-left at the mouse's position
-        # Might some of the new material be outside the current bounds?  If so, add some blank rows and/or columns
-
-        # Define the bounds of the paste-to box
-        pasteTop=top
-        pasteBottom=top+len(self.clipboard)
-        pasteLeft=left
-        pasteRight=left+len(self.clipboard[0])
-
-        # Does the paste-to box extend beyond the end of the available rows?  If so, extend the available rows.
-        num=pasteBottom-len(self.lstData.Rows)-1
-        if num > 0:
-            for i in range(num):
-                self.lstData.Rows.append(["" for x in range(len(self.lstData.Rows[0]))])  # The strange contortion is to append a list of distinct empty strings
-
-        # Does the paste-to box extend beyond the right side of the availables? If so, extend the rows with more columns.
-        num=pasteRight-len(self.lstData.Rows[0])-1
-        if num > 0:
-            for row in self.lstData.Rows:
-                row.extend([""]*num)
-
-        # Copy the cells from the clipboard to the grid in lstData.
-        i=pasteTop
-        for row in self.clipboard:
-            j=pasteLeft
-            for cell in row:
-                self.lstData.Rows[i-1][j-1]=cell  # The -1 is to deal with the 1-indexing
-                j+=1
-            i+=1
-        self.RefreshGridFromLSTData()
-
-    #------------------
-    def DeleteColumn(self, col):
-        # Some columns are sacrosanct
-        # Column 0 is the row number and col 1 is the "first page" (computerd) column
-        # We must subtract 2 from col because the real data only starts at the third column.
-        col=col-2
-        if col >= len(self.lstData.Rows[0]) or col < 0:
-            return
-
-        # For each row, delete the specified column
-        # Note that the computed "first page" column *is* in lastData.Rows as it is editable
-        for i in range(0, len(self.lstData.Rows)):
-            row=self.lstData.Rows[i]
-            newrow=[]
-            if col > 0:
-                newrow.extend(row[:col+1])
-            if col < len(row)-3:
-                newrow.extend(row[col+2:])
-            self.lstData.Rows[i]=newrow
-
-        # Now delete the column header
-        del self.lstData.ColumnHeaders[col]
-
-        # And redisplay
-        self.RefreshGridFromLSTData()
-
-    # ------------------
-    def AddColumnToLeft(self, col):
-        col=col-2
-        self.lstData.ColumnHeaders=self.lstData.ColumnHeaders[:col]+[""]+self.lstData.ColumnHeaders[col:]
-        for i in range(0, len(self.lstData.Rows)):
-            row=self.lstData.Rows[i]
-            row=row[:col+1]+[""]+row[col+1:]
-            self.lstData.Rows[i]=row
-
-        # And redisplay
-        self.RefreshGridFromLSTData()
+        self._grid.OnKeyUp(event) # Pass event to WxDataGrid to handle
 
     # ------------------
     def ExtractScanner(self, col):
@@ -568,156 +358,190 @@ class MainWindow(MainFrame):
         # And redisplay
         self.RefreshGridFromLSTData()
 
-    #------------------
-    def MoveColRight(self, rightClickedColumn):
-        col=rightClickedColumn-2
-        for i in range(0, len(self.lstData.Rows)):
-            row=self.lstData.Rows[i]
-            if rightClickedColumn > len(row):
-                row.append([""])
-            row=row[:col+1]+row[col+2:col+3]+row[col+1:col+2]+row[col+3:]
-            self.lstData.Rows[i]=row
-        ch=self.lstData.ColumnHeaders
-        self.lstData.ColumnHeaders=ch[:col]+ch[col+1:col+2]+ch[col:col+1]+ch[col+2:]
-        # And redisplay
-        self.RefreshGridFromLSTData()
 
-    #------------------
-    def MoveColLeft(self, rightClickedColumn):
-        col=rightClickedColumn-2
-        for i in range(0, len(self.lstData.Rows)):
-            row=self.lstData.Rows[i]
-            if rightClickedColumn > len(row):
-                row.append([""])
-            row=row[:col]+row[col+1:col+2]+row[col:col+1]+row[col+2:]
-            self.lstData.Rows[i]=row
-        ch=self.lstData.ColumnHeaders
-        self.lstData.ColumnHeaders=ch[:col-1]+ch[col:col+1]+ch[col-1:col]+ch[col+1:]
-        # And redisplay
-        self.RefreshGridFromLSTData()
+@dataclass
+class ColHeader:
+    name: str
+    width: int=100
+    type: str=""
+    editable: bool=True
+    preferred: str=""
 
-    #------------------
-    def MoveSelectionRight(self, rightClickedColumn):
-        top, left, bottom, right=self.LocateSelection()
-
-        for i in range(top-1, bottom):
-            row=self.lstData.Rows[i]
-            row=row[:left-1]+[""]+row[left-1:right]+row[right+1:]
-            self.lstData.Rows[i]=row
-
-        # Move the selection along with it
-        self.gRowGrid.SelectBlock(top, left+1, bottom, right+1)
-
-        # And redisplay
-        self.RefreshGridFromLSTData()
-
-    #------------------
-    # Move the selection one column to the left.  The vacated cells to the right are filled with blanks
-    def MoveSelectionLeft(self, rightClickedColumn):
-        top, left, bottom, right=self.LocateSelection()
-
-        for i in range(top-1, bottom):
-            row=self.lstData.Rows[i]
-            row=row[:left-2]+row[left-1:right]+[""]+row[right:]
-            self.lstData.Rows[i]=row
-
-        # Move the selection along with it
-        self.gRowGrid.SelectBlock(top, left-1, bottom, right-1)
-
-        # And redisplay
-        self.RefreshGridFromLSTData()
-
-    #------------------
-    def OnGridCellChange(self, event):
-        row=event.GetRow()
-        col=event.GetCol()
-        newVal=self.gRowGrid.GetCellValue(row, col)
-
-        # The first row is the column headers
-        if row == 0:
-            event.Veto()  # This is a bit of magic to prevent the event from making later changes to the grid.
-            # Note that the Column Headers is offset by *2*. (The first column is the row number column and is blank; the second is the weird filename thingie and is untitled.)
-            if len(self.lstData.ColumnHeaders)+1 < col:
-                self.lstData.ColumnHeaders.extend(["" for x in range(col-len(self.lstData.ColumnHeaders)-1)])
-            self.lstData.ColumnHeaders[col-2]=newVal
-            if len(self.lstData.ColumnHeaderTypes)+1 < col:
-                self.lstData.ColumnHeaderTypes.extend(["" for x in range(col-len(self.lstData.ColumnHeaderTypes)-1)])
-            self.lstData.ColumnHeaderTypes[col-2]=CanonicizeColumnHeaders(newVal)
-            self.RefreshGridFromLSTData()
-            return
-
-        # If we're entering data in a new row or a new column, append the necessary number of new rows of columns to lstData
-        while row > len(self.lstData.Rows):
-            self.lstData.Rows.append([""])
-
-        while col > len(self.lstData.Rows[row-1]):
-            self.lstData.Rows[row-1].append("")
-
-        # Ordinary columns
-        if col > 0:
-            self.gRowGrid.EvtHandlerEnabled=False
-            self.lstData.Rows[row-1][col-1]=newVal
-            self.ColorCellByValue()
-            self.gRowGrid.AutoSizeColumns()
-            self.gRowGrid.EvtHandlerEnabled=True
-            return
-
-        # What's left is column zero and thus the user is editing a row number
-        # If it's an "X", the row has been deleted.
-        if newVal.lower() == "x":
-            del self.lstData.Rows[row-1]
-            event.Veto()                # This is a bit of magic to prevent the event from making later changes to the grid.
-            self.RefreshGridFromLSTData()
-            return
-
-        # If it's a number, it is tricky. We need to confirm that the user entered a new number.  (If not, we restore the old one and we're done.)
-        # If there is a new number, we re-arrange the rows and then renumber them.
-        try:
-            newnumf=float(newVal)
-        except:
-            self.gRowGrid.SetCellValue(row, 0, str(row))    # Restore the old value
-            return
-        newnumf-=0.00001    # When the user supplies an integer, we drop the row *just* before that integer. No overwriting!
-
-        # The indexes the user sees start with 1, but the rows list is 0-based.  Adjust accordingly.
-        oldrow=row-1
-
-        # We *should* have a fractional value or an integer value out of range. Check for this.
-        self.MoveRow(oldrow, newnumf)
-        event.Veto()  # This is a bit of magic to prevent the event from making later changed to the grid.
-        self.RefreshGridFromLSTData()
-        return
+    @property
+    def Preferred(self) -> str:
+        if self.preferred != "":
+            return self.preferred
+        return self.name
 
 
-    #------------------
-    def MoveRow(self, oldrow, newnumf):
-        newrows=[]
-        if newnumf < 0:
-            # Ok, it's being moved to the beginning
-            newrows.append(self.lstData.Rows[oldrow])
-            newrows.extend(self.lstData.Rows[0:oldrow])
-            newrows.extend(self.lstData.Rows[oldrow+1:])
-        elif newnumf > len(self.lstData.Rows):
-            # OK, it's being moved to the end
-            newrows.extend(self.lstData.Rows[0:oldrow])
-            newrows.extend(self.lstData.Rows[oldrow+1:])
-            newrows.append(self.lstData.Rows[oldrow])
-        else:
-            # OK, it've being moved internally
-            newrow=math.ceil(newnumf)-1
-            if oldrow < newrow:
-                # Moving later
-                newrows.extend(self.lstData.Rows[0:oldrow])
-                newrows.extend(self.lstData.Rows[oldrow+1:newrow])
-                newrows.append(self.lstData.Rows[oldrow])
-                newrows.extend(self.lstData.Rows[newrow:])
-            else:
-                # Moving earlier
-                newrows.extend(self.lstData.Rows[0:newrow])
-                newrows.append(self.lstData.Rows[oldrow])
-                newrows.extend(self.lstData.Rows[newrow:oldrow])
-                newrows.extend(self.lstData.Rows[oldrow+1:])
-        self.lstData.Rows=newrows
+# An individual file to be listed under a convention
+# This is a single row
+class FanzineTableRow(GridDataSource):
+
+    def __init__(self, row: list[str]):
+        self._cells: list[str]=row
+
+
+    def __str__(self):
+        return str(self._cells)
+
+    # Make a deep copy of a FanzineTableRow
+    def Copy(self) -> FanzineTableRow:
+        ftr=FanzineTableRow()
+        ftr._cells=self._cells
+        return ftr
+
+    def Signature(self) -> int:
+        return hash(self._cells)
+
+    # Serialize and deserialize
+    def ToJson(self) -> str:
+        d={"ver": 9,
+           "_displayTitle": self._displayTitle,
+           "_notes": self._notes,
+           "_localpathname": self._localpathname,
+           "_filename": self._localfilename,
+           "_sitefilename": self._sitefilename,
+           "_URL": self._URL,
+           "_pages": self._pages,
+           "_size": self._size}
+        return json.dumps(d)
+
+    def FromJson(self, val: str) -> FanzineTableRow:
+        d=json.loads(val)
+        self._displayTitle=d["_displayTitle"]
+        self._notes=d["_notes"]
+        self._localpathname=d["_localpathname"]
+        self._localfilename=d["_filename"]
+        self._size=d["_size"]
+        if d["ver"] > 4:
+            self._sitefilename=d["_sitefilename"]
+        if d["ver"] <= 4 or self._sitefilename.strip() == "":
+            self._sitefilename=self._displayTitle
+        if d["ver"] > 6:
+            self._pages=d["_pages"]
+        if d["ver"] > 8:
+            self._URL=d["_URL"]
+        return self
+
+    @property
+    def Cells(self) -> str:
+        return self._Cells
+    @Cells.setter
+    def Cells(self, val: str) -> None:
+        self._Cells=val
+
+    # Get or set a value by name or column number in the grid
+    def GetVal(self, icol: int) -> Union[str, int, bool]:
+        return self._cells[icol]
+
+    def SetVal(self, icol: int, val: Union[str, int, bool]) -> None:
+        self._cells[icol]=val
+
+    @property
+    def IsLinkRow(self) -> bool:
+        return False            # Override only if needed
+
+    @property
+    def IsTextRow(self) -> bool:
+        return False            # Override only if needed
+
+
+
+#####################################################################################################
+#####################################################################################################
+
+class FanzineTablePage(GridDataSource):
+    # Fixed information shared by all instances
+    _colheaders: list[str]=[]
+    _coldatatypes: list[str]=[]
+    _colminwidths: list[int]=[]
+    _coleditable: list[bool]=[]
+    _element=FanzineTableRow
+
+    def __init__(self):
+        GridDataSource.__init__(self)
+        self._fanzineList: list[FanzineTableRow]=[]
+        self._name: str=""
+        self._specialTextColor: Optional[Color, bool]=True
+
+    # Serialize and deserialize
+    def ToJson(self) -> str:
+        dl=[]
+        for con in self._fanzineList:
+            dl.append(con.ToJson())
+        d={"ver": 3,
+           "_name": self._name,
+           "_fanzineList": dl}
+        return json.dumps(d)
+
+    def FromJson(self, val: str) -> FanzineTablePage:
+        d=json.loads(val)
+        if d["ver"] >= 1:
+            self._name=d["_name"]
+            cfld=d["_fanzineList"]
+            self._fanzineList=[]
+            for c in cfld:
+                self._fanzineList.append(FanzineTableRow().FromJson(c))
+
+        return self
+
+    # Inherited from GridDataSource
+    @property
+    def ColHeaders(self) -> list[str]:
+        return self._colheaders
+
+    @property
+    def ColDataTypes(self) -> list[str]:
+        return self._coldatatypes
+
+    @property
+    def ColMinWidths(self) -> list[int]:
+        return self._colminwidths
+
+    @property
+    def ColEditable(self) -> list[bool]:
+        return self._coleditable
+
+    @property
+    def Rows(self) -> list[FanzineTableRow]:
+        return self._fanzineList
+
+    @Rows.setter
+    def Rows(self, rows: list) -> None:
+        self._fanzineList=rows
+    #
+    # @property
+    # def Name(self) -> str:
+    #     return self._name
+    #
+    # @Name.setter
+    # def Name(self, val: str) -> None:
+    #     self._name=val
+
+    @property
+    def NumRows(self) -> int:
+        return len(self._fanzineList)
+
+    def SetDataVal(self, irow: int, icol: int, val: Union[int, str]) -> None:
+        self._fanzineList[irow].SetVal(icol, val)
+
+    def GetData(self, iRow: int, iCol: int) -> str:
+        return self.Rows[iRow].GetVal(iCol)
+
+    @property
+    def SpecialTextColor(self) -> Optional[Color]:
+        return self._specialTextColor
+    @SpecialTextColor.setter
+    def SpecialTextColor(self, val: Optional[Color]) -> None:
+        self._specialTextColor=val
+
+    def ColHeaderNameToIndex(self, name: str) -> int:
+        assert name in self._colheaders
+        return self._colheaders.index(name)
+
+    def CanAddColumns(self) -> bool:
+        return True
 
 
 
