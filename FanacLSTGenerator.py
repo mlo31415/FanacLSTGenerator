@@ -464,26 +464,26 @@ class FanzineTablePage(GridDataSource):
         self._name: str=""
         self._specialTextColor: Optional[Color, bool]=True
 
-    # Serialize and deserialize
-    def ToJson(self) -> str:
-        dl=[]
-        for con in self._fanzineList:
-            dl.append(con.ToJson())
-        d={"ver": 3,
-           "_name": self._name,
-           "_fanzineList": dl}
-        return json.dumps(d)
-
-    def FromJson(self, val: str) -> FanzineTablePage:
-        d=json.loads(val)
-        if d["ver"] >= 1:
-            self._name=d["_name"]
-            cfld=d["_fanzineList"]
-            self._fanzineList=[]
-            for c in cfld:
-                self._fanzineList.append(FanzineTableRow().FromJson(c))
-
-        return self
+    # # Serialize and deserialize
+    # def ToJson(self) -> str:
+    #     dl=[]
+    #     for con in self._fanzineList:
+    #         dl.append(con.ToJson())
+    #     d={"ver": 3,
+    #        "_name": self._name,
+    #        "_fanzineList": dl}
+    #     return json.dumps(d)
+    #
+    # def FromJson(self, val: str) -> FanzineTablePage:
+    #     d=json.loads(val)
+    #     if d["ver"] >= 1:
+    #         self._name=d["_name"]
+    #         cfld=d["_fanzineList"]
+    #         self._fanzineList=[]
+    #         for c in cfld:
+    #             self._fanzineList.append(FanzineTableRow().FromJson(c))
+    #
+    #     return self
 
     # Inherited from GridDataSource
     @property
