@@ -393,35 +393,35 @@ class FanzineTableRow():
     def Signature(self) -> int:
         return hash(self._cells)
 
-    # Serialize and deserialize
-    def ToJson(self) -> str:
-        d={"ver": 9,
-           "_displayTitle": self._displayTitle,
-           "_notes": self._notes,
-           "_localpathname": self._localpathname,
-           "_filename": self._localfilename,
-           "_sitefilename": self._sitefilename,
-           "_URL": self._URL,
-           "_pages": self._pages,
-           "_size": self._size}
-        return json.dumps(d)
-
-    def FromJson(self, val: str) -> FanzineTableRow:
-        d=json.loads(val)
-        self._displayTitle=d["_displayTitle"]
-        self._notes=d["_notes"]
-        self._localpathname=d["_localpathname"]
-        self._localfilename=d["_filename"]
-        self._size=d["_size"]
-        if d["ver"] > 4:
-            self._sitefilename=d["_sitefilename"]
-        if d["ver"] <= 4 or self._sitefilename.strip() == "":
-            self._sitefilename=self._displayTitle
-        if d["ver"] > 6:
-            self._pages=d["_pages"]
-        if d["ver"] > 8:
-            self._URL=d["_URL"]
-        return self
+    # # Serialize and deserialize
+    # def ToJson(self) -> str:
+    #     d={"ver": 9,
+    #        "_displayTitle": self._displayTitle,
+    #        "_notes": self._notes,
+    #        "_localpathname": self._localpathname,
+    #        "_filename": self._localfilename,
+    #        "_sitefilename": self._sitefilename,
+    #        "_URL": self._URL,
+    #        "_pages": self._pages,
+    #        "_size": self._size}
+    #     return json.dumps(d)
+    #
+    # def FromJson(self, val: str) -> FanzineTableRow:
+    #     d=json.loads(val)
+    #     self._displayTitle=d["_displayTitle"]
+    #     self._notes=d["_notes"]
+    #     self._localpathname=d["_localpathname"]
+    #     self._localfilename=d["_filename"]
+    #     self._size=d["_size"]
+    #     if d["ver"] > 4:
+    #         self._sitefilename=d["_sitefilename"]
+    #     if d["ver"] <= 4 or self._sitefilename.strip() == "":
+    #         self._sitefilename=self._displayTitle
+    #     if d["ver"] > 6:
+    #         self._pages=d["_pages"]
+    #     if d["ver"] > 8:
+    #         self._URL=d["_URL"]
+    #     return self
 
     @property
     def Cells(self) -> str:
