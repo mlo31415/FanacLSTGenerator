@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from GenGUIClass import MainFrame
 
-from WxDataGrid import DataGrid, GridDataSource, Color, GridDataSource
+from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition
 from LSTFile import *
 from HelpersPackage import Bailout, Int, CanonicizeColumnHeaders
 from FanzineIssueSpecPackage import ValidateData
@@ -31,28 +31,28 @@ class MainWindow(MainFrame):
         if len(sys.argv) > 1:
             self.dirname=os.getcwd()
 
-        stdColHeader: defaultdict[str, ColHeader]=defaultdict()
-        stdColHeader["Link"]=ColHeader("Link", type="str")
-        stdColHeader["Issue"]=ColHeader("Issue", type="str")
-        stdColHeader["Title"]=ColHeader("Title", type="str", preferred="Issue")
-        stdColHeader["Whole"]=ColHeader("Whole", type="int", width=75)
-        stdColHeader["WholeNum"]=ColHeader("WholeNum", type="int", width=75, preferred="Whole")
-        stdColHeader["Vol"]=ColHeader("Vol", type="int", width=50)
-        stdColHeader["Volume"]=ColHeader("Volume", type="int", width=50, preferred="Vol")
-        stdColHeader["Num"]=ColHeader("Num", type="int", width=50)
-        stdColHeader["Number"]=ColHeader("Numver", type="int", width=50, preferred="Num")
-        stdColHeader["Month"]=ColHeader("Month", type="str", width=75)
-        stdColHeader["Day"]=ColHeader("Day", type="int", width=50)
-        stdColHeader["Year"]=ColHeader("Year", type="int", width=50)
-        stdColHeader["Pages"]=ColHeader("Pages", type="int", width=50)
-        stdColHeader["PDF"]=ColHeader("PDF", type="str", width=50)
-        stdColHeader["Notes"]=ColHeader("Notes", type="str", width=120)
-        stdColHeader["Scanned"]=ColHeader("Scanned", type="str", width=100)
-        stdColHeader["APA"]=ColHeader("APA", type="str", width=100)
-        stdColHeader["Country"]=ColHeader("Country", type="str", width=50)
-        stdColHeader["Editor"]=ColHeader("Editor", type="str", width=75)
-        stdColHeader["Author"]=ColHeader("Author", type="str", width=75)
-        stdColHeader["Repro"]=ColHeader("Repro", type="str", width=75)
+        stdColHeader: defaultdict[str, ColDefinition]=defaultdict()
+        stdColHeader["Link"]=ColDefinition("Link", Type="str")
+        stdColHeader["Issue"]=ColDefinition("Issue", Type="str")
+        stdColHeader["Title"]=ColDefinition("Title", Type="str", preferred="Issue")
+        stdColHeader["Whole"]=ColDefinition("Whole", Type="int", Width=75)
+        stdColHeader["WholeNum"]=ColDefinition("WholeNum", Type="int", Width=75, preferred="Whole")
+        stdColHeader["Vol"]=ColDefinition("Vol", Type="int", Width=50)
+        stdColHeader["Volume"]=ColDefinition("Volume", Type="int", Width=50, preferred="Vol")
+        stdColHeader["Num"]=ColDefinition("Num", Type="int", Width=50)
+        stdColHeader["Number"]=ColDefinition("Numver", Type="int", Width=50, preferred="Num")
+        stdColHeader["Month"]=ColDefinition("Month", Type="str", Width=75)
+        stdColHeader["Day"]=ColDefinition("Day", Type="int", Width=50)
+        stdColHeader["Year"]=ColDefinition("Year", Type="int", Width=50)
+        stdColHeader["Pages"]=ColDefinition("Pages", Type="int", Width=50)
+        stdColHeader["PDF"]=ColDefinition("PDF", Type="str", Width=50)
+        stdColHeader["Notes"]=ColDefinition("Notes", Type="str", Width=120)
+        stdColHeader["Scanned"]=ColDefinition("Scanned", Type="str", Width=100)
+        stdColHeader["APA"]=ColDefinition("APA", Type="str", Width=100)
+        stdColHeader["Country"]=ColDefinition("Country", Type="str", Width=50)
+        stdColHeader["Editor"]=ColDefinition("Editor", Type="str", Width=75)
+        stdColHeader["Author"]=ColDefinition("Author", Type="str", Width=75)
+        stdColHeader["Repro"]=ColDefinition("Repro", Type="str", Width=75)
         self.stdColHeader=stdColHeader
 
         # Read the LST file
@@ -111,27 +111,19 @@ class MainWindow(MainFrame):
         # First add the invisible column which is actually the link destination
         # It's the first part of the funny xxxxx>yyyyy thing in the LST file's 1st column
         sch=self.stdColHeader["Link"]
-        self._grid.Datasource._colheaders.append(sch.Preferred)
-        self._grid.Datasource._colminwidths.append(sch.width)
-        self._grid.Datasource._coldatatypes.append(sch.type)
-        self._grid.Datasource._coleditable.append(sch.editable)
+        self._grid.Datasource.ColDefs.append(sch)
         # Followed by the headers defined in the LST file
         for i in range(len(self.lstData.ColumnHeaders)):
             name=self.lstData.ColumnHeaders[i]
             name=self.stdColHeader[name].Preferred
-            sch=self.stdColHeader[name]
-            self._grid.Datasource._colheaders.append(sch.Preferred)
-            self._grid.Datasource._colminwidths.append(sch.width)
-            self._grid.Datasource._coldatatypes.append(sch.type)
-            self._grid.Datasource._coleditable.append(sch.editable)
-            # Fill in the column definitions with the new data
+            self._grid.Datasource.ColDefs.append(self.stdColHeader[name])
 
-        self._grid.SetColHeaders(self._grid.Datasource._colheaders)
+        self._grid.SetColHeaders(self._grid.Datasource.ColDefs)
 
         # Copy the row data over
         FTRList: list[FanzineTableRow]=[]
         for row in self.lstData.Rows:
-            if len(row) != len(self._grid.Datasource._colheaders):
+            if len(row) != len(self._grid.Datasource.ColDefs):
                 Log(f"Mismatched column count for Row={row}")
                 continue
             FTRList.append(FanzineTableRow(row))
@@ -357,19 +349,6 @@ class MainWindow(MainFrame):
         self.RefreshGridFromLSTData()
 
 
-@dataclass
-class ColHeader:
-    name: str
-    width: int=100
-    type: str=""
-    editable: bool=True
-    preferred: str=""
-
-    @property
-    def Preferred(self) -> str:
-        if self.preferred != "":
-            return self.preferred
-        return self.name
 
 
 # An individual file to be listed under a convention
@@ -452,15 +431,12 @@ class FanzineTableRow():
 
 class FanzineTablePage(GridDataSource):
     # Fixed information shared by all instances
-    _colheaders: list[str]=[]
-    _coldatatypes: list[str]=[]
-    _colminwidths: list[int]=[]
-    _coleditable: list[bool]=[]
-    _element=FanzineTableRow
+    _colDefs: list[ColDefinition]=[]
 
     def __init__(self):
         GridDataSource.__init__(self)
         self._fanzineList: list[FanzineTableRow]=[]
+        _element=FanzineTableRow
         self._name: str=""
         self._specialTextColor: Optional[Color, bool]=True
 
@@ -487,36 +463,16 @@ class FanzineTablePage(GridDataSource):
 
     # Inherited from GridDataSource
     @property
-    def ColHeaders(self) -> list[str]:
-        return self._colheaders
-
-    @property
-    def ColDataTypes(self) -> list[str]:
-        return self._coldatatypes
-
-    @property
-    def ColMinWidths(self) -> list[int]:
-        return self._colminwidths
-
-    @property
-    def ColEditable(self) -> list[bool]:
-        return self._coleditable
-
-    @property
     def Rows(self) -> list[FanzineTableRow]:
         return self._fanzineList
 
     @Rows.setter
     def Rows(self, rows: list) -> None:
         self._fanzineList=rows
-    #
-    # @property
-    # def Name(self) -> str:
-    #     return self._name
-    #
-    # @Name.setter
-    # def Name(self, val: str) -> None:
-    #     self._name=val
+
+    @property
+    def ColDefs(self) -> list[ColDefinition]:
+        return self._colDefs
 
     @property
     def NumRows(self) -> int:
