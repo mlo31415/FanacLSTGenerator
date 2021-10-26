@@ -292,6 +292,11 @@ class MainWindow(MainFrame):
     def OnKeyUp(self, event):
         self._grid.OnKeyUp(event) # Pass event to WxDataGrid to handle
 
+    #------------------
+    def OnGridCellChanged(self, event):
+        self._grid.OnGridCellChanged(event)
+        self.RefreshWindow()
+
     # ------------------
     def ExtractScanner(self, col):
         # Start by adding a Scanned column to the right of the Notes column. (We check to see if one already exists.)
