@@ -386,7 +386,7 @@ class FanzineTableRow():
 
     # Make a deep copy of a FanzineTableRow
     def Copy(self) -> FanzineTableRow:
-        ftr=FanzineTableRow()
+        ftr=FanzineTableRow([])
         ftr._cells=self._cells
         return ftr
 
