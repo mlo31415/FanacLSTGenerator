@@ -4,8 +4,6 @@ from dataclasses import dataclass
 import os
 import wx
 import wx.grid
-import math
-import json
 import sys
 from collections import defaultdict
 
