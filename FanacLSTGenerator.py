@@ -374,9 +374,10 @@ class ColHeader:
 
 # An individual file to be listed under a convention
 # This is a single row
-class FanzineTableRow(GridDataSource):
+class FanzineTableRow():
 
     def __init__(self, row: list[str]):
+        #GridDataSource.__init__(self)
         self._cells: list[str]=row
 
 
