@@ -10,7 +10,6 @@
 import wx
 import wx.xrc
 import wx.grid
-from Log import Log
 
 ###########################################################################
 ## Class MainFrame
@@ -80,7 +79,7 @@ class MainFrame ( wx.Frame ):
 		# Columns
 		self.gRowGrid.AutoSizeColumns()
 		self.gRowGrid.EnableDragColMove( True )
-		self.gRowGrid.EnableDragColSize( True )
+		self.gRowGrid.EnableDragColSize( False )
 		self.gRowGrid.SetColLabelSize( 30 )
 		self.gRowGrid.SetColLabelAlignment( wx.ALIGN_CENTER, wx.ALIGN_CENTER )
 
@@ -111,33 +110,33 @@ class MainFrame ( wx.Frame ):
 
 		self.SetSizer( bSizerMain )
 		self.Layout()
-		self.m_CellPopupMenu = wx.Menu()
-		self.m_menuItemPopupCopy = wx.MenuItem( self.m_CellPopupMenu, wx.ID_ANY, u"Copy", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_CellPopupMenu.Append( self.m_menuItemPopupCopy )
+		self.m_GridPopup = wx.Menu()
+		self.m_menuItemPopupCopy = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Copy", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupCopy )
 
-		self.m_menuItemPopupPaste = wx.MenuItem( self.m_CellPopupMenu, wx.ID_ANY, u"Paste", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_CellPopupMenu.Append( self.m_menuItemPopupPaste )
+		self.m_menuItemPopupPaste = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Paste", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupPaste )
 
-		self.m_menuItemPopupDelCol = wx.MenuItem( self.m_CellPopupMenu, wx.ID_ANY, u"Delete Column", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_CellPopupMenu.Append( self.m_menuItemPopupDelCol )
+		self.m_menuItemPopupDelCol = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Delete Column", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupDelCol )
 
-		self.m_menuItemPopupInsertColLeft = wx.MenuItem( self.m_CellPopupMenu, wx.ID_ANY, u"Insert Column to Left", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_CellPopupMenu.Append( self.m_menuItemPopupInsertColLeft )
+		self.m_menuItemPopupInsertColLeft = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Insert Column to Left", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupInsertColLeft )
 
-		self.m_menuItemPopupExtractScanner = wx.MenuItem( self.m_CellPopupMenu, wx.ID_ANY, u"Extract Scanner", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_CellPopupMenu.Append( self.m_menuItemPopupExtractScanner )
+		self.m_menuItemPopupExtractScanner = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract Scanner", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupExtractScanner )
 
-		self.m_menuItemPopupMoveColRight = wx.MenuItem( self.m_CellPopupMenu, wx.ID_ANY, u"Move Column Right", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_CellPopupMenu.Append( self.m_menuItemPopupMoveColRight )
+		self.m_menuItemPopupMoveColRight = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Move Column Right", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupMoveColRight )
 
-		self.m_menuItemPopupMoveColLeft = wx.MenuItem( self.m_CellPopupMenu, wx.ID_ANY, u"Move Column Left", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_CellPopupMenu.Append( self.m_menuItemPopupMoveColLeft )
+		self.m_menuItemPopupMoveColLeft = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Move Column Left", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupMoveColLeft )
 
-		self.m_menuItemPopupMoveSelRight = wx.MenuItem( self.m_CellPopupMenu, wx.ID_ANY, u"Move Selection Right", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_CellPopupMenu.Append( self.m_menuItemPopupMoveSelRight )
+		self.m_menuItemPopupMoveSelRight = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Move Selection Right", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupMoveSelRight )
 
-		self.m_menuItemPopupMoveSelLeft = wx.MenuItem( self.m_CellPopupMenu, wx.ID_ANY, u"Move Selection Left", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_CellPopupMenu.Append( self.m_menuItemPopupMoveSelLeft )
+		self.m_menuItemPopupMoveSelLeft = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Move Selection Left", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupMoveSelLeft )
 
 		self.Bind( wx.EVT_RIGHT_DOWN, self.MainFrameOnContextMenu )
 
@@ -154,9 +153,9 @@ class MainFrame ( wx.Frame ):
 		self.gRowGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnGridCellDoubleClick )
 		self.gRowGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnGridCellRightClick )
 		self.gRowGrid.Bind( wx.grid.EVT_GRID_EDITOR_HIDDEN, self.OnGridEditorShown )
+		self.gRowGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.OnGridLabelRightClick )
 		self.gRowGrid.Bind( wx.EVT_KEY_DOWN, self.OnKeyDown )
 		self.gRowGrid.Bind( wx.EVT_KEY_UP, self.OnKeyUp )
-
 		self.Bind( wx.EVT_MENU, self.OnPopupCopy, id = self.m_menuItemCopy.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupPaste, id = self.m_menuItemPaste.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupCopy, id = self.m_menuItemPopupCopy.GetId() )
@@ -201,6 +200,9 @@ class MainFrame ( wx.Frame ):
 	def OnGridEditorShown( self, event ):
 		event.Skip()
 
+	def OnGridLabelRightClick( self, event ):
+		event.Skip()
+
 	def OnKeyDown( self, event ):
 		event.Skip()
 
@@ -238,6 +240,6 @@ class MainFrame ( wx.Frame ):
 		self.gRowGrid.PopupMenu( self.m_menu1, event.GetPosition() )
 
 	def MainFrameOnContextMenu( self, event ):
-		self.PopupMenu( self.m_CellPopupMenu, event.GetPosition() )
+		self.PopupMenu( self.m_GridPopup, event.GetPosition() )
 
 

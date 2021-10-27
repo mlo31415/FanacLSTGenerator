@@ -21,11 +21,12 @@ class MainWindow(MainFrame):
         self._grid: DataGrid=DataGrid(self.gRowGrid)
         self._grid.Datasource=FanzineTablePage()
 
+        # TODO: How many of these are duplicated in WxDataGrid?
         self.highlightRows: list[str]=[]       # A List of the names of fanzines in highlighted rows
         self.clipboard=None         # The grid's clipboard
         self.userSelection=None
         self.cntlDown: bool=False
-        self.rightClickedColumn=None
+        self._grid.clickedColumn=None
 
         self.dirname=''
         if len(sys.argv) > 1:
@@ -215,7 +216,7 @@ class MainWindow(MainFrame):
             bestColTypes=self.lstData.GetInsertCol(row)
             fIndex=self.lstData.GetBestRowIndex(bestColTypes, row)  # "findex" to remind me this is probably a floating point number to indicate an insertion between two rows
             self.lstData.Rows.append(row)
-            self.MoveRow(len(self.lstData.Rows)-1, fIndex)
+            self._grid.MoveRows(len(self.lstData.Rows)-1, 1, fIndex)
             self.highlightRows.append(row[0][1:])   # Add this row's fanzine name to the list of newly-added rows.
 
         self.RefreshGridFromLSTData()
@@ -295,7 +296,81 @@ class MainWindow(MainFrame):
     #------------------
     def OnGridCellChanged(self, event):
         self._grid.OnGridCellChanged(event)
-        self.RefreshWindow()
+
+    #------------------
+    def OnGridCellRightClick(self, event):
+        # Do generic RMB on grid processing
+        self._grid.OnGridCellRightClick(event, self.m_GridPopup)
+
+        # Everything remains disabled when we're outside the defined columns
+        if self._grid.clickedColumn > len(self.lstData.ColumnHeaders)+1 or self._grid.clickedColumn == 0:
+            return
+
+        # Selectively enable menu items which make sense for this cell
+
+        # We enable the Delete Column item if we're on a deletable column
+        if self._grid.clickedColumn > 1 and self._grid.clickedColumn < len(self.lstData.ColumnHeaders)+1:
+            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Delete Column"))
+            if mi is not None:
+                mi.Enable(True)
+
+        # Enable the MoveColRight item if we're in the 2nd data column or later
+        if self._grid.clickedColumn > 2:
+            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Move Column Right"))
+            if mi is not None:
+                mi.Enable(True)
+
+        # Enable the MoveColLeft item if we're in the 2nd data column or later
+        if self._grid.clickedColumn > 2:
+            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Move Column Left"))
+            if mi is not None:
+                mi.Enable(True)
+
+        # # We enable the Copy item if have a selection
+        # #TODO: Does this duplicate work done by WxDataGrid?
+        # sel=self._grid.LocateSelection()
+        # if sel[0] != 0 or sel[1] != 0 or sel[2] != 0 or sel[3] != 0:
+        #     mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Copy"))
+        #     if mi is not None:
+        #         mi.Enable(True)
+
+        # We enable the Add Column to Left item if we're on a column to the left of the first -- it can be off the right and a column will be added to the right
+        if self._grid.clickedColumn > 1:
+            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Insert Column to Left"))
+            if mi is not None:
+                mi.Enable(True)
+
+        # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
+        mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Extract Scanner"))
+        if self._grid.clickedColumn < len(self.lstData.ColumnHeaders)+2:
+            if self.lstData.ColumnHeaders[self._grid.clickedColumn-2] == "Notes":
+                # We only want to enable the Notes column if it contains scanned by information
+                for row in self.lstData.Rows:
+                    if len(row) > self._grid.clickedColumn-1:
+                        note=row[self._grid.clickedColumn-1].lower()
+                        if "scan by" in note or \
+                                "scans by" in note or \
+                                "scanned by" in note or \
+                                "scanning by" in note or \
+                                "scanned at" in note:
+                            mi.Enable(True)
+
+        # We enable the move selection right and left commands only if there is a selection that begins in col 2 or later
+        # Enable the MoveColRight item if we're in the 2nd data column or later
+        top, left, bottom, right=self._grid.LocateSelection()
+        if self._grid.HasSelection():
+            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Move Selection Right"))
+            if mi is not None:
+                mi.Enable(True)
+
+        # Enable the MoveColLeft item if we're in the 2nd data column or later
+        if left > 1 and self._grid.HasSelection():
+            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Move Selection Left"))
+            if mi is not None:
+                mi.Enable(True)
+
+        # Pop the menu up.
+        self.PopupMenu(self.m_GridPopup)
 
     # ------------------
     def ExtractScanner(self, col):

@@ -700,6 +700,7 @@
                                 <event name="OnGridCellLeftDClick">OnGridCellDoubleClick</event>
                                 <event name="OnGridCellRightClick">OnGridCellRightClick</event>
                                 <event name="OnGridEditorHidden">OnGridEditorShown</event>
+                                <event name="OnGridLabelRightClick">OnGridLabelRightClick</event>
                                 <event name="OnKeyDown">OnKeyDown</event>
                                 <event name="OnKeyUp">OnKeyUp</event>
                                 <object class="wxMenu" expanded="1">
@@ -742,7 +743,7 @@
             </object>
             <object class="wxMenu" expanded="1">
                 <property name="label">MyMenu</property>
-                <property name="name">m_CellPopupMenu</property>
+                <property name="name">m_GridPopup</property>
                 <property name="permission">protected</property>
                 <object class="wxMenuItem" expanded="0">
                     <property name="bitmap"></property>
