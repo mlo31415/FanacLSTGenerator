@@ -295,7 +295,7 @@ class MainWindow(MainFrame):
 
     #------------------
     def OnGridCellChanged(self, event):
-        self._grid.OnGridCellChanged(event)
+        self._grid.OnGridCellChanged(event)  # Pass event handling to WxDataGrid
 
     #------------------
     def OnGridCellRightClick(self, event):
