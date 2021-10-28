@@ -146,19 +146,58 @@ class MainWindow(MainFrame):
 
         # Now insert the row data
         grid.AppendRows(len(self.lstData.Rows))
-        i=0
-        for row in self.lstData.Rows:
-            j=0
-            for cell in row:
+        for i, row in enumerate(self.lstData.Rows):
+            for j, cell in enumerate(row):
                 grid.SetCellValue(i, j, cell)
-                j+=1
-            i+=1
 
         #self.ColorCellByValue()
         grid.ForceRefresh()
         grid.AutoSizeColumns()
         grid.EvtHandlerEnabled=True
 
+
+    # ------------------
+    # The LSTFile object has the official information. This function refreshes the display from it.
+    def RefreshLSTDataFromGrid(self):
+        grid=self.gRowGrid
+        grid.EvtHandlerEnabled=False
+
+        # Not all rows and all columns defined in the grid may be filled.  Compute the actual number of rows and columns
+        ncols=len(self._grid.Datasource.ColDefs)    # ncols must be at least this big.
+        nrows=0
+
+        # Walk the rows from last to first looking for last row with content
+        for i in range(grid.NumberRows, 0, -1):
+            found=False
+            for j in range(grid.NumberCols):
+                if grid.GetCellValue(i-1, j) != "":
+                    found=True
+                    break
+            if found:
+                nrows=i
+                break
+
+        # Walk the remaining columns (if any) from last to first looking for the last col with content
+        for i in range(grid.NumberCols, 0, -1):
+            found=False
+            for j in range(grid.NumberRows):
+                if j == ncols:
+                    break
+                if grid.GetCellValue(i-1, j) != "":
+                    found=True
+                    break
+            if found:
+                ncols=i
+                break
+
+        # Now copy the grid's cell contents to the LSTFile structure
+        self.lstData.Rows=[]
+        for i in range(nrows):
+            row=[None]*ncols
+            for j in range(ncols):
+                row[j]=grid.GetCellValue(i, j)
+            self.lstData.Rows.append(row)
+        i=0
 
     #------------------
     def OnLoadNewLSTFile(self, event):
@@ -189,6 +228,7 @@ class MainWindow(MainFrame):
             Bailout(PermissionError, "OnSaveLSTFile fails when trying to rename "+oldname+" to "+newname, "LSTError")
 
         try:
+            self.RefreshLSTDataFromGrid()
             self.lstData.Save(oldname)
         except:
             Bailout(PermissionError, "OnSaveLSTFile fails when trying to write file "+newname, "LSTError")
