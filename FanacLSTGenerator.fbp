@@ -780,12 +780,40 @@
                     <property name="help"></property>
                     <property name="id">wxID_ANY</property>
                     <property name="kind">wxITEM_NORMAL</property>
-                    <property name="label">Delete Column</property>
+                    <property name="label">Delete Column(s)</property>
                     <property name="name">m_menuItemPopupDelCol</property>
                     <property name="permission">none</property>
                     <property name="shortcut"></property>
                     <property name="unchecked_bitmap"></property>
                     <event name="OnMenuSelection">OnPopupDelCol</event>
+                </object>
+                <object class="wxMenuItem" expanded="1">
+                    <property name="bitmap"></property>
+                    <property name="checked">0</property>
+                    <property name="enabled">1</property>
+                    <property name="help"></property>
+                    <property name="id">wxID_ANY</property>
+                    <property name="kind">wxITEM_NORMAL</property>
+                    <property name="label">Delete Row(s)</property>
+                    <property name="name">m_menuItemPopupDelRow</property>
+                    <property name="permission">none</property>
+                    <property name="shortcut"></property>
+                    <property name="unchecked_bitmap"></property>
+                    <event name="OnMenuSelection">OnPopupDelRow</event>
+                </object>
+                <object class="wxMenuItem" expanded="1">
+                    <property name="bitmap"></property>
+                    <property name="checked">0</property>
+                    <property name="enabled">1</property>
+                    <property name="help"></property>
+                    <property name="id">wxID_ANY</property>
+                    <property name="kind">wxITEM_NORMAL</property>
+                    <property name="label">Rename Column</property>
+                    <property name="name">m_menuItemPopupRenameCol</property>
+                    <property name="permission">none</property>
+                    <property name="shortcut"></property>
+                    <property name="unchecked_bitmap"></property>
+                    <event name="OnMenuSelection">OnPopupRenameCol</event>
                 </object>
                 <object class="wxMenuItem" expanded="0">
                     <property name="bitmap"></property>
@@ -801,6 +829,20 @@
                     <property name="unchecked_bitmap"></property>
                     <event name="OnMenuSelection">OnPopupInsertColLeft</event>
                 </object>
+                <object class="wxMenuItem" expanded="1">
+                    <property name="bitmap"></property>
+                    <property name="checked">0</property>
+                    <property name="enabled">1</property>
+                    <property name="help"></property>
+                    <property name="id">wxID_ANY</property>
+                    <property name="kind">wxITEM_NORMAL</property>
+                    <property name="label">Insert Column to Right</property>
+                    <property name="name">m_menuItemPopupInsertColRight</property>
+                    <property name="permission">none</property>
+                    <property name="shortcut"></property>
+                    <property name="unchecked_bitmap"></property>
+                    <event name="OnMenuSelection">OnPopupInsertColRight</event>
+                </object>
                 <object class="wxMenuItem" expanded="0">
                     <property name="bitmap"></property>
                     <property name="checked">0</property>
@@ -814,62 +856,6 @@
                     <property name="shortcut"></property>
                     <property name="unchecked_bitmap"></property>
                     <event name="OnMenuSelection">OnPopupExtractScanner</event>
-                </object>
-                <object class="wxMenuItem" expanded="0">
-                    <property name="bitmap"></property>
-                    <property name="checked">0</property>
-                    <property name="enabled">1</property>
-                    <property name="help"></property>
-                    <property name="id">wxID_ANY</property>
-                    <property name="kind">wxITEM_NORMAL</property>
-                    <property name="label">Move Column Right</property>
-                    <property name="name">m_menuItemPopupMoveColRight</property>
-                    <property name="permission">none</property>
-                    <property name="shortcut"></property>
-                    <property name="unchecked_bitmap"></property>
-                    <event name="OnMenuSelection">OnPopupMoveColRight</event>
-                </object>
-                <object class="wxMenuItem" expanded="0">
-                    <property name="bitmap"></property>
-                    <property name="checked">0</property>
-                    <property name="enabled">1</property>
-                    <property name="help"></property>
-                    <property name="id">wxID_ANY</property>
-                    <property name="kind">wxITEM_NORMAL</property>
-                    <property name="label">Move Column Left</property>
-                    <property name="name">m_menuItemPopupMoveColLeft</property>
-                    <property name="permission">none</property>
-                    <property name="shortcut"></property>
-                    <property name="unchecked_bitmap"></property>
-                    <event name="OnMenuSelection">OnPopupMoveColLeft</event>
-                </object>
-                <object class="wxMenuItem" expanded="0">
-                    <property name="bitmap"></property>
-                    <property name="checked">0</property>
-                    <property name="enabled">1</property>
-                    <property name="help"></property>
-                    <property name="id">wxID_ANY</property>
-                    <property name="kind">wxITEM_NORMAL</property>
-                    <property name="label">Move Selection Right</property>
-                    <property name="name">m_menuItemPopupMoveSelRight</property>
-                    <property name="permission">none</property>
-                    <property name="shortcut"></property>
-                    <property name="unchecked_bitmap"></property>
-                    <event name="OnMenuSelection">OnPopupMoveSelRight</event>
-                </object>
-                <object class="wxMenuItem" expanded="0">
-                    <property name="bitmap"></property>
-                    <property name="checked">0</property>
-                    <property name="enabled">1</property>
-                    <property name="help"></property>
-                    <property name="id">wxID_ANY</property>
-                    <property name="kind">wxITEM_NORMAL</property>
-                    <property name="label">Move Selection Left</property>
-                    <property name="name">m_menuItemPopupMoveSelLeft</property>
-                    <property name="permission">none</property>
-                    <property name="shortcut"></property>
-                    <property name="unchecked_bitmap"></property>
-                    <event name="OnMenuSelection">OnPopupMoveSelLeft</event>
                 </object>
             </object>
         </object>

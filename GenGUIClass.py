@@ -117,26 +117,23 @@ class MainFrame ( wx.Frame ):
 		self.m_menuItemPopupPaste = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Paste", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupPaste )
 
-		self.m_menuItemPopupDelCol = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Delete Column", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menuItemPopupDelCol = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Delete Column(s)", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupDelCol )
+
+		self.m_menuItemPopupDelRow = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Delete Row(s)", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupDelRow )
+
+		self.m_menuItemPopupRenameCol = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Rename Column", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupRenameCol )
 
 		self.m_menuItemPopupInsertColLeft = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Insert Column to Left", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupInsertColLeft )
 
+		self.m_menuItemPopupInsertColRight = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Insert Column to Right", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupInsertColRight )
+
 		self.m_menuItemPopupExtractScanner = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract Scanner", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupExtractScanner )
-
-		self.m_menuItemPopupMoveColRight = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Move Column Right", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_GridPopup.Append( self.m_menuItemPopupMoveColRight )
-
-		self.m_menuItemPopupMoveColLeft = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Move Column Left", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_GridPopup.Append( self.m_menuItemPopupMoveColLeft )
-
-		self.m_menuItemPopupMoveSelRight = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Move Selection Right", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_GridPopup.Append( self.m_menuItemPopupMoveSelRight )
-
-		self.m_menuItemPopupMoveSelLeft = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Move Selection Left", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_GridPopup.Append( self.m_menuItemPopupMoveSelLeft )
 
 		self.Bind( wx.EVT_RIGHT_DOWN, self.MainFrameOnContextMenu )
 
@@ -161,12 +158,11 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.OnPopupCopy, id = self.m_menuItemPopupCopy.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupPaste, id = self.m_menuItemPopupPaste.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupDelCol, id = self.m_menuItemPopupDelCol.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupDelRow, id = self.m_menuItemPopupDelRow.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupRenameCol, id = self.m_menuItemPopupRenameCol.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupInsertColLeft, id = self.m_menuItemPopupInsertColLeft.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupInsertColRight, id = self.m_menuItemPopupInsertColRight.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupExtractScanner, id = self.m_menuItemPopupExtractScanner.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnPopupMoveColRight, id = self.m_menuItemPopupMoveColRight.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnPopupMoveColLeft, id = self.m_menuItemPopupMoveColLeft.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnPopupMoveSelRight, id = self.m_menuItemPopupMoveSelRight.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnPopupMoveSelLeft, id = self.m_menuItemPopupMoveSelLeft.GetId() )
 
 	def __del__( self ):
 		pass
@@ -215,25 +211,24 @@ class MainFrame ( wx.Frame ):
 	def OnPopupPaste( self, event ):
 		event.Skip()
 
+
+
 	def OnPopupDelCol( self, event ):
+		event.Skip()
+
+	def OnPopupDelRow( self, event ):
+		event.Skip()
+
+	def OnPopupRenameCol( self, event ):
 		event.Skip()
 
 	def OnPopupInsertColLeft( self, event ):
 		event.Skip()
 
+	def OnPopupInsertColRight( self, event ):
+		event.Skip()
+
 	def OnPopupExtractScanner( self, event ):
-		event.Skip()
-
-	def OnPopupMoveColRight( self, event ):
-		event.Skip()
-
-	def OnPopupMoveColLeft( self, event ):
-		event.Skip()
-
-	def OnPopupMoveSelRight( self, event ):
-		event.Skip()
-
-	def OnPopupMoveSelLeft( self, event ):
 		event.Skip()
 
 	def gRowGridOnContextMenu( self, event ):

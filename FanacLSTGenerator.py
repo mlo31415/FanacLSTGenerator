@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from GenGUIClass import MainFrame
 
-from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition
+from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, GridDataElement
 from LSTFile import *
 from HelpersPackage import Bailout, Int, CanonicizeColumnHeaders
 from FanzineIssueSpecPackage import ValidateData
@@ -99,10 +99,8 @@ class MainWindow(MainFrame):
         elif len(self.lstData.BottomTextLines) > 0:
             self.tPText.SetValue("\n".join(self.lstData.BottomTextLines))
 
-        # The grid is a bit non-standard, since I want to be able to edit row numbers and column headers
-        # The row and column labels are actually the (editable) 1st column and 1st row of the spreadsheet (they're colored gray)
-        # and the "real" row and column labels are hidden.
-        self.gRowGrid.HideRowLabels()
+        # We used to need the row and column labels suppressed
+        #self.gRowGrid.HideRowLabels()
         #self.gRowGrid.HideColLabels()
 
         # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
@@ -342,41 +340,51 @@ class MainWindow(MainFrame):
         # Do generic RMB on grid processing
         self._grid.OnGridCellRightClick(event, self.m_GridPopup)
 
+        # Call the RMB handler
+        self.RMBHandler(True, event)
+
+    #------------------
+    def OnGridLabelRightClick(self, event):
+        # Do generic RMB on grid processing
+        self._grid.OnGridCellRightClick(event, self.m_GridPopup)
+
+        # Call the RMB handler
+        self.RMBHandler(False, event)
+
+    # RMB click handling for grid and grid label clicks
+    def RMBHandler(self, isCellClick: bool, event):
+        isLabelClick=not isCellClick
+
         # Everything remains disabled when we're outside the defined columns
-        if self._grid.clickedColumn > len(self.lstData.ColumnHeaders)+1 or self._grid.clickedColumn == 0:
+        if self._grid.clickedColumn > len(self.lstData.ColumnHeaders)+1:    # Click is outside populated columns.  The +1 is because of the split of the 1st column
+            return
+        if self._grid.clickedRow > len(self.lstData.Rows):      # Click is outside the populated rows
+            return
+        if isCellClick and self._grid.clickedColumn == 0:   # What's this for?
             return
 
-        # Selectively enable menu items which make sense for this cell
-
-        # We enable the Delete Column item if we're on a deletable column
-        if self._grid.clickedColumn > 1 and self._grid.clickedColumn < len(self.lstData.ColumnHeaders)+1:
-            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Delete Column"))
+        if self._grid.clickedRow != -1:
+            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Delete Row(s)"))
             if mi is not None:
                 mi.Enable(True)
-
-        # Enable the MoveColRight item if we're in the 2nd data column or later
-        if self._grid.clickedColumn > 2:
-            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Move Column Right"))
+        if self._grid.clickedColumn != -1 and self._grid.Datasource.CanDeleteColumns:
+            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Delete Column(s)"))
             if mi is not None:
                 mi.Enable(True)
-
-        # Enable the MoveColLeft item if we're in the 2nd data column or later
-        if self._grid.clickedColumn > 2:
-            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Move Column Left"))
-            if mi is not None:
-                mi.Enable(True)
-
-        # # We enable the Copy item if have a selection
-        # #TODO: Does this duplicate work done by WxDataGrid?
-        # sel=self._grid.LocateSelection()
-        # if sel[0] != 0 or sel[1] != 0 or sel[2] != 0 or sel[3] != 0:
-        #     mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Copy"))
-        #     if mi is not None:
-        #         mi.Enable(True)
 
         # We enable the Add Column to Left item if we're on a column to the left of the first -- it can be off the right and a column will be added to the right
         if self._grid.clickedColumn > 1:
             mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Insert Column to Left"))
+            if mi is not None:
+                mi.Enable(True)
+        # We enable the Add Column to right item if we're on any existing column
+        if self._grid.clickedColumn > -1:
+            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Insert Column to Right"))
+            if mi is not None:
+                mi.Enable(True)
+
+        if self._grid.clickedRow == -1:
+            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Rename Column"))
             if mi is not None:
                 mi.Enable(True)
 
@@ -395,19 +403,6 @@ class MainWindow(MainFrame):
                                 "scanned at" in note:
                             mi.Enable(True)
 
-        # We enable the move selection right and left commands only if there is a selection that begins in col 2 or later
-        # Enable the MoveColRight item if we're in the 2nd data column or later
-        top, left, bottom, right=self._grid.LocateSelection()
-        if self._grid.HasSelection():
-            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Move Selection Right"))
-            if mi is not None:
-                mi.Enable(True)
-
-        # Enable the MoveColLeft item if we're in the 2nd data column or later
-        if left > 1 and self._grid.HasSelection():
-            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Move Selection Left"))
-            if mi is not None:
-                mi.Enable(True)
 
         # Pop the menu up.
         self.PopupMenu(self.m_GridPopup)
@@ -468,7 +463,30 @@ class MainWindow(MainFrame):
         # And redisplay
         self.RefreshGridFromLSTData()
 
+    def OnPopupCopy(self, event):
+        self._grid.OnPopupCopy(event) # Pass event to WxDataGrid to handle
 
+    def OnPopupPaste(self, event):
+        self._grid.OnPopupPaste(event) # Pass event to WxDataGrid to handle
+
+    def OnPopupDelCol(self, event):
+        if self._grid.Datasource.CanDeleteColumns:
+            self._grid.OnPopupDelCol(event) # Pass event to WxDataGrid to handle
+
+    def OnPopupDelRow(self, event):
+        self._grid.OnPopupDelRow(event) # Pass event to WxDataGrid to handle
+
+    def OnPopupRenameCol(self, event):
+        self._grid.OnPopupRenameCol(event) # Pass event to WxDataGrid to handle
+
+    def OnPopupInsertColLeft(self, event):
+        self._grid.OnPopupInsertColLeft(event) # Pass event to WxDataGrid to handle
+
+    def OnPopupInsertColRight(self, event):
+        self._grid.OnPopupInsertColRight(event) # Pass event to WxDataGrid to handle
+
+    def OnPopupExtractScanner(self, event):
+        event.Skip()
 
 
 # An individual file to be listed under a convention
