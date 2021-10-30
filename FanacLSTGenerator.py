@@ -12,7 +12,6 @@ from GenGUIClass import MainFrame
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, GridDataElement
 from LSTFile import *
 from HelpersPackage import Bailout, Int, CanonicizeColumnHeaders
-from FanzineIssueSpecPackage import ValidateData
 from Log import LogOpen
 
 class MainWindow(MainFrame):
@@ -494,7 +493,7 @@ class MainWindow(MainFrame):
 class FanzineTableRow(GridDataElement):
 
     def __init__(self, cells: list[str]):
-        #GridDataSource.__init__(self)
+        GridDataElement.__init__(self)
         self._cells: list[str]=cells
 
 
@@ -575,13 +574,11 @@ class FanzineTableRow(GridDataElement):
 #####################################################################################################
 
 class FanzineTablePage(GridDataSource):
-    # Fixed information shared by all instances
-    _colDefs: list[ColDefinition]=[]
 
     def __init__(self):
         GridDataSource.__init__(self)
         self._fanzineList: list[FanzineTableRow]=[]
-        _element=FanzineTableRow
+        self._element=FanzineTableRow
         self._name: str=""
         self._specialTextColor: Optional[Color, bool]=True
 
@@ -614,10 +611,6 @@ class FanzineTablePage(GridDataSource):
     @Rows.setter
     def Rows(self, rows: list) -> None:
         self._fanzineList=rows
-
-    @property
-    def ColDefs(self) -> list[ColDefinition]:
-        return self._colDefs
 
     @property
     def NumRows(self) -> int:
