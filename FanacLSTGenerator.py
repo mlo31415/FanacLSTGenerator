@@ -523,6 +523,13 @@ class FanzineTableRow():
     #     return self
 
     @property
+    def CanDeleteColumns(self) -> bool:
+        return True
+
+    def DelCol(self, icol: int) -> None:
+        del self._cells[icol]
+
+    @property
     def Cells(self) -> str:
         return self._Cells
     @Cells.setter
