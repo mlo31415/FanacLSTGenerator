@@ -473,11 +473,11 @@ class MainWindow(MainFrame):
 
 # An individual file to be listed under a convention
 # This is a single row
-class FanzineTableRow():
+class FanzineTableRow(GridDataElement):
 
-    def __init__(self, row: list[str]):
+    def __init__(self, cells: list[str]):
         #GridDataSource.__init__(self)
-        self._cells: list[str]=row
+        self._cells: list[str]=cells
 
 
     def __str__(self):
