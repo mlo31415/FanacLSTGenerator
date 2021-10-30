@@ -297,7 +297,7 @@ class MainWindow(MainFrame):
 
 
     def RefreshWindow(self)-> None:
-        self._grid.RefreshGridFromData()
+        self._grid.RefreshGridFromDatasource()
 
     # ----------------------------------------------
     # Used to determine if anything has been updated
