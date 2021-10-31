@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from GenGUIClass import MainFrame
 
-from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, GridDataElement
+from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, GridDataRowClass
 from LSTFile import *
 from HelpersPackage import Bailout, Int, CanonicizeColumnHeaders
 from Log import LogOpen
@@ -490,10 +490,10 @@ class MainWindow(MainFrame):
 
 # An individual file to be listed under a convention
 # This is a single row
-class FanzineTableRow(GridDataElement):
+class FanzineTableRow(GridDataRowClass):
 
     def __init__(self, cells: list[str]):
-        GridDataElement.__init__(self)
+        GridDataRowClass.__init__(self)
         self._cells: list[str]=cells
 
 
@@ -574,11 +574,10 @@ class FanzineTableRow(GridDataElement):
 #####################################################################################################
 
 class FanzineTablePage(GridDataSource):
-
     def __init__(self):
         GridDataSource.__init__(self)
         self._fanzineList: list[FanzineTableRow]=[]
-        self._element=FanzineTableRow
+        self._gridDataRowClass=FanzineTableRow
         self._name: str=""
         self._specialTextColor: Optional[Color, bool]=True
 
