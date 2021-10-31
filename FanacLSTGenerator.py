@@ -201,13 +201,6 @@ class MainWindow(MainFrame):
         self.LoadLSTFile()
         pass
 
-    # Define some RGB color constants
-    labelGray=wx.Colour(230, 230, 230)
-    pink=wx.Colour(255, 230, 230)
-    lightGreen=wx.Colour(240, 255, 240)
-    lightBlue=wx.Colour(240, 230, 255)
-    white=wx.Colour(255, 255, 255)
-
     #------------------
     # Save an LSTFile object to disk.
     def OnSaveLSTFile(self, event):
