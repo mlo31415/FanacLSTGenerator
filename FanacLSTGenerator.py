@@ -109,6 +109,7 @@ class MainWindow(MainFrame):
         # First add the invisible column which is actually the link destination
         # It's the first part of the funny xxxxx>yyyyy thing in the LST file's 1st column
         sch=self.stdColHeader["Link"]
+        self._grid.Datasource.ColDefs=[]
         self._grid.Datasource.ColDefs.append(sch)
         # Followed by the headers defined in the LST file
         for i in range(len(self.lstData.ColumnHeaders)):
@@ -198,6 +199,8 @@ class MainWindow(MainFrame):
 
     #------------------
     def OnLoadNewLSTFile(self, event):
+        self._grid.NumCols=0
+        self._grid.DeleteRows(0, self._grid.NumRows)
         self.LoadLSTFile()
         pass
 
