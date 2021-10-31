@@ -507,7 +507,7 @@ class FanzineTableRow(GridDataRowClass):
         return ftr
 
     def Signature(self) -> int:
-        return hash(self._cells)
+        return sum([hash(x) for x in self._cells])
 
     # # Serialize and deserialize
     # def ToJson(self) -> str:
