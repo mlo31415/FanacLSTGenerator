@@ -576,6 +576,7 @@ class FanzineTableRow(GridDataRowClass):
 class FanzineTablePage(GridDataSource):
     def __init__(self):
         GridDataSource.__init__(self)
+        self._colDefs: list[ColDefinition]=[]   # This will be filled in by the LSTData loader
         self._fanzineList: list[FanzineTableRow]=[]
         self._gridDataRowClass=FanzineTableRow
         self._name: str=""
