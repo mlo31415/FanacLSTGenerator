@@ -93,15 +93,6 @@ class MainFrame ( wx.Frame ):
 
 		# Cell Defaults
 		self.gRowGrid.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
-		self.m_menu1 = wx.Menu()
-		self.m_menuItemCopy = wx.MenuItem( self.m_menu1, wx.ID_ANY, u"Copy", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_menu1.Append( self.m_menuItemCopy )
-
-		self.m_menuItemPaste = wx.MenuItem( self.m_menu1, wx.ID_ANY, u"Paste", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_menu1.Append( self.m_menuItemPaste )
-
-		self.gRowGrid.Bind( wx.EVT_RIGHT_DOWN, self.gRowGridOnContextMenu )
-
 		theIssueGrid.Add( self.gRowGrid, 0, wx.ALL|wx.EXPAND, 5 )
 
 
@@ -154,8 +145,6 @@ class MainFrame ( wx.Frame ):
 		self.gRowGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.OnGridLabelRightClick )
 		self.gRowGrid.Bind( wx.EVT_KEY_DOWN, self.OnKeyDown )
 		self.gRowGrid.Bind( wx.EVT_KEY_UP, self.OnKeyUp )
-		self.Bind( wx.EVT_MENU, self.OnPopupCopy, id = self.m_menuItemCopy.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnPopupPaste, id = self.m_menuItemPaste.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupCopy, id = self.m_menuItemPopupCopy.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupPaste, id = self.m_menuItemPopupPaste.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupDelCol, id = self.m_menuItemPopupDelCol.GetId() )
@@ -233,8 +222,7 @@ class MainFrame ( wx.Frame ):
 	def OnPopupExtractScanner( self, event ):
 		event.Skip()
 
-	def gRowGridOnContextMenu( self, event ):
-		self.gRowGrid.PopupMenu( self.m_menu1, event.GetPosition() )
-
 	def MainFrameOnContextMenu( self, event ):
 		self.PopupMenu( self.m_GridPopup, event.GetPosition() )
+
+
