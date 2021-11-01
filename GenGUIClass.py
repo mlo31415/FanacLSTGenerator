@@ -150,6 +150,7 @@ class MainFrame ( wx.Frame ):
 		self.gRowGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnGridCellDoubleClick )
 		self.gRowGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnGridCellRightClick )
 		self.gRowGrid.Bind( wx.grid.EVT_GRID_EDITOR_HIDDEN, self.OnGridEditorShown )
+		self.gRowGrid.Bind( wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.OnGridLabelLeftClick )
 		self.gRowGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.OnGridLabelRightClick )
 		self.gRowGrid.Bind( wx.EVT_KEY_DOWN, self.OnKeyDown )
 		self.gRowGrid.Bind( wx.EVT_KEY_UP, self.OnKeyUp )
@@ -196,6 +197,9 @@ class MainFrame ( wx.Frame ):
 	def OnGridEditorShown( self, event ):
 		event.Skip()
 
+	def OnGridLabelLeftClick( self, event ):
+		event.Skip()
+
 	def OnGridLabelRightClick( self, event ):
 		event.Skip()
 
@@ -210,8 +214,6 @@ class MainFrame ( wx.Frame ):
 
 	def OnPopupPaste( self, event ):
 		event.Skip()
-
-
 
 	def OnPopupDelCol( self, event ):
 		event.Skip()
@@ -236,5 +238,3 @@ class MainFrame ( wx.Frame ):
 
 	def MainFrameOnContextMenu( self, event ):
 		self.PopupMenu( self.m_GridPopup, event.GetPosition() )
-
-

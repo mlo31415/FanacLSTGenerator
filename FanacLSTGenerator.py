@@ -338,6 +338,10 @@ class MainWindow(MainFrame):
         # Call the RMB handler
         self.RMBHandler(True, event)
 
+    # ------------------
+    def OnGridLabelLeftClick(self, event):
+        self._grid.OnGridLabelLeftClick(event)
+
     #------------------
     def OnGridLabelRightClick(self, event):
         # Do generic RMB on grid processing
