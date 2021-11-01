@@ -53,7 +53,7 @@ class MainWindow(MainFrame):
         stdColHeaders["Editor"]=ColDefinition("Editor", Type="str", Width=75)
         stdColHeaders["Author"]=ColDefinition("Author", Type="str", Width=75)
         stdColHeaders["Repro"]=ColDefinition("Repro", Type="str", Width=75)
-        self.stdColHeader=stdColHeaders
+        self.stdColHeaders=stdColHeaders
 
         # Read the LST file
         self.LoadLSTFile()
@@ -108,14 +108,14 @@ class MainWindow(MainFrame):
         # Define the grid's columns
         # First add the invisible column which is actually the link destination
         # It's the first part of the funny xxxxx>yyyyy thing in the LST file's 1st column
-        sch=self.stdColHeader["Link"]
+        sch=self.stdColHeaders["Link"]
         self._grid.Datasource.ColDefs=[]
         self._grid.Datasource.ColDefs.append(sch)
         # Followed by the headers defined in the LST file
         for i in range(len(self.lstData.ColumnHeaders)):
             name=self.lstData.ColumnHeaders[i]
-            name=self.stdColHeader[name].Preferred
-            self._grid.Datasource.ColDefs.append(self.stdColHeader[name])
+            name=self.stdColHeaders[name].Preferred
+            self._grid.Datasource.ColDefs.append(self.stdColHeaders[name])
 
         self._grid.SetColHeaders(self._grid.Datasource.ColDefs)
 
@@ -473,6 +473,17 @@ class MainWindow(MainFrame):
 
     def OnPopupRenameCol(self, event):
         self._grid.OnPopupRenameCol(event) # Pass event to WxDataGrid to handle
+
+        # Now we check the column header to see if it iss one of the standard header. If so, we use the std definition for that header
+        # (We have to do this here because WxDataGrid doesn't know about header semantics.)
+        icol=self._grid.clickedColumn
+        cd=self._grid.Datasource.ColDefs[icol]
+        if cd.Name in self.stdColHeaders.keys():
+            self._grid.Datasource.ColDefs[icol]=self.stdColHeaders[cd.Name]
+        self._grid.RefreshGridFromDatasource()
+
+
+
 
     def OnPopupInsertColLeft(self, event):
         self._grid.OnPopupInsertColLeft(event) # Pass event to WxDataGrid to handle
