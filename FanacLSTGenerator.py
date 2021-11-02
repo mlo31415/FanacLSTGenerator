@@ -201,7 +201,7 @@ class MainWindow(MainFrame):
     def OnLoadNewLSTFile(self, event):
         self._grid.NumCols=0
         self._grid.DeleteRows(0, self._grid.NumRows)
-        self._grid.Grid.ScrollLines(-999)
+        self._grid.Grid.ScrollLines(-999)   # Scroll down a long ways to show start of file
         self.LoadLSTFile()
         pass
 
