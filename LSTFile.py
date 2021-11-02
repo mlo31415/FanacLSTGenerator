@@ -1,13 +1,11 @@
-from dataclasses import dataclass
-from typing import Union, Optional
+from dataclasses import dataclass, field
 import re
 
 from HelpersPackage import CanonicizeColumnHeaders, CaseInsensitiveReplace, Bailout
 from FanzineIssueSpecPackage import FanzineDate
-from Log import Log
 
 #----------------------------------
-def InterpretIssueSpec(s: str):
+def InterpretIssueSpec(s: str) -> float:
     if s is None:
         return 0
     s=s.strip()
@@ -32,13 +30,14 @@ def InterpretIssueSpec(s: str):
 
 @dataclass(order=False)
 class LSTFile:
-    FirstLine: str=None
-    TopTextLines: list=None
-    BottomTextLines: list=None
-    ColumnHeaders: list=None        # The actual text of the column headers
-    ColumnHeaderTypes: list=None    # The single character types for the corresponding ColumnHeaders
-    SortColumn: dict=None           # The single character type(s) of the sort column(s).  Sort on whole num="W", sort on Vol+Num ="VN", etc.
-    Rows: list=None
+    FirstLine: str=""
+    TopTextLines: list[str] = field(default_factory=list)
+    BottomTextLines: list[str] = field(default_factory=list)
+    ColumnHeaders: list[str] = field(default_factory=list)        # The actual text of the column headers
+    ColumnHeaderTypes: list[str] = field(default_factory=list)    # The single character types for the corresponding ColumnHeaders
+    SortColumn: dict[str, float]   = field(default_factory=dict)# The single character type(s) of the sort column(s).  Sort on whole num="W", sort on Vol+Num ="VN", etc.
+    Rows: list[list[str]] = field(default_factory=list)
+
 
 
     #--------------------------------
@@ -77,11 +76,11 @@ class LSTFile:
                 Bailout(ValueError, "LSTFile: GetBestRowIndex - can't find columnheader="+bestCols, "LSTError")
             colY=self.ColumnHeaderTypes.index("Year")
             colM=self.ColumnHeaderTypes.index("Month")
-            fd=FanzineDate().ParseGeneralDateString(newRow[colM]+" "+newRow[colY])
+            fd=FanzineDate().Match(newRow[colM]+" "+newRow[colY])
             y=fd.Year
             m=fd.Month
             for i in range(0, len(self.Rows)):
-                fd=FanzineDate().ParseGeneralDateString(self.Rows[i][colM]+" "+self.Rows[i][colY])
+                fd=FanzineDate().Match(self.Rows[i][colM]+" "+self.Rows[i][colY])
                 if fd.Year > y or (fd.Year == y and fd.Month > m):
                     return i+0.5
             return len(self.Rows)+1
@@ -117,7 +116,7 @@ class LSTFile:
     #---------------------------------
     # Take the supplied header types and use the row statistics to determine what column to use to do an insertion.
     def GetInsertCol(self, row: list) -> str:
-        if self.SortColumn is None:
+        if len(self.SortColumn) == 0:
             Bailout(ValueError, "class LSTFile: GetInsertCol called while SortColumn is None", "LSTError")
 
         # ColumnHeaderTypes is a list of the type letters for which this issue has data.
@@ -206,7 +205,7 @@ class LSTFile:
             contents=contents.decode("cp1252").split("\r\n")
         contents=[l.strip() for l in contents]
 
-        if contents is None:
+        if len(contents) == 0:
             return
 
         # Collapse all runs of empty lines down to a single empty line

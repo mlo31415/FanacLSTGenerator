@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import Union, Optional
-from dataclasses import dataclass
+
 import os
 import wx
 import wx.grid
@@ -12,7 +12,7 @@ from GenGUIClass import MainFrame
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, GridDataRowClass
 from LSTFile import *
 from HelpersPackage import Bailout, Int, CanonicizeColumnHeaders
-from Log import LogOpen
+from Log import LogOpen, Log
 
 class MainWindow(MainFrame):
     def __init__(self, parent, title):
@@ -259,7 +259,7 @@ class MainWindow(MainFrame):
 
     #------------------
     def DecodeIssueFileName(self, filename: str):
-        if filename is None or len(filename) == 0:
+        if len(filename) == 0:
             return None
 
         # Start by dividing on the "$$"
