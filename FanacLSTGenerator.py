@@ -507,7 +507,6 @@ class FanzineTableRow(GridDataRowClass):
         GridDataRowClass.__init__(self)
         self._cells: list[str]=cells
 
-
     def __str__(self):
         return str(self._cells)
 
@@ -554,6 +553,8 @@ class FanzineTableRow(GridDataRowClass):
     def CanDeleteColumns(self) -> bool:
         return True
 
+    # This deletes a single colum from the datasource.
+    # It must be implemented here because WxDataGrid doesn't understand the details of the DataSource
     def DelCol(self, icol: int) -> None:
         del self._cells[icol]
 
