@@ -52,6 +52,7 @@ class MainWindow(MainFrame):
         stdColHeaders["Country"]=ColDefinition("Country", Type="str", Width=50)
         stdColHeaders["Editor"]=ColDefinition("Editor", Type="str", Width=75)
         stdColHeaders["Author"]=ColDefinition("Author", Type="str", Width=75)
+        stdColHeaders["Mailing"]=ColDefinition("Mailing", Type="str", Width=75)
         stdColHeaders["Repro"]=ColDefinition("Repro", Type="str", Width=75)
         self.stdColHeaders=stdColHeaders
 
@@ -105,13 +106,8 @@ class MainWindow(MainFrame):
         # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
         self.lstData.IdentifyColumnHeaders()
 
-        # Define the grid's columns
-        # First add the invisible column which is actually the link destination
-        # It's the first part of the funny xxxxx>yyyyy thing in the LST file's 1st column
-        sch=self.stdColHeaders["Link"]
+        # Turn the Column Headers into the grid's columns
         self._grid.Datasource.ColDefs=[]
-        self._grid.Datasource.ColDefs.append(sch)
-        # Followed by the headers defined in the LST file
         for i in range(len(self.lstData.ColumnHeaders)):
             name=self.lstData.ColumnHeaders[i]
             name=self.stdColHeaders[name].Preferred
