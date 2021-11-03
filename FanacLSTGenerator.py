@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from GenGUIClass import MainFrame
 
-from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, GridDataRowClass
+from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from LSTFile import *
 from HelpersPackage import Bailout, Int, CanonicizeColumnHeaders
 from Log import LogOpen, Log
@@ -112,7 +112,9 @@ class MainWindow(MainFrame):
             name=self.lstData.ColumnHeaders[i]
             if name in self.stdColHeaders.keys():
                 name=self.stdColHeaders[name].Preferred
-            self._grid.Datasource.ColDefs.append(self.stdColHeaders[name])
+                self._grid.Datasource.ColDefs.append(self.stdColHeaders[name])
+            else:
+                self._grid.Datasource.ColDefs.append(ColDefinition(name))
 
         self._grid.SetColHeaders(self._grid.Datasource.ColDefs)
 
@@ -594,7 +596,7 @@ class FanzineTableRow(GridDataRowClass):
 class FanzineTablePage(GridDataSource):
     def __init__(self):
         GridDataSource.__init__(self)
-        self._colDefs: list[ColDefinition]=[]   # This will be filled in by the LSTData loader
+        self._colDefs: ColDefinitionsList
         self._fanzineList: list[FanzineTableRow]=[]
         self._gridDataRowClass=FanzineTableRow
         self._name: str=""
