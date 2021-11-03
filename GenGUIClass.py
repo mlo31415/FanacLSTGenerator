@@ -108,6 +108,9 @@ class MainFrame ( wx.Frame ):
 		self.m_menuItemPopupPaste = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Paste", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupPaste )
 
+		self.m_menuItemPopupClearSelection = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Clear Selection", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupClearSelection )
+
 		self.m_menuItemPopupDelCol = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Delete Column(s)", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupDelCol )
 
@@ -147,6 +150,7 @@ class MainFrame ( wx.Frame ):
 		self.gRowGrid.Bind( wx.EVT_KEY_UP, self.OnKeyUp )
 		self.Bind( wx.EVT_MENU, self.OnPopupCopy, id = self.m_menuItemPopupCopy.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupPaste, id = self.m_menuItemPopupPaste.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupClearSelection, id = self.m_menuItemPopupClearSelection.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupDelCol, id = self.m_menuItemPopupDelCol.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupDelRow, id = self.m_menuItemPopupDelRow.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupRenameCol, id = self.m_menuItemPopupRenameCol.GetId() )
@@ -202,6 +206,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnPopupPaste( self, event ):
+		event.Skip()
+
+	def OnPopupClearSelection( self, event ):
 		event.Skip()
 
 	def OnPopupDelCol( self, event ):

@@ -110,7 +110,8 @@ class MainWindow(MainFrame):
         self._grid.Datasource.ColDefs=[]
         for i in range(len(self.lstData.ColumnHeaders)):
             name=self.lstData.ColumnHeaders[i]
-            name=self.stdColHeaders[name].Preferred
+            if name in self.stdColHeaders.keys():
+                name=self.stdColHeaders[name].Preferred
             self._grid.Datasource.ColDefs.append(self.stdColHeaders[name])
 
         self._grid.SetColHeaders(self._grid.Datasource.ColDefs)
@@ -359,30 +360,33 @@ class MainWindow(MainFrame):
         if isCellClick and self._grid.clickedColumn == 0:   # What's this for?
             return
 
+        def Enable(name: str) -> None:
+            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem(name))
+            if mi is not None:
+                mi.Enable(True)
+
+        if self._grid.HasSelection():
+            Enable("Copy")
+            Enable("Clear Selection")
+
+        if self._grid.clipboard is not None:
+            Enable("Paste")
+
         if self._grid.clickedRow != -1:
-            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Delete Row(s)"))
-            if mi is not None:
-                mi.Enable(True)
-        if self._grid.clickedColumn != -1 and self._grid.Datasource.CanDeleteColumns:
-            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Delete Column(s)"))
-            if mi is not None:
-                mi.Enable(True)
+            Enable("Delete Row(s)")
+            if self._grid.Datasource.CanDeleteColumns:
+                Enable("Delete Column(s)")
 
         # We enable the Add Column to Left item if we're on a column to the left of the first -- it can be off the right and a column will be added to the right
         if self._grid.clickedColumn > 1:
-            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Insert Column to Left"))
-            if mi is not None:
-                mi.Enable(True)
+            Enable("Insert Column to Left")
+
         # We enable the Add Column to right item if we're on any existing column
         if self._grid.clickedColumn > -1:
-            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Insert Column to Right"))
-            if mi is not None:
-                mi.Enable(True)
+            Enable("Insert Column to Right")
 
-        if self._grid.clickedRow == -1:
-            mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Rename Column"))
-            if mi is not None:
-                mi.Enable(True)
+        if self._grid.clickedRow == -1: #Indicates we're on a column header
+            Enable("Rename Column")
 
         # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
         mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Extract Scanner"))
@@ -464,6 +468,9 @@ class MainWindow(MainFrame):
 
     def OnPopupPaste(self, event):
         self._grid.OnPopupPaste(event) # Pass event to WxDataGrid to handle
+
+    def OnPopupClearSelection(self, event):
+        self._grid.OnPopupClearSelection(event)
 
     def OnPopupDelCol(self, event):
         if self._grid.Datasource.CanDeleteColumns:
