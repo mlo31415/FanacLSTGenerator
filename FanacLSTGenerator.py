@@ -384,7 +384,7 @@ class MainWindow(MainFrame):
                 Enable("Delete Column(s)")
 
         # We enable the Add Column to right item if we're on any existing column
-        if self._grid.clickedColumn > -1:
+        if self._grid.clickedColumn > 0:        # Can't insert columns between the 1st two
             Enable("Insert Column to Right")
 
         if self._grid.clickedRow == -1: #Indicates we're on a column header
