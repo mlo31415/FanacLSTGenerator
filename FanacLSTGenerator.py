@@ -475,7 +475,7 @@ class MainWindow(MainFrame):
         self._grid.OnPopupClearSelection(event)
 
     def OnPopupDelCol(self, event):
-        if self._grid.Datasource.CanDeleteColumns:
+        if self._grid.Datasource.Element.CanDeleteColumns:
             self._grid.OnPopupDelCol(event) # Pass event to WxDataGrid to handle
 
     def OnPopupDelRow(self, event):
