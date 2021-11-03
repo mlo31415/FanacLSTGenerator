@@ -249,7 +249,7 @@ class LSTFile:
 
         def IsTableLine(s: str) -> bool:
             # Column header pattern is four repetitions of (a span of at least one character followed by a semicolon)
-            return re.search(".+[\>;].+;.+;.+;", s) is not None
+            return re.search(".+[>;].+;.+;.+;", s) is not None
 
         # Go through the lines one-by-one, looking for a table line. Until that is found, accumulate toptext lines
         self.TopTextLines=[]
