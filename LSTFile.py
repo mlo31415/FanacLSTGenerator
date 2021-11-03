@@ -296,17 +296,17 @@ class LSTFile:
         #   (There's actually two versions of case (3), with and without 'www.' preceding the URL
         self.Rows=[]
         for row in rowLines:
-            col1=row.split(";", 1)[0]
+            col1, colrest=row.split(";", 1)
             # Look for case (2), and add the ">" to make it case 1
             if col1.find(">") == -1:    #If there's no ">" in col1, put it there.
                 row=">"+row
                 col1=row.split(";", 1)[0]
 
             # The characteristic of Case (3) is that it starts "<a href...".  Look for that and handle it, turning it into Case (1)
-            r=CaseInsensitiveReplace(col1, '<a href="http://fanac.org/fanzines/', "<")
-            r=CaseInsensitiveReplace(r, '<a href="http://www.fanac.org/fanzines/', "<")
+            r=col1
+            r=re.sub("<a href=.*?/fanzines/", "<", r, re.IGNORECASE)
             if len(col1) != len(r):
-                row=r.replace('">', '>>')      # Get rid of the trailing double quote in the URL and add in an extra '>' to designate that it's Case 3
+                row=r.replace('">', '>>')+";"+colrest      # Get rid of the trailing double quote in the URL and add in an extra '>' to designate that it's Case 3
 
             # Now we can handle them all as case (1)
             if row.find(">>") != -1 and row.find(">>") < row.find(";"):
@@ -326,6 +326,11 @@ class LSTFile:
         # It's the first part of the funny xxxxx>yyyyy thing in the LST file's 1st column
         self.ColumnHeaders=["Link"]+self.ColumnHeaders
 
+        # If any rows are shorter than the headers row, pad them with blanks
+        for row in self.Rows:
+            if len(row) < len(self.ColumnHeaders):
+                row.extend([""]*(len(self.ColumnHeaders)-len(row)))
+
         # Run through the rows and columns and look at the Notes column  If an APA mailing note is present,
         # move it to a "Mailing" column (which may need to be created).  Remove the text from the Notes column.
         # Find the Notes column. If there is none, we're done.
@@ -339,7 +344,7 @@ class LSTFile:
             found=False
             for i, row in enumerate(self.Rows):
                 for apa in apas:
-                    pat=f"(?:for|in)\s+{apa}\s+([0-9]+)"
+                    pat=f"(?:for|in|)[^a-zA-Z]+{apa}\s+([0-9]+)"
                     m=re.search(pat, row[notescol])
                     if m is not None:
                         mailing[i]=apa+" "+m.groups()[0]
