@@ -374,12 +374,14 @@ class MainWindow(MainFrame):
 
         if self._grid.clickedRow != -1:
             Enable("Delete Row(s)")
-            if self._grid.Datasource.CanDeleteColumns:
+            if self._grid.Datasource.Element.CanDeleteColumns:
                 Enable("Delete Column(s)")
 
         # We enable the Add Column to Left item if we're on a column to the left of the first -- it can be off the right and a column will be added to the right
         if self._grid.clickedColumn > 1:
             Enable("Insert Column to Left")
+            if self._grid.Datasource.Element.CanDeleteColumns:
+                Enable("Delete Column(s)")
 
         # We enable the Add Column to right item if we're on any existing column
         if self._grid.clickedColumn > -1:
