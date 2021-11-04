@@ -324,7 +324,7 @@ class LSTFile:
         # Define the grid's columns
         # First add the invisible column which is actually the link destination
         # It's the first part of the funny xxxxx>yyyyy thing in the LST file's 1st column
-        self.ColumnHeaders=["Link"]+self.ColumnHeaders
+        self.ColumnHeaders=["Filename"]+self.ColumnHeaders
 
         # If any rows are shorter than the headers row, pad them with blanks
         for row in self.Rows:

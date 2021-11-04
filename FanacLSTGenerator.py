@@ -31,31 +31,30 @@ class MainWindow(MainFrame):
         if len(sys.argv) > 1:
             self.dirname=os.getcwd()
 
-        stdColHeaders: defaultdict[str, ColDefinition]=defaultdict()
-        stdColHeaders["Link"]=ColDefinition("Link", Type="str")
-        stdColHeaders["Issue"]=ColDefinition("Issue", Type="str")
-        stdColHeaders["Title"]=ColDefinition("Title", Type="str", preferred="Issue")
-        stdColHeaders["Whole"]=ColDefinition("Whole", Type="int", Width=75)
-        stdColHeaders["WholeNum"]=ColDefinition("WholeNum", Type="int", Width=75, preferred="Whole")
-        stdColHeaders["Vol"]=ColDefinition("Vol", Type="int", Width=50)
-        stdColHeaders["Volume"]=ColDefinition("Volume", Type="int", Width=50, preferred="Vol")
-        stdColHeaders["Num"]=ColDefinition("Num", Type="int", Width=50)
-        stdColHeaders["Number"]=ColDefinition("Numver", Type="int", Width=50, preferred="Num")
-        stdColHeaders["Month"]=ColDefinition("Month", Type="str", Width=75)
-        stdColHeaders["Day"]=ColDefinition("Day", Type="int", Width=50)
-        stdColHeaders["Year"]=ColDefinition("Year", Type="int", Width=50)
-        stdColHeaders["Pages"]=ColDefinition("Pages", Type="int", Width=50)
-        stdColHeaders["PDF"]=ColDefinition("PDF", Type="str", Width=50)
-        stdColHeaders["Notes"]=ColDefinition("Notes", Type="str", Width=120)
-        stdColHeaders["Scanned"]=ColDefinition("Scanned", Type="str", Width=100)
-        stdColHeaders["APA"]=ColDefinition("APA", Type="str", Width=100)
-        stdColHeaders["Country"]=ColDefinition("Country", Type="str", Width=50)
-        stdColHeaders["Editor"]=ColDefinition("Editor", Type="str", Width=75)
-        stdColHeaders["Author"]=ColDefinition("Author", Type="str", Width=75)
-        stdColHeaders["Mailing"]=ColDefinition("Mailing", Type="str", Width=75)
-        stdColHeaders["Repro"]=ColDefinition("Repro", Type="str", Width=75)
-        self.stdColHeaders=stdColHeaders
-
+        self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
+                                                              ColDefinition("Filename", Type="str"),
+                                                              ColDefinition("Issue", Type="str"),
+                                                              ColDefinition("Title", Type="str", preferred="Issue"),
+                                                              ColDefinition("Whole", Type="int", Width=75),
+                                                              ColDefinition("WholeNum", Type="int", Width=75, preferred="Whole"),
+                                                              ColDefinition("Vol", Type="int", Width=50),
+                                                              ColDefinition("Volume", Type="int", Width=50, preferred="Vol"),
+                                                              ColDefinition("Num", Type="int", Width=50),
+                                                              ColDefinition("Numver", Type="int", Width=50, preferred="Num"),
+                                                              ColDefinition("Month", Type="str", Width=75),
+                                                              ColDefinition("Day", Type="int", Width=50),
+                                                              ColDefinition("Year", Type="int", Width=50),
+                                                              ColDefinition("Pages", Type="int", Width=50),
+                                                              ColDefinition("PDF", Type="str", Width=50),
+                                                              ColDefinition("Notes", Type="str", Width=120),
+                                                              ColDefinition("Scanned", Type="str", Width=100),
+                                                              ColDefinition("APA", Type="str", Width=100),
+                                                              ColDefinition("Country", Type="str", Width=50),
+                                                              ColDefinition("Editor", Type="str", Width=75),
+                                                              ColDefinition("Author", Type="str", Width=75),
+                                                              ColDefinition("Mailing", Type="str", Width=75),
+                                                              ColDefinition("Repro", Type="str", Width=75)
+                                                              ])
         # Read the LST file
         self.LoadLSTFile()
 
@@ -107,16 +106,13 @@ class MainWindow(MainFrame):
         self.lstData.IdentifyColumnHeaders()
 
         # Turn the Column Headers into the grid's columns
-        self._grid.Datasource.ColDefs=[]
-        for i in range(len(self.lstData.ColumnHeaders)):
-            name=self.lstData.ColumnHeaders[i]
-            if name in self.stdColHeaders.keys():
+        self._grid.Datasource.ColDefs=ColDefinitionsList([])
+        for name in self.lstData.ColumnHeaders:
+            if name in self.stdColHeaders:
                 name=self.stdColHeaders[name].Preferred
                 self._grid.Datasource.ColDefs.append(self.stdColHeaders[name])
             else:
                 self._grid.Datasource.ColDefs.append(ColDefinition(name))
-
-        self._grid.SetColHeaders(self._grid.Datasource.ColDefs)
 
         # Copy the row data over
         FTRList: list[FanzineTableRow]=[]
@@ -127,7 +123,7 @@ class MainWindow(MainFrame):
             FTRList.append(FanzineTableRow(row))
         self._grid.Datasource._fanzineList=FTRList
 
-
+        self._grid.SetColHeaders(self._grid.Datasource.ColDefs) #TODO: Should this be moved into RefreshGridFromLSTData?
         self.RefreshGridFromLSTData()
         self.MarkAsSaved()
         self.RefreshWindow()
@@ -138,7 +134,7 @@ class MainWindow(MainFrame):
     # The LSTFile object has the official information. This function refreshes the display from it.
     def RefreshGridFromLSTData(self):
         grid=self.gRowGrid
-        grid.EvtHandlerEnabled=False
+        #grid.EvtHandlerEnabled=False
         grid.ClearGrid()
 
         # Now insert the row data
@@ -150,14 +146,14 @@ class MainWindow(MainFrame):
         #self.ColorCellByValue()
         grid.ForceRefresh()
         grid.AutoSizeColumns()
-        grid.EvtHandlerEnabled=True
+        #grid.EvtHandlerEnabled=True
 
 
     # ------------------
     # The LSTFile object has the official information. This function refreshes the display from it.
     def RefreshLSTDataFromGrid(self):
         grid=self.gRowGrid
-        grid.EvtHandlerEnabled=False
+        #grid.EvtHandlerEnabled=False
 
         # Not all rows and all columns defined in the grid may be filled.  Compute the actual number of rows and columns
         ncols=len(self._grid.Datasource.ColDefs)    # ncols must be at least this big.
@@ -392,18 +388,18 @@ class MainWindow(MainFrame):
 
         # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
         mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Extract Scanner"))
-        if self._grid.clickedColumn < len(self.lstData.ColumnHeaders)+2:
-            if self.lstData.ColumnHeaders[self._grid.clickedColumn-2] == "Notes":
-                # We only want to enable the Notes column if it contains scanned by information
-                for row in self.lstData.Rows:
-                    if len(row) > self._grid.clickedColumn-1:
-                        note=row[self._grid.clickedColumn-1].lower()
-                        if "scan by" in note or \
-                                "scans by" in note or \
-                                "scanned by" in note or \
-                                "scanning by" in note or \
-                                "scanned at" in note:
-                            mi.Enable(True)
+        if self._grid.Datasource.ColDefs[self._grid.clickedColumn].Preferred == "Notes":
+            notescol=self._grid.Datasource.ColDefs.index("Notes")
+            # We only want to enable the Notes column if it contains scanned by information
+            for row in self.lstData.Rows:
+                if len(row) > self._grid.clickedColumn-1:
+                    note=row[self._grid.clickedColumn-1].lower()
+                    if "scan by" in note or \
+                            "scans by" in note or \
+                            "scanned by" in note or \
+                            "scanning by" in note or \
+                            "scanned at" in note:
+                        mi.Enable(True)
 
 
         # Pop the menu up.
@@ -490,7 +486,7 @@ class MainWindow(MainFrame):
         # (We have to do this here because WxDataGrid doesn't know about header semantics.)
         icol=self._grid.clickedColumn
         cd=self._grid.Datasource.ColDefs[icol]
-        if cd.Name in self.stdColHeaders.keys():
+        if cd.Name in self.stdColHeaders:
             self._grid.Datasource.ColDefs[icol]=self.stdColHeaders[cd.Name]
         self._grid.RefreshGridFromDatasource()
 
@@ -596,7 +592,7 @@ class FanzineTableRow(GridDataRowClass):
 class FanzineTablePage(GridDataSource):
     def __init__(self):
         GridDataSource.__init__(self)
-        self._colDefs: ColDefinitionsList
+        self._colDefs: ColDefinitionsList=ColDefinitionsList([])
         self._fanzineList: list[FanzineTableRow]=[]
         self._gridDataRowClass=FanzineTableRow
         self._name: str=""
