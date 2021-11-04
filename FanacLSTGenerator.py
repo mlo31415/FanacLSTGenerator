@@ -98,10 +98,6 @@ class MainWindow(MainFrame):
         elif len(self.lstData.BottomTextLines) > 0:
             self.tPText.SetValue("\n".join(self.lstData.BottomTextLines))
 
-        # We used to need the row and column labels suppressed
-        #self.gRowGrid.HideRowLabels()
-        #self.gRowGrid.HideColLabels()
-
         # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
         self.lstData.IdentifyColumnHeaders()
 
