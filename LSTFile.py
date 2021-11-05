@@ -1,9 +1,8 @@
 from dataclasses import dataclass, field
 import re
 
-from HelpersPackage import CanonicizeColumnHeaders, CaseInsensitiveReplace, Bailout
+from HelpersPackage import CanonicizeColumnHeaders, Bailout
 from FanzineIssueSpecPackage import FanzineDate
-from WxDataGrid import ColDefinition
 
 #----------------------------------
 def InterpretIssueSpec(s: str) -> float:
@@ -363,7 +362,6 @@ class LSTFile:
                     row[mailcol]=mailing[i]
 
 
-
     # ---------------------------------
     # Save an LST file back to disk
     def Save(self, filename: str) -> None:
@@ -409,7 +407,7 @@ class LSTFile:
             elif len(row[0]) > 0:
                 # Case (3) is marked by the first column beginning and ending with pointy brackets
                 if row[0][0] == "<" and row[0][-1:] == ">":
-                    out='<a href="http://fanac.org/fanzines/'+row[0][1:-1]+'">'+row[1]
+                    out='<a href="https://fanac.org/fanzines/'+row[0][1:-1]+'">'+row[1]
                 else:
                     out=row[0] + ">" + row[1]   # Case (1)
             else:
