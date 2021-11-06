@@ -175,7 +175,7 @@ class MainWindow(MainFrame):
 
 
     # Create a new LSTFile from the datasource
-    def CreateLSTDataFromDatasource(self) -> LSTFile:
+    def CreateLSTFileFromDatasource(self) -> LSTFile:
 
         lstfile=LSTFile()
 
@@ -220,7 +220,7 @@ class MainWindow(MainFrame):
     def OnSaveLSTFile(self, event):
 
         self.UpdateDatasourceFromWxGrid()
-        lstfile=self.CreateLSTDataFromDatasource()
+        lstfile=self.CreateLSTFileFromDatasource()
 
         # Fill in the upper stuff
         lstfile.FirstLine=self.tTopMatter.GetValue()
