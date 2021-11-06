@@ -5,27 +5,26 @@ import os
 import wx
 import wx.grid
 import sys
-from collections import defaultdict
 
 from GenGUIClass import MainFrame
 
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from LSTFile import *
-from HelpersPackage import Bailout, Int, CanonicizeColumnHeaders
+from HelpersPackage import Bailout
 from Log import LogOpen, Log
 
 class MainWindow(MainFrame):
     def __init__(self, parent, title):
         MainFrame.__init__(self, parent)
-        self._grid: DataGrid=DataGrid(self.gRowGrid)
-        self._grid.Datasource=FanzineTablePage()
+        self._dataGrid: DataGrid=DataGrid(self.wxGrid)
+        self._dataGrid.Datasource=FanzineTablePage()
 
         # TODO: How many of these are duplicated in WxDataGrid?
         self.highlightRows: list[str]=[]       # A List of the names of fanzines in highlighted rows
         self.clipboard=None         # The grid's clipboard
         self.userSelection=None
         self.cntlDown: bool=False
-        self._grid.clickedColumn=None
+        self._dataGrid.clickedColumn=None
 
         self.dirname=''
         if len(sys.argv) > 1:
@@ -56,20 +55,21 @@ class MainWindow(MainFrame):
                                                               ColDefinition("Repro", Type="str", Width=75)
                                                               ])
         # Read the LST file
-        self.LoadLSTFile()
+        lstfile=self.LoadLSTFile()
+        if lstfile is None:
+            return
+
+        self.InitializeDatasourceFromLSTfile(lstfile)
+        self._dataGrid.RefreshWxGridFromDatasource()
+        self.MarkAsSaved()
+        self.RefreshWindow()
 
         self.Show(True)
 
     #------------------
-    # Given a LST file of disk load it into self
-    def LoadLSTFile(self):
-        # Clear out any old information
-        self.lstData=LSTFile()
-        self.tTopMatter.SetValue("")
-        self.tPText.SetValue("")
-        for i in range(0, self.gRowGrid.NumberCols):
-            for j in range(0, self.gRowGrid.NumberRows):
-                self.gRowGrid.SetCellValue(j, i, "")
+    # Open a dialog to allow the user to select an LSTFile on disk.
+    # Load it (and some other stuff) into self's 'LSFFile() object
+    def LoadLSTFile(self) -> Optional[LSTFile]:
 
         # Call the File Open dialog to get an LST file
         dlg=wx.FileDialog(self, "Select LST file to load", self.dirname, "", "*.LST", wx.FD_OPEN)
@@ -78,7 +78,11 @@ class MainWindow(MainFrame):
         if dlg.ShowModal() != wx.ID_OK:
             dlg.Raise()
             dlg.Destroy()
-            return
+            return None
+
+        # Clear out old information from form.
+        self.ClearDisplay()
+        lstfile=LSTFile()
 
         self.lstFilename=dlg.GetFilename()
         self.dirname=dlg.GetDirectory()
@@ -87,79 +91,66 @@ class MainWindow(MainFrame):
         # Read the lst file
         pathname=os.path.join(self.dirname, self.lstFilename)
         try:
-            self.lstData.Read(pathname)
+            lstfile.Read(pathname)
         except Exception as e:
-            Bailout(e, "MainWindow: Failure reading LST file '"+pathname+"'", "LSTError")
+            Log(f"MainWindow: Failure reading LST file '{pathname}'", isError=True)
+            Bailout(e, f"MainWindow: Failure reading LST file '{pathname}'", "LSTError")
 
         # Fill in the upper stuff
-        self.tTopMatter.SetValue(self.lstData.FirstLine)
-        if len(self.lstData.TopTextLines) > 0:
-            self.tPText.SetValue("\n".join(self.lstData.TopTextLines))
-        elif len(self.lstData.BottomTextLines) > 0:
-            self.tPText.SetValue("\n".join(self.lstData.BottomTextLines))
+        self.tTopMatter.SetValue(lstfile.FirstLine)
+        if len(lstfile.TopTextLines) > 0:
+            self.tPText.SetValue("\n".join(lstfile.TopTextLines))
+        elif len(lstfile.BottomTextLines) > 0:
+            self.tPText.SetValue("\n".join(lstfile.BottomTextLines))
 
         # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
-        self.lstData.IdentifyColumnHeaders()
+        lstfile.IdentifyColumnHeaders()
+
+        return lstfile
+
+
+    # Take the LST file which has been loaded into self.lstData and fill the Datasource
+    def InitializeDatasourceFromLSTfile(self, lstfile: LSTFile):
 
         # Turn the Column Headers into the grid's columns
-        self._grid.Datasource.ColDefs=ColDefinitionsList([])
-        for name in self.lstData.ColumnHeaders:
+        self._dataGrid.Datasource.ColDefs=ColDefinitionsList([])
+        for name in lstfile.ColumnHeaders:
             if name in self.stdColHeaders:
                 name=self.stdColHeaders[name].Preferred
-                self._grid.Datasource.ColDefs.append(self.stdColHeaders[name])
+                self._dataGrid.Datasource.ColDefs.append(self.stdColHeaders[name])
             else:
-                self._grid.Datasource.ColDefs.append(ColDefinition(name))
+                self._dataGrid.Datasource.ColDefs.append(ColDefinition(name))
 
-        # Copy the row data over
+        # Copy the row data over into the Datasource class
         FTRList: list[FanzineTableRow]=[]
-        for row in self.lstData.Rows:
-            if len(row) != len(self._grid.Datasource.ColDefs):
-                Log(f"Mismatched column count for Row={row}")
+        for row in lstfile.Rows:
+            if len(row) != len(self._dataGrid.Datasource.ColDefs):
+                Log(f"Mismatched column count for Row={row}", isError=True)
                 continue
             FTRList.append(FanzineTableRow(row))
-        self._grid.Datasource._fanzineList=FTRList
+        self._dataGrid.Datasource._fanzineList=FTRList
 
-        self._grid.SetColHeaders(self._grid.Datasource.ColDefs) #TODO: Should this be moved into RefreshGridFromLSTData?
-        self.RefreshGridFromLSTData()
-        self.MarkAsSaved()
-        self.RefreshWindow()
 
-        i=0
-
-    # ------------------
-    # The LSTFile object has the official information. This function refreshes the display from it.
-    def RefreshGridFromLSTData(self):
-        grid=self.gRowGrid
-        #grid.EvtHandlerEnabled=False
-        grid.ClearGrid()
-
-        # Now insert the row data
-        grid.AppendRows(len(self.lstData.Rows))
-        for i, row in enumerate(self.lstData.Rows):
-            for j, cell in enumerate(row):
-                grid.SetCellValue(i, j, cell)
-
-        #self.ColorCellByValue()
-        grid.ForceRefresh()
-        grid.AutoSizeColumns()
-        #grid.EvtHandlerEnabled=True
-
+    #TODO: Either use this more widely or merge it in
+    def ClearDisplay(self):
+        self.tTopMatter.SetValue("")
+        self.tPText.SetValue("")
+        self.wxGrid.ClearGrid()
 
     # ------------------
-    # The LSTFile object has the official information. This function refreshes the display from it.
-    def RefreshLSTDataFromGrid(self):
-        grid=self.gRowGrid
-        #grid.EvtHandlerEnabled=False
+    # The Datasource object has the official information. This function updates it from edits made on the display.
+    def UpdateDatasourceFromWxGrid(self):
+
+        #TODO: Need to pull in the header stuff?
 
         # Not all rows and all columns defined in the grid may be filled.  Compute the actual number of rows and columns
-        ncols=len(self._grid.Datasource.ColDefs)    # ncols must be at least this big.
-        nrows=0
+        ncols=len(self._dataGrid.Datasource.ColDefs)    # ncols must be at least this big.
 
         # Walk the rows from last to first looking for last row with content
-        for i in range(grid.NumberRows, 0, -1):
+        for i in range(self.wxGrid.NumberRows, 0, -1):
             found=False
-            for j in range(grid.NumberCols):
-                if grid.GetCellValue(i-1, j) != "":
+            for j in range(self.wxGrid.NumberCols):
+                if self.wxGrid.GetCellValue(i-1, j) != "":
                     found=True
                     break
             if found:
@@ -167,38 +158,78 @@ class MainWindow(MainFrame):
                 break
 
         # Walk the remaining columns (if any) from last to first looking for the last col with content
-        for i in range(grid.NumberCols, 0, -1):
+        for i in range(self.wxGrid.NumberCols, 0, -1):
             found=False
-            for j in range(grid.NumberRows):
+            for j in range(self.wxGrid.NumberRows):
                 if j == ncols:
                     break
-                if grid.GetCellValue(i-1, j) != "":
+                if self.wxGrid.GetCellValue(i-1, j) != "":
                     found=True
                     break
             if found:
                 ncols=i
                 break
 
+        # We don't need to copy column headers because the code which manages updates to the headers updates the ColDefinitionsList
+        # Likewise, the ancilliary text box handling updates the datasource
+
+
+    # Create a new LSTFile from the datasource
+    def CreateLSTDataFromDatasource(self) -> LSTFile:
+
+        lstfile=LSTFile()
+
+        #TODO: Need to copy ancillary text box material
+        #TODO: Need to copy column headers
+
         # Now copy the grid's cell contents to the LSTFile structure
-        self.lstData.Rows=[]
-        for i in range(nrows):
-            row=[None]*ncols
-            for j in range(ncols):
-                row[j]=grid.GetCellValue(i, j)
-            self.lstData.Rows.append(row)
-        i=0
+        lstfile.Rows=[]
+        for i in range(self._dataGrid.Datasource.NumRows):
+            row=[None]*self._dataGrid.Datasource.NumCols
+            for j in range(self._dataGrid.Datasource.NumCols):
+                row[j]=self.wxGrid.GetCellValue(i, j)
+            lstfile.Rows.append(row)
+
+        return lstfile
+
+# Need:
+#     One place to hold loaded-in data.  LSTFile?
+#     One way to clear the display
+#     One way to load data from the datasource to the display
+#     One way to update the datasource from the display
 
     #------------------
+    # Load an LST file from disk into an LSTFile class
     def OnLoadNewLSTFile(self, event):
-        self._grid.NumCols=0
-        self._grid.DeleteRows(0, self._grid.NumRows)
-        self._grid.Grid.ScrollLines(-999)   # Scroll down a long ways to show start of file
-        self.LoadLSTFile()
+        self._dataGrid.NumCols=0
+        self._dataGrid.DeleteRows(0, self._dataGrid.NumRows)
+        self._dataGrid.Grid.ScrollLines(-999)   # Scroll down a long ways to show start of file
+
+        lstfile=self.LoadLSTFile()
+        if lstfile is None:
+            return
+
+        self.InitializeDatasourceFromLSTfile(lstfile)
+        self._dataGrid.RefreshWxGridFromDatasource()
+        self.MarkAsSaved()
+        self.RefreshWindow()
         pass
 
     #------------------
     # Save an LSTFile object to disk.
     def OnSaveLSTFile(self, event):
+
+        self.UpdateDatasourceFromWxGrid()
+        lstfile=self.CreateLSTDataFromDatasource()
+
+        # Fill in the upper stuff
+        lstfile.FirstLine=self.tTopMatter.GetValue()
+        lstfile.TopTextLines=self.tPText.GetValue().split()
+        lstfile.BottomTextLines=self.tPText.GetValue().split()
+
+        # Copy over the column headers
+        lstfile.ColumnHeaders=self._dataGrid.Datasource.ColHeaders
+
         # Rename the old file
         oldname=os.path.join(self.dirname, self.lstFilename)
         newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
@@ -210,134 +241,74 @@ class MainWindow(MainFrame):
 
             os.rename(oldname, newname)
         except:
-            Bailout(PermissionError, "OnSaveLSTFile fails when trying to rename "+oldname+" to "+newname, "LSTError")
+            Log(f"OnSaveLSTFile fails when trying to rename {oldname} to {newname}", isError=True)
+            Bailout(PermissionError, f"OnSaveLSTFile fails when trying to rename {oldname} to {newname}", "LSTError")
 
         try:
-            self.RefreshLSTDataFromGrid()
-            self.lstData.Save(oldname)
+            lstfile.Save(oldname)
         except:
-            Bailout(PermissionError, "OnSaveLSTFile fails when trying to write file "+newname, "LSTError")
-
-
-    #------------------
-    # We load a bunch of files, including one or more.issue files.
-    # The .issue files tell us what image files we have present.
-    # Add one row for each .issue file
-    def OnLoadNewIssues(self, event):
-        # Call the File Open dialog to get the .issue files
-        self.dirname=''
-        dlg=wx.FileDialog(self, "Select .issue files to load", self.dirname, "", "*.issue", wx.FD_OPEN|wx.FD_MULTIPLE)
-        if dlg.ShowModal() != wx.ID_OK:
-            dlg.Destroy()
-            return
-        files=dlg.GetFilenames()
-        dlg.Destroy()
-        for file in files:
-            # Decode the file name to get the row info.
-            # The filename consists of:
-            #       A first section (ending in $$) which is the prefix of the associated image files
-            #       A number of space-delimited segments consisting of a capital letter followed by data
-            row=self.DecodeIssueFileName(file)
-            bestColTypes=self.lstData.GetInsertCol(row)
-            fIndex=self.lstData.GetBestRowIndex(bestColTypes, row)  # "findex" to remind me this is probably a floating point number to indicate an insertion between two rows
-            self.lstData.Rows.append(row)
-            self._grid.MoveRows(len(self.lstData.Rows)-1, 1, fIndex)
-            self.highlightRows.append(row[0][1:])   # Add this row's fanzine name to the list of newly-added rows.
-
-        self.RefreshGridFromLSTData()
-        pass
-
-
-    #------------------
-    def DecodeIssueFileName(self, filename: str):
-        if len(filename) == 0:
-            return None
-
-        # Start by dividing on the "$$"
-        sections=filename.split("$$")
-        if len(sections) != 2:
-            Bailout(ValueError, "FanacLSTGenerator.DecodeIssueFileName: Missing $$ in '"+filename+"'", "LSTError")
-        namePrefix=sections[0].strip()
-
-        # Now remove the extension and divide the balance of the name by spaces
-        balance=os.path.splitext(sections[1])[0]    # Get the filename and then drop the extension
-        rest=[r for r in balance.split(" ") if len(r) > 0]
-
-        # We have the table of column headers types in lstData.ColumnHeaderTypes
-        # Match them up and create the new row with the right stuff in each column.
-        row=[""]*len(self.lstData.ColumnHeaders)    # Create an empty list of the correct size
-        for val in rest:
-            if len(val) > 1:
-                valtype=val[0]
-                val=val[1:]     # The value is the part after the initial character (which is the val type)
-                if not valtype.isupper():
-                    continue
-                try:
-                    index=self.lstData.ColumnHeaderTypes.index(valtype)
-                    row[index]=val
-                except:
-                    pass    # Just ignore the error and the column
-        row[0]=namePrefix
-        return row
+            Log(f"OnSaveLSTFile failed while trying to save {oldname}", isError=True)
+            Bailout(PermissionError, "OnSaveLSTFile failed when trying to write file "+oldname, "LSTError")
 
 
     def RefreshWindow(self)-> None:
-        self._grid.RefreshGridFromDatasource()
+        self._dataGrid.RefreshWxGridFromDatasource()
 
     # ----------------------------------------------
     # Used to determine if anything has been updated
     def Signature(self) -> int:
+        #TODO: Add in the top stuff
         #stuff=self.ConInstanceName.strip()+self.ConInstanceTopText.strip()+self.ConInstanceFancyURL.strip()+self.Credits.strip()
-        #return hash(stuff)+self._grid.Signature()
-        return self._grid.Signature()
+        #return hash(stuff)+self._dataGrid.Signature()
+        return self._dataGrid.Signature()
 
     def MarkAsSaved(self):
-        self._signature=self.Signature()
+        self._initialSignature=self.Signature()
 
     def NeedsSaving(self):
-        return self._signature != self.Signature()
+        return self._initialSignature != self.Signature()
 
     #------------------
     def OnTextTopMatter(self, event):
-        self.lstData.FirstLine=self.tTopMatter.GetValue()
+        self.FirstLine=self.tTopMatter.GetValue()
 
     #------------------
     def OnTextComments(self, event):
-        if self.lstData.TopTextLines is not None and len(self.lstData.TopTextLines) > 0:
-            self.lstData.TopTextLines=self.tPText.GetValue().split("\n")
-        elif self.lstData.BottomTextLines is not None and len(self.lstData.BottomTextLines) > 0:
-            self.lstData.BottomTextLines=self.tPText.GetValue().split("\n")
+        if self._dataGrid.Datasource.TopTextLines is not None and len(self._dataGrid.Datasource.TopTextLines) > 0:
+            self._dataGrid.Datasource.TopTextLines=self.tPText.GetValue().split("\n")
+        elif self._dataGrid.Datasource.BottomTextLines is not None and len(self._dataGrid.Datasource.BottomTextLines) > 0:
+            self._dataGrid.Datasource.BottomTextLines=self.tPText.GetValue().split("\n")
         else:
-            self.lstData.TopTextLines=self.tPText.GetValue().split("\n")
+            self._dataGrid.Datasource.TopTextLines=self.tPText.GetValue().split("\n")
 
     #-------------------
     def OnKeyDown(self, event):
-        self._grid.OnKeyDown(event) # Pass event to WxDataGrid to handle
+        self._dataGrid.OnKeyDown(event) # Pass event to WxDataGrid to handle
 
     #-------------------
     def OnKeyUp(self, event):
-        self._grid.OnKeyUp(event) # Pass event to WxDataGrid to handle
+        self._dataGrid.OnKeyUp(event) # Pass event to WxDataGrid to handle
 
     #------------------
     def OnGridCellChanged(self, event):
-        self._grid.OnGridCellChanged(event)  # Pass event handling to WxDataGrid
+        self._dataGrid.OnGridCellChanged(event)  # Pass event handling to WxDataGrid
 
     #------------------
     def OnGridCellRightClick(self, event):
         # Do generic RMB on grid processing
-        self._grid.OnGridCellRightClick(event, self.m_GridPopup)
+        self._dataGrid.OnGridCellRightClick(event, self.m_GridPopup)
 
         # Call the RMB handler
         self.RMBHandler(True, event)
 
     # ------------------
     def OnGridLabelLeftClick(self, event):
-        self._grid.OnGridLabelLeftClick(event)
+        self._dataGrid.OnGridLabelLeftClick(event)
 
     #------------------
     def OnGridLabelRightClick(self, event):
         # Do generic RMB on grid processing
-        self._grid.OnGridCellRightClick(event, self.m_GridPopup)
+        self._dataGrid.OnGridCellRightClick(event, self.m_GridPopup)
 
         # Call the RMB handler
         self.RMBHandler(False, event)
@@ -347,11 +318,11 @@ class MainWindow(MainFrame):
         isLabelClick=not isCellClick
 
         # Everything remains disabled when we're outside the defined columns
-        if self._grid.clickedColumn > len(self.lstData.ColumnHeaders)+1:    # Click is outside populated columns.  The +1 is because of the split of the 1st column
+        if self._dataGrid.clickedColumn > self._dataGrid.Datasource.NumCols:    # Click is outside populated columns.  The +1 is because of the split of the 1st column
             return
-        if self._grid.clickedRow > len(self.lstData.Rows):      # Click is outside the populated rows
+        if self._dataGrid.clickedRow > self._dataGrid.Datasource.NumRows:      # Click is outside the populated rows
             return
-        if isCellClick and self._grid.clickedColumn == 0:   # What's this for?
+        if isCellClick and self._dataGrid.clickedColumn == 0:   # What's this for?
             return
 
         def Enable(name: str) -> None:
@@ -359,72 +330,61 @@ class MainWindow(MainFrame):
             if mi is not None:
                 mi.Enable(True)
 
-        if self._grid.HasSelection():
+        if self._dataGrid.HasSelection():
             Enable("Copy")
             Enable("Clear Selection")
 
-        if self._grid.clipboard is not None:
+        if self._dataGrid.clipboard is not None:
             Enable("Paste")
 
-        if self._grid.clickedRow != -1:
+        if self._dataGrid.clickedRow != -1:
             Enable("Delete Row(s)")
 
         # We enable the Add Column to Left item if we're on a column to the left of the first -- it can be off the right and a column will be added to the right
-        if self._grid.clickedColumn > 1:
+        if self._dataGrid.clickedColumn > 1:
             Enable("Insert Column to Left")
-            if self._grid.Datasource.Element.CanDeleteColumns:
+            if self._dataGrid.Datasource.Element.CanDeleteColumns:
                 Enable("Delete Column(s)")
 
         # We enable the Add Column to right item if we're on any existing column
-        if self._grid.clickedColumn > 0:        # Can't insert columns between the 1st two
+        if self._dataGrid.clickedColumn > 0:        # Can't insert columns between the 1st two
             Enable("Insert Column to Right")
 
-        if self._grid.clickedRow == -1: #Indicates we're on a column header
+        if self._dataGrid.clickedRow == -1: #Indicates we're on a column header
             Enable("Rename Column")
 
         # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
         mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Extract Scanner"))
-        if self._grid.Datasource.ColDefs[self._grid.clickedColumn].Preferred == "Notes":
-            notescol=self._grid.Datasource.ColDefs.index("Notes")
-            # We only want to enable the Notes column if it contains scanned by information
-            for row in self.lstData.Rows:
-                if len(row) > self._grid.clickedColumn-1:
-                    note=row[self._grid.clickedColumn-1].lower()
-                    if "scan by" in note or \
-                            "scans by" in note or \
-                            "scanned by" in note or \
-                            "scanning by" in note or \
-                            "scanned at" in note:
-                        mi.Enable(True)
+        if self._dataGrid.Datasource.ColDefs[self._dataGrid.clickedColumn].Preferred == "Notes":
+            # We only want to enable the "Extract Scanner" item if the Notes column contains scanned by information
+            for row in self._dataGrid.Datasource.Rows:
+                note=row.Cells[self._dataGrid.clickedColumn].lower()
+                if "scan by" in note or \
+                        "scans by" in note or \
+                        "scanned by" in note or \
+                        "scanning by" in note or \
+                        "scanned at" in note:
+                    mi.Enable(True)
 
 
         # Pop the menu up.
         self.PopupMenu(self.m_GridPopup)
 
     # ------------------
+    # Extract 'scanned by' information from the Notes column, if any
     def ExtractScanner(self, col):
-        # Start by adding a Scanned column to the right of the Notes column. (We check to see if one already exists.)
-        # Located the Notes and Scanned columns, if any.
-        scannedCol=None
-        for i in range(0, len(self.lstData.ColumnHeaders)):
-            if self.lstData.ColumnHeaders[i] == "Scanned":
-                scannedCol=i
-                break
-        notesCol=None
-        for i in range(0, len(self.lstData.ColumnHeaders)):
-            if self.lstData.ColumnHeaders[i] == "Notes":
-                notesCol=i
-                break
 
-        # Add the Scanned column if needed
-        if scannedCol is None:
-            for i in range(0, len(self.lstData.Rows)):
-                row=self.lstData.Rows[i]
-                row=row[:notesCol+2]+[""]+row[notesCol+2:]
-                self.lstData.Rows[i]=row
-            self.lstData.ColumnHeaders=self.lstData.ColumnHeaders[:notesCol+1]+["Scanned"]+self.lstData.ColumnHeaders[notesCol+1:]
-            scannedCol=notesCol+1
-            notesCol=notesCol
+        if "Notes" not in self._dataGrid.Datasource.ColDefs:
+            return
+        notesCol=self._dataGrid.Datasource.ColDefs.index("Notes")
+
+        # Start by adding a Scanned column to the right of the Notes column, if needed. (We check to see if one already exists.)
+        if "Scanned" not in self._dataGrid.Datasource.ColDefs:
+            # Add the Scanned column if needed
+            self._dataGrid.InsertColumn(notesCol, name="Scanned")
+
+        scannedCol=self._dataGrid.Datasource.ColDefs.index("Scanned")
+        notesCol=self._dataGrid.Datasource.ColDefs.index("Notes")
 
         # Now parse the notes looking for scanning information
         # Scanning Info will look like one of the four prefixes (Scan by, Scanned by, Scanned at, Scanning by) followed by
@@ -442,8 +402,8 @@ class MainWindow(MainFrame):
             "[A-Z][a-z]+|" # This needs to go last because it will ignore characters after it finds a match (with "Sam McDonald" it matches "Sam Mc")
             "[0-9]+)"       # Boskone 23
         )
-        for i in range(0, len(self.lstData.Rows)):
-            row=self.lstData.Rows[i]
+        for i in range(self._dataGrid.Datasource.NumRows):
+            row=self._dataGrid.Datasource.Rows[i]
             note=row[notesCol+1]
             m=re.search(pattern, note)
             if m is not None:
@@ -455,47 +415,47 @@ class MainWindow(MainFrame):
                 row[notesCol+1]=note
 
         # And redisplay
-        self.RefreshGridFromLSTData()
+        self._dataGrid.RefreshWxGridFromDatasource()
 
     def OnPopupCopy(self, event):
-        self._grid.OnPopupCopy(event) # Pass event to WxDataGrid to handle
+        self._dataGrid.OnPopupCopy(event) # Pass event to WxDataGrid to handle
 
     def OnPopupPaste(self, event):
-        self._grid.OnPopupPaste(event) # Pass event to WxDataGrid to handle
+        self._dataGrid.OnPopupPaste(event) # Pass event to WxDataGrid to handle
 
     def OnPopupClearSelection(self, event):
-        self._grid.OnPopupClearSelection(event)
+        self._dataGrid.OnPopupClearSelection(event)
 
     def OnPopupDelCol(self, event):
-        if self._grid.Datasource.Element.CanDeleteColumns:
-            self._grid.DeleteSelectedColumns() # Pass event to WxDataGrid to handle
+        if self._dataGrid.Datasource.Element.CanDeleteColumns:
+            self._dataGrid.DeleteSelectedColumns() # Pass event to WxDataGrid to handle
         event.Skip()
 
     def OnPopupDelRow(self, event):
-        self._grid.DeleteSelectedRows() # Pass event to WxDataGrid to handle
+        self._dataGrid.DeleteSelectedRows() # Pass event to WxDataGrid to handle
         event.Skip()
 
     def OnPopupRenameCol(self, event):
-        self._grid.OnPopupRenameCol(event) # Pass event to WxDataGrid to handle
+        self._dataGrid.OnPopupRenameCol(event) # Pass event to WxDataGrid to handle
 
         # Now we check the column header to see if it iss one of the standard header. If so, we use the std definition for that header
         # (We have to do this here because WxDataGrid doesn't know about header semantics.)
-        icol=self._grid.clickedColumn
-        cd=self._grid.Datasource.ColDefs[icol]
+        icol=self._dataGrid.clickedColumn
+        cd=self._dataGrid.Datasource.ColDefs[icol]
         if cd.Name in self.stdColHeaders:
-            self._grid.Datasource.ColDefs[icol]=self.stdColHeaders[cd.Name]
-        self._grid.RefreshGridFromDatasource()
-
-
+            self._dataGrid.Datasource.ColDefs[icol]=self.stdColHeaders[cd.Name]
+        self._dataGrid.RefreshWxGridFromDatasource()
 
 
     def OnPopupInsertColLeft(self, event):
-        self._grid.OnPopupInsertColLeft(event) # Pass event to WxDataGrid to handle
+        self._dataGrid.OnPopupInsertColLeft(event) # Pass event to WxDataGrid to handle
 
     def OnPopupInsertColRight(self, event):
-        self._grid.OnPopupInsertColRight(event) # Pass event to WxDataGrid to handle
+        self._dataGrid.OnPopupInsertColRight(event) # Pass event to WxDataGrid to handle
 
     def OnPopupExtractScanner(self, event):
+        self.ExtractScanner(self._dataGrid.Datasource.ColDefs.index("Notes"))
+        #TODO: Add the needed code
         event.Skip()
 
 
@@ -560,10 +520,10 @@ class FanzineTableRow(GridDataRowClass):
 
     @property
     def Cells(self) -> str:
-        return self._Cells
+        return self._cells
     @Cells.setter
     def Cells(self, val: str) -> None:
-        self._Cells=val
+        self._cells=val
 
     # Get or set a value by name or column number in the grid
     def GetVal(self, icol: int) -> Union[str, int, bool]:
@@ -593,6 +553,9 @@ class FanzineTablePage(GridDataSource):
         self._gridDataRowClass=FanzineTableRow
         self._name: str=""
         self._specialTextColor: Optional[Color, bool]=True
+        self.TopTextLines: str=""
+        self.BottomTextLines: str=""
+        self.FirstLine=""
 
     # # Serialize and deserialize
     # def ToJson(self) -> str:
@@ -640,10 +603,6 @@ class FanzineTablePage(GridDataSource):
     @SpecialTextColor.setter
     def SpecialTextColor(self, val: Optional[Color]) -> None:
         self._specialTextColor=val
-
-    def ColHeaderNameToIndex(self, name: str) -> int:
-        assert name in self._colheaders
-        return self._colheaders.index(name)
 
     def CanAddColumns(self) -> bool:
         return True

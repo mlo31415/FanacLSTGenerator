@@ -363,34 +363,20 @@ class LSTFile:
 
 
     # ---------------------------------
-    # Save an LST file back to disk
+    # Format the data and save it as an LST file on disk
     def Save(self, filename: str) -> None:
 
         content=[self.FirstLine, ""]
+
         if len(self.TopTextLines) > 0:
             for line in self.TopTextLines:
                 content.append(line)
             content.append("")
 
-        # Next we determine the last column to have non-blank content in any cell (including the header)
-        # Helper function
-        def Length(row: list) -> int:
-            temp=row
-            while len(temp) > 0 and len(temp[-1:][0].strip()) == 0:
-                temp=temp[:-1]
-            return len(temp)
-
-        # How long is the longest row?
-        maxlen=Length(self.ColumnHeaders)
-        for row in self.Rows:
-            l=Length(row)
-            maxlen=max(maxlen, l)
-
         # Column headers
-        if len(self.ColumnHeaders) > maxlen:
-            self.ColumnHeaders=self.ColumnHeaders[:maxlen]
         content.append("; ".join(self.ColumnHeaders))
-        content.append("")
+
+        maxlen=len(self.ColumnHeaders)
 
         # Rows
         for row in self.Rows:
