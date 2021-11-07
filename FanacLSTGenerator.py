@@ -351,7 +351,7 @@ class MainWindow(MainFrame):
         if self._dataGrid.Datasource.ColDefs[self._dataGrid.clickedColumn].Preferred == "Notes":
             # We only want to enable the "Extract Scanner" item if the Notes column contains scanned by information
             for row in self._dataGrid.Datasource.Rows:
-                note=row.Cells[self._dataGrid.clickedColumn].lower()
+                note=row[self._dataGrid.clickedColumn].lower()
                 if "scan by" in note or \
                         "scans by" in note or \
                         "scanned by" in note or \
@@ -511,19 +511,20 @@ class FanzineTableRow(GridDataRowClass):
     def DelCol(self, icol: int) -> None:
         del self._cells[icol]
 
-    @property
-    def Cells(self) -> str:
-        return self._cells
-    @Cells.setter
-    def Cells(self, val: str) -> None:
-        self._cells=val
 
-    # Get or set a value by name or column number in the grid
-    def GetVal(self, icol: int) -> Union[str, int, bool]:
-        return self._cells[icol]
+    def __getitem__(self, index: Union[int, slice]) -> str:
+        if type(index) is int:
+            return self._cells[index]
+        if type(index) is slice:
+            assert False
+            #return self._cells(self.List[index])
+        raise KeyError
 
-    def SetVal(self, icol: int, val: Union[str, int, bool]) -> None:
-        self._cells[icol]=val
+    def __setitem__(self, index: Union[str, int, slice], value: Union[str, int, bool]) -> None:
+        if type(index) is int:
+            self._cells[index]=value
+            return
+        raise KeyError
 
     @property
     def IsLinkRow(self) -> bool:
@@ -584,11 +585,12 @@ class FanzineTablePage(GridDataSource):
     def NumRows(self) -> int:
         return len(self._fanzineList)
 
-    def SetDataVal(self, irow: int, icol: int, val: Union[int, str]) -> None:
-        self._fanzineList[irow].SetVal(icol, val)
+    def __getitem__(self, index: int) -> FanzineTableRow:
+        return self.Rows[index]
 
-    def GetData(self, iRow: int, iCol: int) -> str:
-        return self.Rows[iRow].GetVal(iCol)
+    def __setitem__(self, index: int, val: FanzineTableRow) -> None:
+        self._fanzineList[index]=val
+
 
     @property
     def SpecialTextColor(self) -> Optional[Color]:
