@@ -373,8 +373,8 @@ class LSTFile:
                 content.append(line)
             content.append("")
 
-        # Column headers
-        content.append("; ".join(self.ColumnHeaders))
+        # Column headers.  Need to remove the "Filename" column which was added when the LST file was loaded.  It is the 1st col.
+        content.append("; ".join(self.ColumnHeaders[1:]))
 
         maxlen=len(self.ColumnHeaders)
 
