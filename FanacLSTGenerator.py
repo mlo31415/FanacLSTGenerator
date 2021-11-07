@@ -19,17 +19,6 @@ class MainWindow(MainFrame):
         self._dataGrid: DataGrid=DataGrid(self.wxGrid)
         self._dataGrid.Datasource=FanzineTablePage()
 
-        # TODO: How many of these are duplicated in WxDataGrid?
-        self.highlightRows: list[str]=[]       # A List of the names of fanzines in highlighted rows
-        self.clipboard=None         # The grid's clipboard
-        self.userSelection=None
-        self.cntlDown: bool=False
-        self._dataGrid.clickedColumn=None
-
-        self.dirname=''
-        if len(sys.argv) > 1:
-            self.dirname=os.getcwd()
-
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
                                                               ColDefinition("Issue", Type="str"),
@@ -54,6 +43,11 @@ class MainWindow(MainFrame):
                                                               ColDefinition("Mailing", Type="str", Width=75),
                                                               ColDefinition("Repro", Type="str", Width=75)
                                                               ])
+
+        self.dirname=''
+        if len(sys.argv) > 1:
+            self.dirname=os.getcwd()
+
         # Read the LST file
         lstfile=self.LoadLSTFile()
         if lstfile is None:
@@ -104,13 +98,17 @@ class MainWindow(MainFrame):
             self.tPText.SetValue("\n".join(lstfile.BottomTextLines))
 
         # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
-        lstfile.IdentifyColumnHeaders()
+        # lstfile.IdentifyColumnHeaders()
 
         return lstfile
 
 
     # Take the LST file which has been loaded into self.lstData and fill the Datasource
     def InitializeDatasourceFromLSTfile(self, lstfile: LSTFile):
+
+        self._dataGrid.NumCols=0
+        self._dataGrid.DeleteRows(0, self._dataGrid.NumRows)
+        self._dataGrid.Grid.ScrollLines(-999)   # Scroll down a long ways to show start of file
 
         # Turn the Column Headers into the grid's columns
         self._dataGrid.Datasource.ColDefs=ColDefinitionsList([])
@@ -175,12 +173,17 @@ class MainWindow(MainFrame):
 
 
     # Create a new LSTFile from the datasource
-    def CreateLSTFileFromDatasource(self) -> LSTFile:
+    def CreateLSTFileFromDatasourceEtc(self) -> LSTFile:
 
         lstfile=LSTFile()
 
-        #TODO: Need to copy ancillary text box material
-        #TODO: Need to copy column headers
+        # Fill in the upper stuff
+        lstfile.FirstLine=self.tTopMatter.GetValue()
+        lstfile.TopTextLines=self.tPText.GetValue().split()
+        lstfile.BottomTextLines=self.tPText.GetValue().split()
+
+        # Copy over the column headers
+        lstfile.ColumnHeaders=self._dataGrid.Datasource.ColHeaders
 
         # Now copy the grid's cell contents to the LSTFile structure
         lstfile.Rows=[]
@@ -201,9 +204,6 @@ class MainWindow(MainFrame):
     #------------------
     # Load an LST file from disk into an LSTFile class
     def OnLoadNewLSTFile(self, event):
-        self._dataGrid.NumCols=0
-        self._dataGrid.DeleteRows(0, self._dataGrid.NumRows)
-        self._dataGrid.Grid.ScrollLines(-999)   # Scroll down a long ways to show start of file
 
         lstfile=self.LoadLSTFile()
         if lstfile is None:
@@ -211,24 +211,17 @@ class MainWindow(MainFrame):
 
         self.InitializeDatasourceFromLSTfile(lstfile)
         self._dataGrid.RefreshWxGridFromDatasource()
+
         self.MarkAsSaved()
         self.RefreshWindow()
-        pass
+
 
     #------------------
     # Save an LSTFile object to disk.
     def OnSaveLSTFile(self, event):
 
         self.UpdateDatasourceFromWxGrid()
-        lstfile=self.CreateLSTFileFromDatasource()
-
-        # Fill in the upper stuff
-        lstfile.FirstLine=self.tTopMatter.GetValue()
-        lstfile.TopTextLines=self.tPText.GetValue().split()
-        lstfile.BottomTextLines=self.tPText.GetValue().split()
-
-        # Copy over the column headers
-        lstfile.ColumnHeaders=self._dataGrid.Datasource.ColHeaders
+        lstfile=self.CreateLSTFileFromDatasourceEtc()
 
         # Rename the old file
         oldname=os.path.join(self.dirname, self.lstFilename)
@@ -424,7 +417,7 @@ class MainWindow(MainFrame):
         self._dataGrid.OnPopupPaste(event) # Pass event to WxDataGrid to handle
 
     def OnPopupClearSelection(self, event):
-        self._dataGrid.OnPopupClearSelection(event)
+        self._dataGrid.OnPopupClearSelection(event) # Pass event to WxDataGrid to handle
 
     def OnPopupDelCol(self, event):
         if self._dataGrid.Datasource.Element.CanDeleteColumns:
