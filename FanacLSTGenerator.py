@@ -18,6 +18,10 @@ class MainWindow(MainFrame):
         self._dataGrid: DataGrid=DataGrid(self.wxGrid)
         self._dataGrid.Datasource=FanzineTablePage()
 
+        self._initialSignature=0
+        self.lstFilename="Init value"
+        self.dirname="Init value"
+
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
                                                               ColDefinition("Issue", Type="str"),
@@ -54,6 +58,15 @@ class MainWindow(MainFrame):
 
         self.InitializeDatasourceFromLSTfile(lstfile)
         self._dataGrid.RefreshWxGridFromDatasource()
+
+        # Fill in the upper stuff
+        self.ClearDisplay()
+        self.tTopMatter.SetValue(lstfile.FirstLine)
+        if len(lstfile.TopTextLines) > 0:
+            self.tPText.SetValue("\n".join(lstfile.TopTextLines))
+        elif len(lstfile.BottomTextLines) > 0:
+            self.tPText.SetValue("\n".join(lstfile.BottomTextLines))
+
         self.MarkAsSaved()
         self.RefreshWindow()
 
@@ -74,7 +87,6 @@ class MainWindow(MainFrame):
             return None
 
         # Clear out old information from form.
-        self.ClearDisplay()
         lstfile=LSTFile()
 
         self.lstFilename=dlg.GetFilename()
@@ -88,13 +100,6 @@ class MainWindow(MainFrame):
         except Exception as e:
             Log(f"MainWindow: Failure reading LST file '{pathname}'", isError=True)
             Bailout(e, f"MainWindow: Failure reading LST file '{pathname}'", "LSTError")
-
-        # Fill in the upper stuff
-        self.tTopMatter.SetValue(lstfile.FirstLine)
-        if len(lstfile.TopTextLines) > 0:
-            self.tPText.SetValue("\n".join(lstfile.TopTextLines))
-        elif len(lstfile.BottomTextLines) > 0:
-            self.tPText.SetValue("\n".join(lstfile.BottomTextLines))
 
         # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
         # lstfile.IdentifyColumnHeaders()
@@ -211,6 +216,14 @@ class MainWindow(MainFrame):
         self.InitializeDatasourceFromLSTfile(lstfile)
         self._dataGrid.RefreshWxGridFromDatasource()
 
+        # Fill in the upper stuff
+        self.ClearDisplay()
+        self.tTopMatter.SetValue(lstfile.FirstLine)
+        if len(lstfile.TopTextLines) > 0:
+            self.tPText.SetValue("\n".join(lstfile.TopTextLines))
+        elif len(lstfile.BottomTextLines) > 0:
+            self.tPText.SetValue("\n".join(lstfile.BottomTextLines))
+
         self.MarkAsSaved()
         self.RefreshWindow()
 
@@ -244,15 +257,22 @@ class MainWindow(MainFrame):
 
 
     def RefreshWindow(self)-> None:
+        s="Editing "+self.lstFilename
+        if s.endswith(" *"):
+            s=s[:-2]        # Remove the changed marker if one is present
+        if self.NeedsSaving():
+            s=s+" *"        # Add on a change marker if needed
+        self.SetTitle(s)
         self._dataGrid.RefreshWxGridFromDatasource()
 
     # ----------------------------------------------
     # Used to determine if anything has been updated
     def Signature(self) -> int:
-        #TODO: Add in the top stuff
-        #stuff=self.ConInstanceName.strip()+self.ConInstanceTopText.strip()+self.ConInstanceFancyURL.strip()+self.Credits.strip()
-        #return hash(stuff)+self._dataGrid.Signature()
-        return self._dataGrid.Signature()
+        h=hash("".join(self._dataGrid.Datasource.TopTextLines))
+        h+=hash("".join(self._dataGrid.Datasource.BottomTextLines))
+        h+=hash(self.tTopMatter.GetValue())
+        h+=self._dataGrid.Signature()
+        return h
 
     def MarkAsSaved(self):
         self._initialSignature=self.Signature()
