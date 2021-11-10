@@ -5,7 +5,6 @@ import os
 import wx
 import wx.grid
 import sys
-
 from GenGUIClass import MainFrame
 
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass

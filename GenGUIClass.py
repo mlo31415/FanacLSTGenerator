@@ -67,33 +67,33 @@ class MainFrame ( wx.Frame ):
 
 		theIssueGrid = wx.BoxSizer( wx.VERTICAL )
 
-		self.wxGrid = wx.grid.Grid(self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0)
+		self.wxGrid = wx.grid.Grid( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
 
 		# Grid
-		self.wxGrid.CreateGrid(100, 15)
-		self.wxGrid.EnableEditing(True)
-		self.wxGrid.EnableGridLines(True)
-		self.wxGrid.EnableDragGridSize(False)
-		self.wxGrid.SetMargins(0, 0)
+		self.wxGrid.CreateGrid( 100, 15 )
+		self.wxGrid.EnableEditing( True )
+		self.wxGrid.EnableGridLines( True )
+		self.wxGrid.EnableDragGridSize( False )
+		self.wxGrid.SetMargins( 0, 0 )
 
 		# Columns
 		self.wxGrid.AutoSizeColumns()
-		self.wxGrid.EnableDragColMove(True)
-		self.wxGrid.EnableDragColSize(False)
-		self.wxGrid.SetColLabelSize(30)
-		self.wxGrid.SetColLabelAlignment(wx.ALIGN_CENTER, wx.ALIGN_CENTER)
+		self.wxGrid.EnableDragColMove( True )
+		self.wxGrid.EnableDragColSize( False )
+		self.wxGrid.SetColLabelSize( 30 )
+		self.wxGrid.SetColLabelAlignment( wx.ALIGN_CENTER, wx.ALIGN_CENTER )
 
 		# Rows
 		self.wxGrid.AutoSizeRows()
-		self.wxGrid.EnableDragRowSize(True)
-		self.wxGrid.SetRowLabelSize(80)
-		self.wxGrid.SetRowLabelAlignment(wx.ALIGN_CENTER, wx.ALIGN_CENTER)
+		self.wxGrid.EnableDragRowSize( True )
+		self.wxGrid.SetRowLabelSize( 80 )
+		self.wxGrid.SetRowLabelAlignment( wx.ALIGN_CENTER, wx.ALIGN_CENTER )
 
 		# Label Appearance
 
 		# Cell Defaults
-		self.wxGrid.SetDefaultCellAlignment(wx.ALIGN_LEFT, wx.ALIGN_TOP)
-		theIssueGrid.Add(self.wxGrid, 0, wx.ALL|wx.EXPAND, 5)
+		self.wxGrid.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
+		theIssueGrid.Add( self.wxGrid, 0, wx.ALL|wx.EXPAND, 5 )
 
 
 		bSizerMain.Add( theIssueGrid, 1, wx.EXPAND, 5 )
@@ -140,14 +140,14 @@ class MainFrame ( wx.Frame ):
 		self.bSaveLSTFile.Bind( wx.EVT_BUTTON, self.OnSaveLSTFile )
 		self.tTopMatter.Bind( wx.EVT_TEXT, self.OnTextTopMatter )
 		self.tPText.Bind( wx.EVT_TEXT, self.OnTextComments )
-		self.wxGrid.Bind(wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged)
-		self.wxGrid.Bind(wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnGridCellDoubleClick)
-		self.wxGrid.Bind(wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnGridCellRightClick)
-		self.wxGrid.Bind(wx.grid.EVT_GRID_EDITOR_HIDDEN, self.OnGridEditorShown)
-		self.wxGrid.Bind(wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.OnGridLabelLeftClick)
-		self.wxGrid.Bind(wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.OnGridLabelRightClick)
-		self.wxGrid.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
-		self.wxGrid.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
+		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged )
+		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnGridCellDoubleClick )
+		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnGridCellRightClick )
+		self.wxGrid.Bind( wx.grid.EVT_GRID_EDITOR_HIDDEN, self.OnGridEditorShown )
+		self.wxGrid.Bind( wx.grid.EVT_GRID_LABEL_LEFT_CLICK, self.OnGridLabelLeftClick )
+		self.wxGrid.Bind( wx.grid.EVT_GRID_LABEL_RIGHT_CLICK, self.OnGridLabelRightClick )
+		self.wxGrid.Bind( wx.EVT_KEY_DOWN, self.OnKeyDown )
+		self.wxGrid.Bind( wx.EVT_KEY_UP, self.OnKeyUp )
 		self.Bind( wx.EVT_MENU, self.OnPopupCopy, id = self.m_menuItemPopupCopy.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupPaste, id = self.m_menuItemPopupPaste.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupClearSelection, id = self.m_menuItemPopupClearSelection.GetId() )
