@@ -199,11 +199,25 @@ class MainWindow(MainFrame):
 
         return lstfile
 
-# Need:
-#     One place to hold loaded-in data.  LSTFile?
-#     One way to clear the display
-#     One way to load data from the datasource to the display
-#     One way to update the datasource from the display
+    def OnExitClicked(self, event):
+        self.OnClose(event)
+
+
+    def OnClose(self, event):
+        if self.NeedsSaving():
+            if event.CanVeto():
+                ret=wx.MessageBox("The LST file has been updated and not yet saved. Exit anyway?", 'Warning', wx.OK|wx.CANCEL|wx.ICON_WARNING)
+                if ret == wx.CANCEL:
+                    event.Veto()
+                    return
+
+        # Save the window's position
+        # pos=self.GetPosition()
+        # Settings().Put("Top Level Window Position", (pos.x, pos.y))
+
+        self.Destroy()
+        sys.exit(1)
+
 
     #------------------
     # Load an LST file from disk into an LSTFile class

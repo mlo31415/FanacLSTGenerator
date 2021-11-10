@@ -29,6 +29,8 @@ class MainFrame ( wx.Frame ):
 		self.m_toolBarTop.AddControl( self.bLoadNewLSTFile )
 		self.bSaveLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Save LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bSaveLSTFile )
+		self.bExit = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Exit", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_toolBarTop.AddControl( self.bExit )
 		self.m_toolBarTop.Realize()
 
 		bSizerMain = wx.BoxSizer( wx.VERTICAL )
@@ -135,9 +137,11 @@ class MainFrame ( wx.Frame ):
 		self.Centre( wx.BOTH )
 
 		# Connect Events
+		self.Bind( wx.EVT_CLOSE, self.OnClose )
 		self.mLoadNewIssues.Bind( wx.EVT_BUTTON, self.OnLoadNewIssues )
 		self.bLoadNewLSTFile.Bind( wx.EVT_BUTTON, self.OnLoadNewLSTFile )
 		self.bSaveLSTFile.Bind( wx.EVT_BUTTON, self.OnSaveLSTFile )
+		self.bExit.Bind( wx.EVT_BUTTON, self.OnExitClicked )
 		self.tTopMatter.Bind( wx.EVT_TEXT, self.OnTextTopMatter )
 		self.tPText.Bind( wx.EVT_TEXT, self.OnTextComments )
 		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged )
@@ -163,6 +167,9 @@ class MainFrame ( wx.Frame ):
 
 
 	# Virtual event handlers, overide them in your derived class
+	def OnClose( self, event ):
+		event.Skip()
+
 	def OnLoadNewIssues( self, event ):
 		event.Skip()
 
@@ -170,6 +177,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnSaveLSTFile( self, event ):
+		event.Skip()
+
+	def OnExitClicked( self, event ):
 		event.Skip()
 
 	def OnTextTopMatter( self, event ):
