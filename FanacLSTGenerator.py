@@ -263,6 +263,7 @@ class MainWindow(MainFrame):
     #------------------
     def OnTextTopMatter(self, event):
         self.FirstLine=self.tTopMatter.GetValue()
+        self.RefreshWindow()
 
     #------------------
     def OnTextComments(self, event):
@@ -272,6 +273,8 @@ class MainWindow(MainFrame):
             self._dataGrid.Datasource.BottomTextLines=self.tPText.GetValue().split("\n")
         else:
             self._dataGrid.Datasource.TopTextLines=self.tPText.GetValue().split("\n")
+
+        self.RefreshWindow()
 
     #-------------------
     def OnKeyDown(self, event):
@@ -284,6 +287,7 @@ class MainWindow(MainFrame):
     #------------------
     def OnGridCellChanged(self, event):
         self._dataGrid.OnGridCellChanged(event)  # Pass event handling to WxDataGrid
+        self.RefreshWindow()
 
     #------------------
     def OnGridCellRightClick(self, event):
@@ -408,24 +412,28 @@ class MainWindow(MainFrame):
 
         # And redisplay
         self._dataGrid.RefreshWxGridFromDatasource()
+        self.RefreshWindow()
 
     def OnPopupCopy(self, event):
         self._dataGrid.OnPopupCopy(event) # Pass event to WxDataGrid to handle
+        self.RefreshWindow()
 
     def OnPopupPaste(self, event):
         self._dataGrid.OnPopupPaste(event) # Pass event to WxDataGrid to handle
+        self.RefreshWindow()
 
     def OnPopupClearSelection(self, event):
         self._dataGrid.OnPopupClearSelection(event) # Pass event to WxDataGrid to handle
+        self.RefreshWindow()
 
     def OnPopupDelCol(self, event):
         if self._dataGrid.Datasource.Element.CanDeleteColumns:
             self._dataGrid.DeleteSelectedColumns() # Pass event to WxDataGrid to handle
-        event.Skip()
+        self.RefreshWindow()
 
     def OnPopupDelRow(self, event):
         self._dataGrid.DeleteSelectedRows() # Pass event to WxDataGrid to handle
-        event.Skip()
+        self.RefreshWindow()
 
     def OnPopupRenameCol(self, event):
         self._dataGrid.OnPopupRenameCol(event) # Pass event to WxDataGrid to handle
@@ -437,18 +445,20 @@ class MainWindow(MainFrame):
         if cd.Name in self.stdColHeaders:
             self._dataGrid.Datasource.ColDefs[icol]=self.stdColHeaders[cd.Name]
         self._dataGrid.RefreshWxGridFromDatasource()
+        self.RefreshWindow()
 
 
     def OnPopupInsertColLeft(self, event):
         self._dataGrid.OnPopupInsertColLeft(event) # Pass event to WxDataGrid to handle
+        self.RefreshWindow()
 
     def OnPopupInsertColRight(self, event):
         self._dataGrid.OnPopupInsertColRight(event) # Pass event to WxDataGrid to handle
+        self.RefreshWindow()
 
     def OnPopupExtractScanner(self, event):
         self.ExtractScanner(self._dataGrid.Datasource.ColDefs.index("Notes"))
-        #TODO: Add the needed code
-        event.Skip()
+        self.RefreshWindow()
 
 
 # An individual file to be listed under a convention
