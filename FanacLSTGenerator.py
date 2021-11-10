@@ -11,6 +11,7 @@ from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefini
 from LSTFile import *
 from HelpersPackage import Bailout
 from Log import LogOpen, Log
+from Settings import Settings
 
 class MainWindow(MainFrame):
     def __init__(self, parent, title):
@@ -66,6 +67,11 @@ class MainWindow(MainFrame):
             self.tPText.SetValue("\n".join(lstfile.TopTextLines))
         elif len(lstfile.BottomTextLines) > 0:
             self.tPText.SetValue("\n".join(lstfile.BottomTextLines))
+
+        # Position the window on the screen it was on before
+        tlwp=Settings().Get("Top Level Window Position")
+        if tlwp is not None and len(tlwp) > 0:
+            self.SetPosition(tlwp)
 
         self.MarkAsSaved()
         self.RefreshWindow()
@@ -212,8 +218,8 @@ class MainWindow(MainFrame):
                     return
 
         # Save the window's position
-        # pos=self.GetPosition()
-        # Settings().Put("Top Level Window Position", (pos.x, pos.y))
+        pos=self.GetPosition()
+        Settings().Put("Top Level Window Position", (pos.x, pos.y))
 
         self.Destroy()
         sys.exit(1)
@@ -650,6 +656,10 @@ class FanzineTablePage(GridDataSource):
 def main():
     # Start the GUI and run the event loop
     LogOpen("Log -- FanacLSTGenerator.txt", "Log (Errors) -- FanacLSTGenerator.txt")
+
+    # Load the global settings dictionary
+    Settings().Load("FanacLSTGenerator settings.json")
+
     app=wx.App(False)
     frame=MainWindow(None, "Sample editor")
     app.MainLoop()
