@@ -443,17 +443,22 @@ class MainWindow(MainFrame):
             "[A-Z][a-z]+|" # This needs to go last because it will ignore characters after it finds a match (with "Sam McDonald" it matches "Sam Mc")
             "[0-9]+)"       # Boskone 23
         )
+        pattern='[sS](?:can by|cans by|canned by|canned at|canning by) ([A-Z][a-z]+ (?:Mc|Mac|O\'\s?)?[A-Z][a-z]+|[A-Z]\\.[A-Z][a-z]+|[A-Z][a-z]+|[0-9]+)'
+
         for i in range(self._dataGrid.Datasource.NumRows):
             row=self._dataGrid.Datasource.Rows[i]
-            note=row[notesCol+1]
+            note=row[notesCol]
             m=re.search(pattern, note)
             if m is not None:
-                row[scannedCol+1]=m.groups()[1]+" "+m.groups()[2]     # Put the matched name in the scanned
+                # Append the matched name to scanned
+                if len(row[scannedCol]) > 0:
+                    row[scannedCol]+="; "     # Use a semi-colon separator if there was already something there
+                row[scannedCol]+=m.groups()[0]
+
                 note=re.sub(pattern, "", note)  # Delete the matched text from the note
-                # Now remove leading and trailing spans of spaces and commas from the note.
-                note=re.sub("^([ ,]*)", "", note)
+                note=re.sub("^([ ,]*)", "", note)          # Now remove leading and trailing spans of spaces and commas from the note.
                 note=re.sub("([ ,]*)$", "", note)
-                row[notesCol+1]=note
+                row[notesCol]=note
 
         # And redisplay
         self._dataGrid.RefreshWxGridFromDatasource()
