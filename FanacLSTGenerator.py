@@ -72,6 +72,9 @@ class MainWindow(MainFrame):
         tlwp=Settings().Get("Top Level Window Position")
         if tlwp is not None and len(tlwp) > 0:
             self.SetPosition(tlwp)
+        tlws=Settings().Get("Top Level Windows Size")
+        if tlws is not None and len(tlws) > 0:
+            self.SetSize(tlws)
 
         self.MarkAsSaved()
         self.RefreshWindow()
@@ -220,6 +223,8 @@ class MainWindow(MainFrame):
         # Save the window's position
         pos=self.GetPosition()
         Settings().Put("Top Level Window Position", (pos.x, pos.y))
+        size=self.GetSize()
+        Settings().Put("Top Level Windows Size", (size.width, size.height))
 
         self.Destroy()
         sys.exit(1)
