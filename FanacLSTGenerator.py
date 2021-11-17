@@ -422,7 +422,7 @@ class MainWindow(MainFrame):
         # Start by adding a Scanned column to the right of the Notes column, if needed. (We check to see if one already exists.)
         if "Scanned" not in self._dataGrid.Datasource.ColDefs:
             # Add the Scanned column if needed
-            self._dataGrid.InsertColumn(notesCol, name="Scanned")
+            self._dataGrid.InsertColumnMaybeQuery(notesCol, name="Scanned")
 
         scannedCol=self._dataGrid.Datasource.ColDefs.index("Scanned")
         notesCol=self._dataGrid.Datasource.ColDefs.index("Notes")
