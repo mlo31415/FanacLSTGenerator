@@ -17,7 +17,7 @@ class MainWindow(MainFrame):
     def __init__(self, parent, title):
         MainFrame.__init__(self, parent)
         self._dataGrid: DataGrid=DataGrid(self.wxGrid)
-        self._dataGrid.Datasource=FanzineTablePage()
+        self.Datasource=FanzineTablePage()
 
         self._initialSignature=0
         self.lstFilename="Init value"
@@ -81,6 +81,15 @@ class MainWindow(MainFrame):
 
         self.Show(True)
 
+    @property
+    def Datasource(self) -> FanzineTablePage:
+        return self._Datasource
+    @Datasource.setter
+    def Datasource(self, val: FanzineTablePage):
+        self._Datasource=val
+        self._dataGrid.Datasource=val
+
+
     #------------------
     # Open a dialog to allow the user to select an LSTFile on disk.
     # Load it (and some other stuff) into self's 'LSFFile() object
@@ -124,22 +133,22 @@ class MainWindow(MainFrame):
         self._dataGrid.Grid.ScrollLines(-999)   # Scroll down a long ways to show start of file
 
         # Turn the Column Headers into the grid's columns
-        self._dataGrid.Datasource.ColDefs=ColDefinitionsList([])
+        self.Datasource.ColDefs=ColDefinitionsList([])
         for name in lstfile.ColumnHeaders:
             if name in self.stdColHeaders:
                 name=self.stdColHeaders[name].Preferred
-                self._dataGrid.Datasource.ColDefs.append(self.stdColHeaders[name])
+                self.Datasource.ColDefs.append(self.stdColHeaders[name])
             else:
-                self._dataGrid.Datasource.ColDefs.append(ColDefinition(name))
+                self.Datasource.ColDefs.append(ColDefinition(name))
 
         # Copy the row data over into the Datasource class
         FTRList: list[FanzineTableRow]=[]
         for row in lstfile.Rows:
-            if len(row) != len(self._dataGrid.Datasource.ColDefs):
+            if len(row) != len(self.Datasource.ColDefs):
                 Log(f"Mismatched column count for Row={row}", isError=True)
                 continue
             FTRList.append(FanzineTableRow(row))
-        self._dataGrid.Datasource._fanzineList=FTRList
+        self.Datasource._fanzineList=FTRList
 
 
     #TODO: Either use this more widely or merge it in
@@ -155,7 +164,7 @@ class MainWindow(MainFrame):
         #TODO: Need to pull in the header stuff?
 
         # Not all rows and all columns defined in the grid may be filled.  Compute the actual number of rows and columns
-        ncols=len(self._dataGrid.Datasource.ColDefs)    # ncols must be at least this big.
+        ncols=len(self.Datasource.ColDefs)    # ncols must be at least this big.
 
         # Walk the rows from last to first looking for last row with content
         for i in range(self.wxGrid.NumberRows, 0, -1):
@@ -196,13 +205,13 @@ class MainWindow(MainFrame):
         lstfile.BottomTextLines=self.tPText.GetValue().split()
 
         # Copy over the column headers
-        lstfile.ColumnHeaders=self._dataGrid.Datasource.ColHeaders
+        lstfile.ColumnHeaders=self.Datasource.ColHeaders
 
         # Now copy the grid's cell contents to the LSTFile structure
         lstfile.Rows=[]
-        for i in range(self._dataGrid.Datasource.NumRows):
-            row=[None]*self._dataGrid.Datasource.NumCols
-            for j in range(self._dataGrid.Datasource.NumCols):
+        for i in range(self.Datasource.NumRows):
+            row=[None]*self.Datasource.NumCols
+            for j in range(self.Datasource.NumCols):
                 row[j]=self.wxGrid.GetCellValue(i, j)
             lstfile.Rows.append(row)
 
@@ -293,8 +302,8 @@ class MainWindow(MainFrame):
     # ----------------------------------------------
     # Used to determine if anything has been updated
     def Signature(self) -> int:
-        h=hash("".join(self._dataGrid.Datasource.TopTextLines))
-        h+=hash("".join(self._dataGrid.Datasource.BottomTextLines))
+        h=hash("".join(self.Datasource.TopTextLines))
+        h+=hash("".join(self.Datasource.BottomTextLines))
         h+=hash(self.tTopMatter.GetValue())
         h+=self._dataGrid.Signature()
         return h
@@ -312,12 +321,12 @@ class MainWindow(MainFrame):
 
     #------------------
     def OnTextComments(self, event):
-        if self._dataGrid.Datasource.TopTextLines is not None and len(self._dataGrid.Datasource.TopTextLines) > 0:
-            self._dataGrid.Datasource.TopTextLines=self.tPText.GetValue().split("\n")
-        elif self._dataGrid.Datasource.BottomTextLines is not None and len(self._dataGrid.Datasource.BottomTextLines) > 0:
-            self._dataGrid.Datasource.BottomTextLines=self.tPText.GetValue().split("\n")
+        if self.Datasource.TopTextLines is not None and len(self.Datasource.TopTextLines) > 0:
+            self.Datasource.TopTextLines=self.tPText.GetValue().split("\n")
+        elif self.Datasource.BottomTextLines is not None and len(self.Datasource.BottomTextLines) > 0:
+            self.Datasource.BottomTextLines=self.tPText.GetValue().split("\n")
         else:
-            self._dataGrid.Datasource.TopTextLines=self.tPText.GetValue().split("\n")
+            self.Datasource.TopTextLines=self.tPText.GetValue().split("\n")
 
         self.RefreshWindow()
 
@@ -359,9 +368,9 @@ class MainWindow(MainFrame):
         isLabelClick=not isCellClick
 
         # Everything remains disabled when we're outside the defined columns
-        if self._dataGrid.clickedColumn > self._dataGrid.Datasource.NumCols:    # Click is outside populated columns.  The +1 is because of the split of the 1st column
+        if self._dataGrid.clickedColumn > self.Datasource.NumCols:    # Click is outside populated columns.  The +1 is because of the split of the 1st column
             return
-        if self._dataGrid.clickedRow > self._dataGrid.Datasource.NumRows:      # Click is outside the populated rows
+        if self._dataGrid.clickedRow > self.Datasource.NumRows:      # Click is outside the populated rows
             return
         if isCellClick and self._dataGrid.clickedColumn == 0:   # What's this for?
             return
@@ -384,7 +393,7 @@ class MainWindow(MainFrame):
         # We enable the Add Column to Left item if we're on a column to the left of the first -- it can be off the right and a column will be added to the right
         if self._dataGrid.clickedColumn > 1:
             Enable("Insert Column to Left")
-            if self._dataGrid.Datasource.Element.CanDeleteColumns:
+            if self.Datasource.Element.CanDeleteColumns:
                 Enable("Delete Column(s)")
 
         # We enable the Add Column to right item if we're on any existing column
@@ -396,9 +405,9 @@ class MainWindow(MainFrame):
 
         # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
         mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Extract Scanner"))
-        if self._dataGrid.Datasource.ColDefs[self._dataGrid.clickedColumn].Preferred == "Notes":
+        if self.Datasource.ColDefs[self._dataGrid.clickedColumn].Preferred == "Notes":
             # We only want to enable the "Extract Scanner" item if the Notes column contains scanned by information
-            for row in self._dataGrid.Datasource.Rows:
+            for row in self.Datasource.Rows:
                 note=row[self._dataGrid.clickedColumn].lower()
                 if "scan by" in note or \
                         "scans by" in note or \
@@ -415,17 +424,17 @@ class MainWindow(MainFrame):
     # Extract 'scanned by' information from the Notes column, if any
     def ExtractScanner(self, col):
 
-        if "Notes" not in self._dataGrid.Datasource.ColDefs:
+        if "Notes" not in self.Datasource.ColDefs:
             return
-        notesCol=self._dataGrid.Datasource.ColDefs.index("Notes")
+        notesCol=self.Datasource.ColDefs.index("Notes")
 
         # Start by adding a Scanned column to the right of the Notes column, if needed. (We check to see if one already exists.)
-        if "Scanned" not in self._dataGrid.Datasource.ColDefs:
+        if "Scanned" not in self.Datasource.ColDefs:
             # Add the Scanned column if needed
-            self._dataGrid.InsertColumnMaybeQuery(notesCol, name="Scanned")
+            self.InsertColumnMaybeQuery(notesCol, name="Scanned")
 
-        scannedCol=self._dataGrid.Datasource.ColDefs.index("Scanned")
-        notesCol=self._dataGrid.Datasource.ColDefs.index("Notes")
+        scannedCol=self.Datasource.ColDefs.index("Scanned")
+        notesCol=self.Datasource.ColDefs.index("Notes")
 
         # Now parse the notes looking for scanning information
         # Scanning Info will look like one of the four prefixes (Scan by, Scanned by, Scanned at, Scanning by) followed by
@@ -445,8 +454,8 @@ class MainWindow(MainFrame):
         )
         pattern='[sS](?:can by|cans by|canned by|canned at|canning by) ([A-Z][a-z]+ (?:Mc|Mac|O\'\s?)?[A-Z][a-z]+|[A-Z]\\.[A-Z][a-z]+|[A-Z][a-z]+|[0-9]+)'
 
-        for i in range(self._dataGrid.Datasource.NumRows):
-            row=self._dataGrid.Datasource.Rows[i]
+        for i in range(self.Datasource.NumRows):
+            row=self.Datasource.Rows[i]
             note=row[notesCol]
             m=re.search(pattern, note)
             if m is not None:
@@ -477,7 +486,7 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
     def OnPopupDelCol(self, event):
-        if self._dataGrid.Datasource.Element.CanDeleteColumns:
+        if self.Datasource.Element.CanDeleteColumns:
             self._dataGrid.DeleteSelectedColumns() # Pass event to WxDataGrid to handle
         self.RefreshWindow()
 
@@ -491,9 +500,9 @@ class MainWindow(MainFrame):
         # Now we check the column header to see if it iss one of the standard header. If so, we use the std definition for that header
         # (We have to do this here because WxDataGrid doesn't know about header semantics.)
         icol=self._dataGrid.clickedColumn
-        cd=self._dataGrid.Datasource.ColDefs[icol]
+        cd=self.Datasource.ColDefs[icol]
         if cd.Name in self.stdColHeaders:
-            self._dataGrid.Datasource.ColDefs[icol]=self.stdColHeaders[cd.Name]
+            self.Datasource.ColDefs[icol]=self.stdColHeaders[cd.Name]
         self._dataGrid.RefreshWxGridFromDatasource()
         self.RefreshWindow()
 
@@ -507,7 +516,7 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
     def OnPopupExtractScanner(self, event):
-        self.ExtractScanner(self._dataGrid.Datasource.ColDefs.index("Notes"))
+        self.ExtractScanner(self.Datasource.ColDefs.index("Notes"))
         self.RefreshWindow()
 
 
