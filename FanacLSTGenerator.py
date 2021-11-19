@@ -292,8 +292,6 @@ class MainWindow(MainFrame):
 
     def RefreshWindow(self)-> None:
         s="Editing "+self.lstFilename
-        if s.endswith(" *"):
-            s=s[:-2]        # Remove the changed marker if one is present
         if self.NeedsSaving():
             s=s+" *"        # Add on a change marker if needed
         self.SetTitle(s)
