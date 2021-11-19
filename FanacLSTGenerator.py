@@ -70,10 +70,10 @@ class MainWindow(MainFrame):
 
         # Position the window on the screen it was on before
         tlwp=Settings().Get("Top Level Window Position")
-        if tlwp is not None and len(tlwp) > 0:
+        if tlwp:
             self.SetPosition(tlwp)
         tlws=Settings().Get("Top Level Windows Size")
-        if tlws is not None and len(tlws) > 0:
+        if tlws:
             self.SetSize(tlws)
 
         self.MarkAsSaved()
