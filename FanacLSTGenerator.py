@@ -82,7 +82,7 @@ class MainWindow(MainFrame):
         self.Show(True)
 
     @property
-    def Datasource(self) -> FanzineTablePage:
+    def Datasource(self) -> FanzineTablePage:       # MainWindow(MainFrame)
         return self._Datasource
     @Datasource.setter
     def Datasource(self, val: FanzineTablePage):
@@ -93,7 +93,7 @@ class MainWindow(MainFrame):
     #------------------
     # Open a dialog to allow the user to select an LSTFile on disk.
     # Load it (and some other stuff) into self's 'LSFFile() object
-    def LoadLSTFile(self) -> Optional[LSTFile]:
+    def LoadLSTFile(self) -> Optional[LSTFile]:       # MainWindow(MainFrame)
 
         # Call the File Open dialog to get an LST file
         dlg=wx.FileDialog(self, "Select LST file to load", self.dirname, "", "*.LST", wx.FD_OPEN)
@@ -126,7 +126,7 @@ class MainWindow(MainFrame):
 
 
     # Take the LST file which has been loaded into self.lstData and fill the Datasource
-    def InitializeDatasourceFromLSTfile(self, lstfile: LSTFile):
+    def InitializeDatasourceFromLSTfile(self, lstfile: LSTFile):       # MainWindow(MainFrame)
 
         self._dataGrid.NumCols=0
         self._dataGrid.DeleteRows(0, self._dataGrid.NumRows)
@@ -152,14 +152,14 @@ class MainWindow(MainFrame):
 
 
     #TODO: Either use this more widely or merge it in
-    def ClearDisplay(self):
+    def ClearDisplay(self):       # MainWindow(MainFrame)
         self.tTopMatter.SetValue("")
         self.tPText.SetValue("")
         self.wxGrid.ClearGrid()
 
     # ------------------
     # The Datasource object has the official information. This function updates it from edits made on the display.
-    def UpdateDatasourceFromWxGrid(self):
+    def UpdateDatasourceFromWxGrid(self):       # MainWindow(MainFrame)
 
         #TODO: Need to pull in the header stuff?
 
@@ -195,7 +195,7 @@ class MainWindow(MainFrame):
 
 
     # Create a new LSTFile from the datasource
-    def CreateLSTFileFromDatasourceEtc(self) -> LSTFile:
+    def CreateLSTFileFromDatasourceEtc(self) -> LSTFile:       # MainWindow(MainFrame)
 
         lstfile=LSTFile()
 
@@ -217,7 +217,7 @@ class MainWindow(MainFrame):
 
         return lstfile
 
-    def OnExitClicked(self, event):
+    def OnExitClicked(self, event):       # MainWindow(MainFrame)
         self.OnClose(event)
 
 
@@ -241,7 +241,7 @@ class MainWindow(MainFrame):
 
     #------------------
     # Load an LST file from disk into an LSTFile class
-    def OnLoadNewLSTFile(self, event):
+    def OnLoadNewLSTFile(self, event):       # MainWindow(MainFrame)
 
         lstfile=self.LoadLSTFile()
         if lstfile is None:
@@ -264,7 +264,7 @@ class MainWindow(MainFrame):
 
     #------------------
     # Save an LSTFile object to disk.
-    def OnSaveLSTFile(self, event):
+    def OnSaveLSTFile(self, event):       # MainWindow(MainFrame)
 
         self.UpdateDatasourceFromWxGrid()
         lstfile=self.CreateLSTFileFromDatasourceEtc()
@@ -299,7 +299,7 @@ class MainWindow(MainFrame):
 
     # ----------------------------------------------
     # Used to determine if anything has been updated
-    def Signature(self) -> int:
+    def Signature(self) -> int:       # MainWindow(MainFrame)
         h=hash("".join(self.Datasource.TopTextLines))
         h+=hash("".join(self.Datasource.BottomTextLines))
         h+=hash(self.tTopMatter.GetValue())
@@ -313,12 +313,12 @@ class MainWindow(MainFrame):
         return self._initialSignature != self.Signature()
 
     #------------------
-    def OnTextTopMatter(self, event):
+    def OnTextTopMatter(self, event):       # MainWindow(MainFrame)
         self.FirstLine=self.tTopMatter.GetValue()
         self.RefreshWindow()
 
     #------------------
-    def OnTextComments(self, event):
+    def OnTextComments(self, event):       # MainWindow(MainFrame)
         if self.Datasource.TopTextLines is not None and len(self.Datasource.TopTextLines) > 0:
             self.Datasource.TopTextLines=self.tPText.GetValue().split("\n")
         elif self.Datasource.BottomTextLines is not None and len(self.Datasource.BottomTextLines) > 0:
@@ -329,20 +329,20 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
     #-------------------
-    def OnKeyDown(self, event):
+    def OnKeyDown(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnKeyDown(event) # Pass event to WxDataGrid to handle
 
     #-------------------
-    def OnKeyUp(self, event):
+    def OnKeyUp(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnKeyUp(event) # Pass event to WxDataGrid to handle
 
     #------------------
-    def OnGridCellChanged(self, event):
+    def OnGridCellChanged(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnGridCellChanged(event)  # Pass event handling to WxDataGrid
         self.RefreshWindow()
 
     #------------------
-    def OnGridCellRightClick(self, event):
+    def OnGridCellRightClick(self, event):       # MainWindow(MainFrame)
         # Do generic RMB on grid processing
         self._dataGrid.OnGridCellRightClick(event, self.m_GridPopup)
 
@@ -350,11 +350,11 @@ class MainWindow(MainFrame):
         self.RMBHandler(True, event)
 
     # ------------------
-    def OnGridLabelLeftClick(self, event):
+    def OnGridLabelLeftClick(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnGridLabelLeftClick(event)
 
     #------------------
-    def OnGridLabelRightClick(self, event):
+    def OnGridLabelRightClick(self, event):       # MainWindow(MainFrame)
         # Do generic RMB on grid processing
         self._dataGrid.OnGridCellRightClick(event, self.m_GridPopup)
 
@@ -362,7 +362,7 @@ class MainWindow(MainFrame):
         self.RMBHandler(False, event)
 
     # RMB click handling for grid and grid label clicks
-    def RMBHandler(self, isCellClick: bool, event):
+    def RMBHandler(self, isCellClick: bool, event):       # MainWindow(MainFrame)
         isLabelClick=not isCellClick
 
         # Everything remains disabled when we're outside the defined columns
@@ -420,7 +420,7 @@ class MainWindow(MainFrame):
 
     # ------------------
     # Extract 'scanned by' information from the Notes column, if any
-    def ExtractScanner(self, col):
+    def ExtractScanner(self, col):       # MainWindow(MainFrame)
 
         if "Notes" not in self.Datasource.ColDefs:
             return
@@ -471,28 +471,28 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource()
         self.RefreshWindow()
 
-    def OnPopupCopy(self, event):
+    def OnPopupCopy(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnPopupCopy(event) # Pass event to WxDataGrid to handle
         self.RefreshWindow()
 
-    def OnPopupPaste(self, event):
+    def OnPopupPaste(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnPopupPaste(event) # Pass event to WxDataGrid to handle
         self.RefreshWindow()
 
-    def OnPopupClearSelection(self, event):
+    def OnPopupClearSelection(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnPopupClearSelection(event) # Pass event to WxDataGrid to handle
         self.RefreshWindow()
 
-    def OnPopupDelCol(self, event):
+    def OnPopupDelCol(self, event):       # MainWindow(MainFrame)
         if self.Datasource.Element.CanDeleteColumns:
             self._dataGrid.DeleteSelectedColumns() # Pass event to WxDataGrid to handle
         self.RefreshWindow()
 
-    def OnPopupDelRow(self, event):
+    def OnPopupDelRow(self, event):       # MainWindow(MainFrame)
         self._dataGrid.DeleteSelectedRows() # Pass event to WxDataGrid to handle
         self.RefreshWindow()
 
-    def OnPopupRenameCol(self, event):
+    def OnPopupRenameCol(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnPopupRenameCol(event) # Pass event to WxDataGrid to handle
 
         # Now we check the column header to see if it iss one of the standard header. If so, we use the std definition for that header
@@ -505,15 +505,15 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
 
-    def OnPopupInsertColLeft(self, event):
+    def OnPopupInsertColLeft(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnPopupInsertColLeft(event) # Pass event to WxDataGrid to handle
         self.RefreshWindow()
 
-    def OnPopupInsertColRight(self, event):
+    def OnPopupInsertColRight(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnPopupInsertColRight(event) # Pass event to WxDataGrid to handle
         self.RefreshWindow()
 
-    def OnPopupExtractScanner(self, event):
+    def OnPopupExtractScanner(self, event):       # MainWindow(MainFrame)
         self.ExtractScanner(self.Datasource.ColDefs.index("Notes"))
         self.RefreshWindow()
 
@@ -526,11 +526,11 @@ class FanzineTableRow(GridDataRowClass):
         GridDataRowClass.__init__(self)
         self._cells: list[str]=cells
 
-    def __str__(self):
+    def __str__(self):      # FanzineTableRow(GridDataRowClass)
         return str(self._cells)
 
     # Make a deep copy of a FanzineTableRow
-    def Copy(self) -> FanzineTableRow:
+    def Copy(self) -> FanzineTableRow:      # FanzineTableRow(GridDataRowClass)
         ftr=FanzineTableRow([])
         ftr._cells=self._cells
         return ftr
@@ -569,16 +569,16 @@ class FanzineTableRow(GridDataRowClass):
     #     return self
 
     @property
-    def CanDeleteColumns(self) -> bool:
+    def CanDeleteColumns(self) -> bool:      # FanzineTableRow(GridDataRowClass)
         return True
 
     # This deletes a single column from the datasource.
     # It must be implemented here because WxDataGrid doesn't understand the details of the DataSource
-    def DelCol(self, icol: int) -> None:
+    def DelCol(self, icol: int) -> None:      # FanzineTableRow(GridDataRowClass)
         del self._cells[icol]
 
 
-    def __getitem__(self, index: Union[int, slice]) -> str:
+    def __getitem__(self, index: Union[int, slice]) -> str:      # FanzineTableRow(GridDataRowClass)
         if type(index) is int:
             return self._cells[index]
         if type(index) is slice:
@@ -586,18 +586,18 @@ class FanzineTableRow(GridDataRowClass):
             #return self._cells(self.List[index])
         raise KeyError
 
-    def __setitem__(self, index: Union[str, int, slice], value: Union[str, int, bool]) -> None:
+    def __setitem__(self, index: Union[str, int, slice], value: Union[str, int, bool]) -> None:      # FanzineTableRow(GridDataRowClass)
         if type(index) is int:
             self._cells[index]=value
             return
         raise KeyError
 
     @property
-    def IsLinkRow(self) -> bool:
+    def IsLinkRow(self) -> bool:      # FanzineTableRow(GridDataRowClass)
         return False            # Override only if needed
 
     @property
-    def IsTextRow(self) -> bool:
+    def IsTextRow(self) -> bool:      # FanzineTableRow(GridDataRowClass)
         return False            # Override only if needed
 
 
@@ -640,33 +640,34 @@ class FanzineTablePage(GridDataSource):
 
     # Inherited from GridDataSource
     @property
-    def Rows(self) -> list[FanzineTableRow]:
+    def Rows(self) -> list[FanzineTableRow]:        # FanzineTablePage(GridDataSource)
         return self._fanzineList
 
     @Rows.setter
-    def Rows(self, rows: list) -> None:
+    def Rows(self, rows: list) -> None:        # FanzineTablePage(GridDataSource)
         self._fanzineList=rows
 
     @property
-    def NumRows(self) -> int:
+    def NumRows(self) -> int:        # FanzineTablePage(GridDataSource)
         return len(self._fanzineList)
 
-    def __getitem__(self, index: int) -> FanzineTableRow:
+    def __getitem__(self, index: int) -> FanzineTableRow:        # FanzineTablePage(GridDataSource)
         return self.Rows[index]
 
-    def __setitem__(self, index: int, val: FanzineTableRow) -> None:
+    def __setitem__(self, index: int, val: FanzineTableRow) -> None:        # FanzineTablePage(GridDataSource)
         self._fanzineList[index]=val
 
 
     @property
-    def SpecialTextColor(self) -> Optional[Color]:
+    def SpecialTextColor(self) -> Optional[Color]:        # FanzineTablePage(GridDataSource)
         return self._specialTextColor
     @SpecialTextColor.setter
-    def SpecialTextColor(self, val: Optional[Color]) -> None:
+    def SpecialTextColor(self, val: Optional[Color]) -> None:        # FanzineTablePage(GridDataSource)
         self._specialTextColor=val
 
-    def CanAddColumns(self) -> bool:
+    def CanAddColumns(self) -> bool:        # FanzineTablePage(GridDataSource)
         return True
+
 
 
 
