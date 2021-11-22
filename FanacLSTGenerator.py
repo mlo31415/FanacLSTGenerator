@@ -20,7 +20,7 @@ class MainWindow(MainFrame):
         self._dataGrid: DataGrid=DataGrid(self.wxGrid)
         self.Datasource=FanzineTablePage()
 
-        self._initialSignature=0
+        self._signature=0
         self.lstFilename="Init value"
         self.dirname="Init value"
 
@@ -287,11 +287,15 @@ class MainWindow(MainFrame):
             Bailout(PermissionError, "OnSaveLSTFile failed when trying to write file "+oldname, "LSTError")
 
 
-    def RefreshWindow(self)-> None:
+    def MaybeSetNeedsSavingFlag(self):
         s="Editing "+self.lstFilename
         if self.NeedsSaving():
             s=s+" *"        # Add on a change marker if needed
         self.SetTitle(s)
+
+
+    def RefreshWindow(self)-> None:       # MainWindow(MainFrame)
+        self.MaybeSetNeedsSavingFlag()
         self._dataGrid.RefreshWxGridFromDatasource()
 
     # ----------------------------------------------
@@ -300,14 +304,15 @@ class MainWindow(MainFrame):
         h=hash("".join(self.Datasource.TopTextLines))
         h+=hash("".join(self.Datasource.BottomTextLines))
         h+=hash(self.tTopMatter.GetValue())
-        h+=self._dataGrid.Signature()
+        h+=self.Datasource.Signature()
+        print(f"DataGrid: {h=}")
         return h
 
-    def MarkAsSaved(self):
-        self._initialSignature=self.Signature()
+    def MarkAsSaved(self):       # MainWindow(MainFrame)
+        self._signature=self.Signature()
 
-    def NeedsSaving(self):
-        return self._initialSignature != self.Signature()
+    def NeedsSaving(self):       # MainWindow(MainFrame)
+        return self._signature != self.Signature()
 
     #------------------
     def OnTextTopMatter(self, event):       # MainWindow(MainFrame)
@@ -328,6 +333,7 @@ class MainWindow(MainFrame):
     #-------------------
     def OnKeyDown(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnKeyDown(event) # Pass event to WxDataGrid to handle
+        self.MaybeSetNeedsSavingFlag()
 
     #-------------------
     def OnKeyUp(self, event):       # MainWindow(MainFrame)
@@ -532,8 +538,9 @@ class FanzineTableRow(GridDataRowClass):
         ftr._cells=self._cells
         return ftr
 
-    def Signature(self) -> int:
-        return sum([hash(x) for x in self._cells])
+    # We multiply the cell has by the cell index (+1) so that moves right and left also change the signature
+    def Signature(self) -> int:      # FanzineTableRow(GridDataRowClass)
+        return sum([(i+1)*hash(x) for i, x in enumerate(self._cells)])
 
     # # Serialize and deserialize
     # def ToJson(self) -> str:
@@ -634,6 +641,12 @@ class FanzineTablePage(GridDataSource):
     #             self._fanzineList.append(FanzineTableRow().FromJson(c))
     #
     #     return self
+
+    def Signature(self) -> int:
+        s=self._colDefs.Signature()
+        s+=hash(self._name.strip()+"".join(self.TopTextLines).strip()+"".join(self.BottomTextLines).strip()+self.FirstLine.strip())
+        s+=sum([x.Signature()*(i+1) for i, x in enumerate(self._fanzineList)])
+        return s+hash(self._specialTextColor)+self._colDefs.Signature()
 
     # Inherited from GridDataSource
     @property
