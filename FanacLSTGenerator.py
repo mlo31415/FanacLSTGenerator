@@ -8,6 +8,7 @@ import sys
 from GenGUIClass import MainFrame
 
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
+from WxHelpers import OnCloseHandling
 from LSTFile import *
 from HelpersPackage import Bailout
 from Log import LogOpen, Log
@@ -221,13 +222,9 @@ class MainWindow(MainFrame):
         self.OnClose(event)
 
 
-    def OnClose(self, event):
-        if self.NeedsSaving():
-            if event.CanVeto():
-                ret=wx.MessageBox("The LST file has been updated and not yet saved. Exit anyway?", 'Warning', wx.OK|wx.CANCEL|wx.ICON_WARNING)
-                if ret == wx.CANCEL:
-                    event.Veto()
-                    return
+    def OnClose(self, event):       # MainWindow(MainFrame)
+        if OnCloseHandling(event, self.NeedsSaving(), "The LST file has been updated and not yet saved. Exit anyway?"):
+            return
 
         # Save the window's position
         pos=self.GetPosition()
