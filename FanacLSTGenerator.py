@@ -305,7 +305,6 @@ class MainWindow(MainFrame):
         h+=hash("".join(self.Datasource.BottomTextLines))
         h+=hash(self.tTopMatter.GetValue())
         h+=self.Datasource.Signature()
-        print(f"DataGrid: {h=}")
         return h
 
     def MarkAsSaved(self):       # MainWindow(MainFrame)
