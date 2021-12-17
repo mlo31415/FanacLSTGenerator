@@ -668,6 +668,10 @@ class FanzineTablePage(GridDataSource):
     def CanAddColumns(self) -> bool:        # FanzineTablePage(GridDataSource)
         return True
 
+    def InsertEmptyRows(self, insertat: int, num: int=1) -> None:
+        for i in range(num):
+            ftr=FanzineTableRow([""]*self.NumCols)
+            self._fanzineList.insert(insertat+i, ftr)
 
 
 
