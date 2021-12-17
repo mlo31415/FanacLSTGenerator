@@ -595,15 +595,6 @@ class FanzineTableRow(GridDataRowClass):
             return
         raise KeyError
 
-    @property
-    def IsLinkRow(self) -> bool:      # FanzineTableRow(GridDataRowClass)
-        return False            # Override only if needed
-
-    @property
-    def IsTextRow(self) -> bool:      # FanzineTableRow(GridDataRowClass)
-        return False            # Override only if needed
-
-
 
 #####################################################################################################
 #####################################################################################################
