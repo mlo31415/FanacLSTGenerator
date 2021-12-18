@@ -541,35 +541,6 @@ class FanzineTableRow(GridDataRowClass):
     def Signature(self) -> int:      # FanzineTableRow(GridDataRowClass)
         return sum([(i+1)*hash(x) for i, x in enumerate(self._cells)])
 
-    # # Serialize and deserialize
-    # def ToJson(self) -> str:
-    #     d={"ver": 9,
-    #        "_displayTitle": self._displayTitle,
-    #        "_notes": self._notes,
-    #        "_localpathname": self._localpathname,
-    #        "_filename": self._localfilename,
-    #        "_sitefilename": self._sitefilename,
-    #        "_URL": self._URL,
-    #        "_pages": self._pages,
-    #        "_size": self._size}
-    #     return json.dumps(d)
-    #
-    # def FromJson(self, val: str) -> FanzineTableRow:
-    #     d=json.loads(val)
-    #     self._displayTitle=d["_displayTitle"]
-    #     self._notes=d["_notes"]
-    #     self._localpathname=d["_localpathname"]
-    #     self._localfilename=d["_filename"]
-    #     self._size=d["_size"]
-    #     if d["ver"] > 4:
-    #         self._sitefilename=d["_sitefilename"]
-    #     if d["ver"] <= 4 or self._sitefilename.strip() == "":
-    #         self._sitefilename=self._displayTitle
-    #     if d["ver"] > 6:
-    #         self._pages=d["_pages"]
-    #     if d["ver"] > 8:
-    #         self._URL=d["_URL"]
-    #     return self
 
     @property
     def CanDeleteColumns(self) -> bool:      # FanzineTableRow(GridDataRowClass)
@@ -611,26 +582,6 @@ class FanzineTablePage(GridDataSource):
         self.BottomTextLines: str=""
         self.FirstLine=""
 
-    # # Serialize and deserialize
-    # def ToJson(self) -> str:
-    #     dl=[]
-    #     for con in self._fanzineList:
-    #         dl.append(con.ToJson())
-    #     d={"ver": 3,
-    #        "_name": self._name,
-    #        "_fanzineList": dl}
-    #     return json.dumps(d)
-    #
-    # def FromJson(self, val: str) -> FanzineTablePage:
-    #     d=json.loads(val)
-    #     if d["ver"] >= 1:
-    #         self._name=d["_name"]
-    #         cfld=d["_fanzineList"]
-    #         self._fanzineList=[]
-    #         for c in cfld:
-    #             self._fanzineList.append(FanzineTableRow().FromJson(c))
-    #
-    #     return self
 
     def Signature(self) -> int:
         s=self._colDefs.Signature()
