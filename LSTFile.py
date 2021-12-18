@@ -175,7 +175,7 @@ class LSTFile:
             found=False
             for i, row in enumerate(self.Rows):
                 for apa in apas:
-                    pat=f"(?:for|in|)[^a-zA-Z]+{apa}\s+([0-9]+)"
+                    pat=f"(?:for|in|)[^a-zA-Z]+{apa}\s+([0-9]+)[,;]?"
                     m=re.search(pat, row[notescol])
                     if m is not None:
                         mailing[i]=apa+" "+m.groups()[0]
