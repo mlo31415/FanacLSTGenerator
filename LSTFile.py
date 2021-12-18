@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 import re
 
 from HelpersPackage import CanonicizeColumnHeaders, Bailout
-from FanzineIssueSpecPackage import FanzineDate
 
 
 @dataclass(order=False)
@@ -14,7 +13,6 @@ class LSTFile:
     ColumnHeaderTypes: list[str] = field(default_factory=list)    # The single character types for the corresponding ColumnHeaders
     SortColumn: dict[str, float]   = field(default_factory=dict)# The single character type(s) of the sort column(s).  Sort on whole num="W", sort on Vol+Num ="VN", etc.
     Rows: list[list[str]] = field(default_factory=list)
-
 
 
     #---------------------------------
