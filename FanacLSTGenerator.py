@@ -383,6 +383,9 @@ class MainWindow(MainFrame):
         if self._dataGrid.HasSelection():
             Enable("Copy")
             Enable("Clear Selection")
+            _, left, _, right=self._dataGrid.SelectionBoundingBox()
+            if left == right:
+                Enable("Sort on Selected Column")
 
         if self._dataGrid.clipboard is not None:
             Enable("Paste")
@@ -506,6 +509,10 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource()
         self.RefreshWindow()
 
+
+    def OnPopupSortOnSelectedColumn(self, event):       # MainWindow(MainFrame)
+        assert False
+        #self.RefreshWindow()
 
     def OnPopupInsertColLeft(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnPopupInsertColLeft(event) # Pass event to WxDataGrid to handle
