@@ -509,10 +509,11 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource()
         self.RefreshWindow()
 
-
     def OnPopupSortOnSelectedColumn(self, event):       # MainWindow(MainFrame)
-        assert False
-        #self.RefreshWindow()
+        # We already know that only a single column is selected
+        _, col, _, _=self._dataGrid.SelectionBoundingBox()
+        self.Datasource.Rows.sort(key=lambda x:x[col])
+        self.RefreshWindow()
 
     def OnPopupInsertColLeft(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnPopupInsertColLeft(event) # Pass event to WxDataGrid to handle
