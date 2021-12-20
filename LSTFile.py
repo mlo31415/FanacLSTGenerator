@@ -170,7 +170,7 @@ class LSTFile:
 
             # Look through the rows and extract mailing info, if any
             # We're looking for things like [for/in] <apa> nnn
-            apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA"]
+            apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP"]
             mailing=[""]*len(self.Rows)
             found=False
             for i, row in enumerate(self.Rows):
