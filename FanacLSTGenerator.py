@@ -10,9 +10,10 @@ from GenGUIClass import MainFrame
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from WxHelpers import OnCloseHandling
 from LSTFile import *
-from HelpersPackage import Bailout, IsInt, Int0
+from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone
 from Log import LogOpen, Log
 from Settings import Settings
+from FanzineIssueSpecPackage import MonthNameToInt
 
 class MainWindow(MainFrame):
     def __init__(self, parent, title):
@@ -513,11 +514,15 @@ class MainWindow(MainFrame):
         # We already know that only a single column is selected
         _, col, _, _=self._dataGrid.SelectionBoundingBox()
         # If the column consists on thong but empty cells and numbers, we do a special numerical sort.
-        test=all([(x[col] == "" or IsInt(x[col])) for x in self.Datasource.Rows])
-        if test:
+        testIsInt=all([(x[col] == "" or IsInt(x[col])) for x in self.Datasource.Rows])
+        if testIsInt:
             self.Datasource.Rows.sort(key=lambda x: Int0(x[col]))
         else:
-            self.Datasource.Rows.sort(key=lambda x:x[col])
+            testIsMonth=all([(x[col] == "" or MonthNameToInt(x[col])) is not None for x in self.Datasource.Rows])
+            if testIsMonth:
+                self.Datasource.Rows.sort(key=lambda x: ZeroIfNone(MonthNameToInt(x[col])))
+            else:
+                self.Datasource.Rows.sort(key=lambda x:x[col])
         self.RefreshWindow()
 
     def OnPopupInsertColLeft(self, event):       # MainWindow(MainFrame)
