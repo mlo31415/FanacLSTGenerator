@@ -283,6 +283,7 @@ class MainWindow(MainFrame):
 
         try:
             lstfile.Save(oldname)
+            self.MarkAsSaved()
         except:
             Log(f"OnSaveLSTFile failed while trying to save {oldname}", isError=True)
             Bailout(PermissionError, "OnSaveLSTFile failed when trying to write file "+oldname, "LSTError")
