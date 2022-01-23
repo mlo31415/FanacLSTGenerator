@@ -11,7 +11,7 @@ from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefini
 from WxHelpers import OnCloseHandling
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone
-from Log import LogOpen, Log
+from Log import LogOpen, Log, LogClose
 from Settings import Settings
 from FanzineIssueSpecPackage import MonthNameToInt
 
@@ -234,8 +234,6 @@ class MainWindow(MainFrame):
         Settings().Put("Top Level Windows Size", (size.width, size.height))
 
         self.Destroy()
-        sys.exit(1)
-
 
     #------------------
     # Load an LST file from disk into an LSTFile class
@@ -655,6 +653,10 @@ def main():
     app=wx.App(False)
     frame=MainWindow(None, "Sample editor")
     app.MainLoop()
+
+    LogClose()
+
+    sys.exit(1)
 
 if __name__ == "__main__":
     main()
