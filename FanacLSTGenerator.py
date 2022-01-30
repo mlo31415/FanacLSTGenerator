@@ -159,42 +159,6 @@ class MainWindow(MainFrame):
         self.tPText.SetValue("")
         self.wxGrid.ClearGrid()
 
-    # ------------------
-    # The Datasource object has the official information. This function updates it from edits made on the display.
-    def UpdateDatasourceFromWxGrid(self):       # MainWindow(MainFrame)
-
-        #TODO: Need to pull in the header stuff?
-
-        # Not all rows and all columns defined in the grid may be filled.  Compute the actual number of rows and columns
-        ncols=len(self.Datasource.ColDefs)    # ncols must be at least this big.
-
-        # Walk the rows from last to first looking for last row with content
-        for i in range(self.wxGrid.NumberRows, 0, -1):
-            found=False
-            for j in range(self.wxGrid.NumberCols):
-                if self.wxGrid.GetCellValue(i-1, j) != "":
-                    found=True
-                    break
-            if found:
-                nrows=i
-                break
-
-        # Walk the remaining columns (if any) from last to first looking for the last col with content
-        for i in range(self.wxGrid.NumberCols, 0, -1):
-            found=False
-            for j in range(self.wxGrid.NumberRows):
-                if j == ncols:
-                    break
-                if self.wxGrid.GetCellValue(i-1, j) != "":
-                    found=True
-                    break
-            if found:
-                ncols=i
-                break
-
-        # We don't need to copy column headers because the code which manages updates to the headers updates the ColDefinitionsList
-        # Likewise, the ancilliary text box handling updates the datasource
-
 
     # Create a new LSTFile from the datasource
     def CreateLSTFileFromDatasourceEtc(self) -> LSTFile:       # MainWindow(MainFrame)
@@ -262,7 +226,6 @@ class MainWindow(MainFrame):
     # Save an LSTFile object to disk.
     def OnSaveLSTFile(self, event):       # MainWindow(MainFrame)
 
-        self.UpdateDatasourceFromWxGrid()
         lstfile=self.CreateLSTFileFromDatasourceEtc()
 
         # Rename the old file
