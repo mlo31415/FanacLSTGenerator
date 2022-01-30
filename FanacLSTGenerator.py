@@ -511,6 +511,12 @@ class FanzineTableRow(GridDataRowClass):
     def __str__(self):      # FanzineTableRow(GridDataRowClass)
         return str(self._cells)
 
+    def __len__(self):     # FanzineTableRow(GridDataRowClass)
+        return len(self._cells)
+
+    def Extend(self, s: list[str]) -> None:    # FanzineTableRow(GridDataRowClass)
+        self._cells.extend(s)
+
     # Make a deep copy of a FanzineTableRow
     def Copy(self) -> FanzineTableRow:      # FanzineTableRow(GridDataRowClass)
         ftr=FanzineTableRow([])
