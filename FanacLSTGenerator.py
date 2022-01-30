@@ -134,22 +134,30 @@ class MainWindow(MainFrame):
         self._dataGrid.DeleteRows(0, self._dataGrid.NumRows)
         self._dataGrid.Grid.ScrollLines(-999)   # Scroll down a long ways to show start of file
 
+        # Copy the row data over into the Datasource class
+        # Because the LST data tends to be especially sloppy in the column count (extra or missing semicolons),
+        # we expand to cover the maximum number of columns found so as to drop nothing.
+        FTRList: list[FanzineTableRow]=[FanzineTableRow(row) for row in lstfile.Rows]
+        # Find the longest row and lengthen all the rows to that length
+        maxlen=max([len(row) for row in FTRList])
+        maxlen=max(maxlen, len(lstfile.ColumnHeaders))
+        if len(lstfile.ColumnHeaders) < maxlen:
+            lstfile.ColumnHeaders.extend([""]*(maxlen-len(lstfile.ColumnHeaders)))
+        for row in FTRList:
+            if len(row) < maxlen:
+                row.Extend([""]*(maxlen-len(row)))
+
         # Turn the Column Headers into the grid's columns
         self.Datasource.ColDefs=ColDefinitionsList([])
         for name in lstfile.ColumnHeaders:
-            if name in self.stdColHeaders:
+            if name == "":
+                self.Datasource.ColDefs.append(ColDefinition())
+            elif name in self.stdColHeaders:
                 name=self.stdColHeaders[name].Preferred
                 self.Datasource.ColDefs.append(self.stdColHeaders[name])
             else:
                 self.Datasource.ColDefs.append(ColDefinition(name))
 
-        # Copy the row data over into the Datasource class
-        FTRList: list[FanzineTableRow]=[]
-        for row in lstfile.Rows:
-            if len(row) != len(self.Datasource.ColDefs):
-                Log(f"Mismatched column count for Row={row}", isError=True)
-                continue
-            FTRList.append(FanzineTableRow(row))
         self.Datasource._fanzineList=FTRList
 
 
