@@ -80,6 +80,7 @@ class LSTFile:
 
         def IsTableLine(s: str) -> bool:
             # Column header pattern is four repetitions of (a span of at least one character followed by a semicolon)
+            # And there's also the messiness of the first column having an A>B structure
             return re.search(".+[>;].+;.+;.+;", s) is not None
 
         # Go through the lines one-by-one, looking for a table line. Until that is found, accumulate toptext lines
@@ -205,18 +206,36 @@ class LSTFile:
                 content.append(line)
             content.append("")
 
-        # Column headers.  Need to remove the "Filename" column which was added when the LST file was loaded.  It is the 1st col.
+        # Go through the headers and rows and trim any trailing columns which are entirely empty.
+        # First find the last non-empty column
+        maxlen=max([len(row) for row in self.Rows])
+        maxlen=max(maxlen, len(self.ColumnHeaders))
+        lastNonEmptyColumn=maxlen-1     # lastNonEmptyColumn is an index, not a length
+        while lastNonEmptyColumn > 0:
+            if len(self.ColumnHeaders[lastNonEmptyColumn]) > 0:
+                break
+            found=False
+            for row in self. Rows:
+                if len(row[lastNonEmptyColumn]) > 0:
+                    found=True
+                    break
+            if found:
+                break
+            lastNonEmptyColumn-=1
+
+        # Do we need to trim?
+        if lastNonEmptyColumn < maxlen-1:    # lastNonEmptyColumn is an index, not a length
+            self.ColumnHeaders=self.ColumnHeaders[:lastNonEmptyColumn+1]
+            self.Rows=[row[:lastNonEmptyColumn+1] for row in self.Rows]
+
+        # Write out the column headers
+        # Need to remove the "Filename" column which was added when the LST file was loaded.  It is the 1st col.
         content.append("; ".join(self.ColumnHeaders[1:]))
 
-        maxlen=len(self.ColumnHeaders)
-
-        # Rows
+        # And the rows
         for row in self.Rows:
             if len(row) < 3:    # Smallest possible LST file
                 continue
-
-            if len(row) > maxlen:
-                row=row[:maxlen]    # Truncate if necessary
 
             # We have to join the first two elements of row into a single element to deal with the LST's odd format. (See the reading code, above.)
             # We also have to be aware of the input Case (3) and handle that correctly
