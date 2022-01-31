@@ -227,10 +227,10 @@ class MainWindow(MainFrame):
 
         # We have a list of file names. Sort them and add them to the rows at the bottom
         files.sort()
-        nrows=self._Datasource.NumRows
-        self._Datasource.AppendEmptyRows(len(files))
+        nrows=self.Datasource.NumRows
+        self.Datasource.AppendEmptyRows(len(files))
         for i, file in enumerate(files):
-            self._Datasource.Rows[nrows+i][0]=file
+            self.Datasource.Rows[nrows+i][0]=file
 
         self._dataGrid.RefreshWxGridFromDatasource()
 
