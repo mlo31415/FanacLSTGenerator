@@ -207,6 +207,34 @@ class MainWindow(MainFrame):
 
         self.Destroy()
 
+    def OnLoadNewIssues(self, event):       # MainWindow(MainFrame)
+        files=[]
+        # Call the File Open dialog to select PDF files
+        with wx.FileDialog(self,
+                           message="Select PDF files to add",
+                           defaultDir=self.dirname,
+                           wildcard="PDF files (*.pdf)|*.pdf",
+                           style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_FILE_MUST_EXIST | wx.STAY_ON_TOP) as dlg:
+
+            if dlg.ShowModal() != wx.ID_OK:
+                return
+
+            files=dlg.GetFilenames()
+            self.dirname=dlg.GetDirectory()
+
+        if not files:  # Empty selection
+            return
+
+        # We have a list of file names. Sort them and add them to the rows at the bottom
+        files.sort()
+        nrows=self._Datasource.NumRows
+        self._Datasource.AppendEmptyRows(len(files))
+        for i, file in enumerate(files):
+            self._Datasource.Rows[nrows+i][0]=file
+
+        self._dataGrid.RefreshWxGridFromDatasource()
+
+
     #------------------
     # Load an LST file from disk into an LSTFile class
     def OnLoadNewLSTFile(self, event):       # MainWindow(MainFrame)
