@@ -81,7 +81,7 @@ class LSTFile:
         def IsTableLine(s: str) -> bool:
             # Column header pattern is four repetitions of (a span of at least one character followed by a semicolon)
             # And there's also the messiness of the first column having an A>B structure
-            return re.search(".+[>;].+;.+;.+;", s) is not None
+            return re.search(".+[>;].+;.+;", s) is not None
 
         # Go through the lines one-by-one, looking for a table line. Until that is found, accumulate toptext lines
         self.TopTextLines=[]
@@ -130,7 +130,8 @@ class LSTFile:
         for row in rowLines:
             col1, colrest=row.split(";", 1)
             # Look for case (2), and add the ">" to make it case 1
-            if col1.find(">") == -1:    #If there's no ">" in col1, put it there.
+            if col1.find(">") == -1:    # If there's no ">" in col1, put it there.
+                assert False    # What does this do???
                 row=">"+row
                 col1=row.split(";", 1)[0]
 
