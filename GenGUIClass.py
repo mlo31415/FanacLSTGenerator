@@ -46,7 +46,7 @@ class MainFrame ( wx.Frame ):
 
 		fgSizerComments.Add( self.m_staticText1, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
 
-		self.tTopMatter = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 800,-1 ), 0 )
+		self.tTopMatter = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 800,30 ), wx.TE_MULTILINE )
 		self.tTopMatter.SetMinSize( wx.Size( -1,30 ) )
 		self.tTopMatter.SetMaxSize( wx.Size( -1,30 ) )
 
@@ -62,7 +62,7 @@ class MainFrame ( wx.Frame ):
 
 		fgSizerComments.Add( self.tTopText, 1, wx.ALL|wx.EXPAND, 5 )
 
-		self.m_staticText21 = wx.StaticText( self, wx.ID_ANY, u"Local Info:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText21 = wx.StaticText( self, wx.ID_ANY, u"Locale Info:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText21.Wrap( -1 )
 
 		fgSizerComments.Add( self.m_staticText21, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
