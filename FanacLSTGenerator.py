@@ -55,8 +55,7 @@ class MainWindow(MainFrame):
             self.dirname=os.getcwd()
 
         # Read the LST file
-        lstfile=self.LoadLSTFile()
-        if lstfile is None:
+        if not self.LoadLSTFile():
             return
 
         # Position the window on the screen it was on before
@@ -84,7 +83,7 @@ class MainWindow(MainFrame):
     #------------------
     # Open a dialog to allow the user to select an LSTFile on disk.
     # Load it (and some other stuff) into self's 'LSFFile() object
-    def LoadLSTFile(self) -> Optional[LSTFile]:       # MainWindow(MainFrame)
+    def LoadLSTFile(self) -> bool:       # MainWindow(MainFrame)
 
         # Call the File Open dialog to get an LST file
         dlg=wx.FileDialog(self, "Select LST file to load", self.dirname, "", "*.LST", wx.FD_OPEN)
@@ -93,7 +92,7 @@ class MainWindow(MainFrame):
         if dlg.ShowModal() != wx.ID_OK:
             dlg.Raise()
             dlg.Destroy()
-            return None
+            return False
 
         # Clear out old information from form.
         lstfile=LSTFile()
@@ -109,23 +108,6 @@ class MainWindow(MainFrame):
         except Exception as e:
             Log(f"MainWindow: Failure reading LST file '{pathname}'", isError=True)
             Bailout(e, f"MainWindow: Failure reading LST file '{pathname}'", "LSTError")
-
-        self.InitializeDatasourceFromLSTfile(lstfile)
-        self._dataGrid.RefreshWxGridFromDatasource()
-
-        # Fill in the upper stuff
-        self.ClearDisplay()
-        self.tTopMatter.SetValue(lstfile.FirstLine)
-        if len(lstfile.TopTextLines) > 0:
-            self.tTopText.SetValue("\n".join(lstfile.TopTextLines))
-        elif len(lstfile.BottomTextLines) > 0:
-            self.tBottomText.SetValue("\n".join(lstfile.BottomTextLines))
-
-        return lstfile
-
-
-    # Take the LST file which has been loaded into self.lstData and fill the Datasource
-    def InitializeDatasourceFromLSTfile(self, lstfile: LSTFile):       # MainWindow(MainFrame)
 
         self._dataGrid.NumCols=0
         self._dataGrid.DeleteRows(0, self._dataGrid.NumRows)
@@ -157,11 +139,24 @@ class MainWindow(MainFrame):
 
         self.Datasource._fanzineList=FTRList
 
+        self._dataGrid.RefreshWxGridFromDatasource()
+
+        # Fill in the upper stuff
+        self.ClearDisplay()
+        self.tTopMatter.SetValue(lstfile.FirstLine)
+        if len(lstfile.TopTextLines) > 0:
+            self.tTopText.SetValue("\n".join(lstfile.TopTextLines))
+        if lstfile.Locale:
+            self.tLocaleText.SetValue("\n".join(lstfile.Locale))
+
+        return True
+
 
     #TODO: Either use this more widely or merge it in
     def ClearDisplay(self):       # MainWindow(MainFrame)
         self.tTopMatter.SetValue("")
-        self.tPText.SetValue("")
+        self.tTopText.SetValue("")
+        self.tLocaleText.SetValue("")
         self.wxGrid.ClearGrid()
 
 
@@ -172,8 +167,8 @@ class MainWindow(MainFrame):
 
         # Fill in the upper stuff
         lstfile.FirstLine=self.tTopMatter.GetValue()
-        lstfile.TopTextLines=self.tPText.GetValue().split()
-        lstfile.BottomTextLines=self.tPText.GetValue().split()
+        lstfile.TopTextLines=self.tTopText.GetValue().split()
+        lstfile.Locale=self.tLocaleText.GetValue().split()
 
         # Copy over the column headers
         lstfile.ColumnHeaders=self.Datasource.ColHeaders
@@ -236,8 +231,7 @@ class MainWindow(MainFrame):
     # Load an LST file from disk into an LSTFile class
     def OnLoadNewLSTFile(self, event):       # MainWindow(MainFrame)
 
-        lstfile=self.LoadLSTFile()
-        if lstfile is None:
+        if not self.LoadLSTFile():
             return
 
         self.MarkAsSaved()
@@ -287,7 +281,7 @@ class MainWindow(MainFrame):
     # Used to determine if anything has been updated
     def Signature(self) -> int:       # MainWindow(MainFrame)
         h=hash("".join(self.Datasource.TopTextLines))
-        h+=hash("".join(self.Datasource.BottomTextLines))
+        h+=hash("".join(self.Datasource.Locale))
         h+=hash(self.tTopMatter.GetValue())
         h+=self.Datasource.Signature()
         return h
@@ -304,14 +298,17 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
     #------------------
-    def OnTextComments(self, event):       # MainWindow(MainFrame)
+    def OnTextTopComments(self, event):       # MainWindow(MainFrame)
         if self.Datasource.TopTextLines is not None and len(self.Datasource.TopTextLines) > 0:
-            self.Datasource.TopTextLines=self.tPText.GetValue().split("\n")
-        elif self.Datasource.BottomTextLines is not None and len(self.Datasource.BottomTextLines) > 0:
-            self.Datasource.BottomTextLines=self.tPText.GetValue().split("\n")
+            self.Datasource.TopTextLines=self.tTopText.GetValue().split("\n")
         else:
-            self.Datasource.TopTextLines=self.tPText.GetValue().split("\n")
+            self.Datasource.TopTextLines=self.tTopText.GetValue().split("\n")
 
+        self.RefreshWindow()
+
+    #------------------
+    def OnTextLocale(self, event):       # MainWindow(MainFrame)
+        self.Datasource.Locale=self.tLocaleText.GetValue().split("\n")
         self.RefreshWindow()
 
     #-------------------
@@ -587,13 +584,13 @@ class FanzineTablePage(GridDataSource):
         self._name: str=""
         self._specialTextColor: Optional[Color, bool]=True
         self.TopTextLines: str=""
-        self.BottomTextLines: str=""
+        self.Locale: str=""
         self.FirstLine=""
 
 
     def Signature(self) -> int:
         s=self._colDefs.Signature()
-        s+=hash(self._name.strip()+"".join(self.TopTextLines).strip()+"".join(self.BottomTextLines).strip()+self.FirstLine.strip())
+        s+=hash(self._name.strip()+"".join(self.TopTextLines).strip()+"".join(self.Locale).strip()+self.FirstLine.strip())
         s+=sum([x.Signature()*(i+1) for i, x in enumerate(self._fanzineList)])
         return s+hash(self._specialTextColor)+self._colDefs.Signature()
 

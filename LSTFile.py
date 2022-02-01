@@ -8,7 +8,7 @@ from HelpersPackage import CanonicizeColumnHeaders, Bailout
 class LSTFile:
     FirstLine: str=""
     TopTextLines: list[str] = field(default_factory=list)
-    BottomTextLines: list[str] = field(default_factory=list)
+    Locale: list[str] = field(default_factory=list)
     ColumnHeaders: list[str] = field(default_factory=list)        # The actual text of the column headers
     ColumnHeaderTypes: list[str] = field(default_factory=list)    # The single character types for the corresponding ColumnHeaders
     SortColumn: dict[str, float]   = field(default_factory=dict)# The single character type(s) of the sort column(s).  Sort on whole num="W", sort on Vol+Num ="VN", etc.
@@ -42,17 +42,13 @@ class LSTFile:
 
         # Collapse all runs of empty lines down to a single empty line
         output=[]
-        lastlinemepty=False
         for c in contents:
-            if len(c) == 0:
-                if lastlinemepty:
-                    continue        # Skip the line
-                lastlinemepty=True
-            else:
-                lastlinemepty=False
+            if not c:   # If the current line is empty
+                if output and output[-1]:   # Was the last line empty too?
+                    continue        # Yes: Skip the current line
             output.append(c)
         contents=output
-        if len(contents) == 0:
+        if not contents:
             return
 
         # The structure of an LST file is
@@ -74,43 +70,56 @@ class LSTFile:
         # ALL table lines consist of one instance of either of the characters ">" or ";" and two more of ";", all separated by spans of other stuff.
         # No lines of that sort appear in the toplines section
 
-        # The first line is the first line
-        self.FirstLine=contents[0]
-        contents=contents[1:]   # Drop the first line, as it has been processed
+        # The first non-empty line is the first line. (Since we've already collapsed runs of multiple empty lines to one, we only have to check the 1st line.)
+        if not contents[0]:
+            contents.pop(0)
+        self.FirstLine=contents.pop(0)
 
+        # Inline function to test if a line is a table row
+        # Because we have already extracted the top line (which looks line a table line), we can use this function to detect the column headers
         def IsTableLine(s: str) -> bool:
-            # Column header pattern is four repetitions of (a span of at least one character followed by a semicolon)
+            # Column header pattern is at least three repetitions of <a span of at least one character followed by a semicolon or '>'>
             # And there's also the messiness of the first column having an A>B structure
             return re.search(".+[>;].+;.+;", s) is not None
 
         # Go through the lines one-by-one, looking for a table line. Until that is found, accumulate toptext lines
+        # Be on the lookout for Locale lines (bracketed by <<fanac-type>>)
+        # Once we hit the table, we move to a new loop.
         self.TopTextLines=[]
-        self.BottomTextLines=[]
-        rowLines=[]
-        pasttable=False
-        for line in contents:
-            line=line.strip()
-            if len(rowLines) > 0 and not pasttable and len(line) == 0:
-                continue    # Skip blank lines within the table
-            if IsTableLine(line):
-                rowLines.append(line)
+        self.Locale=[]
+        rowLines=[]     # This will accumulate the column header line and row lines
+        colHeaderLine=""
+        inFanacType=False
+        while contents:
+            line=contents.pop(0).strip()    # Grab the top line
+            if not line:
+                continue    # Skip blank lines
+            if IsTableLine(line):   # If we come to a table line, we havew found the colum headers (which must start the table). Save it and then drop down to table row processing.
+                colHeaderLine=line
+                break
+            # Once we find a line that starts with <fanac-type>, we send the lines to local until we find a line that ends with </fanac-type>
+            if inFanacType or line.startswith("<fanac-type>"):
+                self.Locale.append(line)
+                if not line.endswith("</fanac-type>"):
+                    inFanacType=True
+                    continue
+                inFanacType=False
             else:
-                if len(rowLines) == 0:  # Non table lines go in top text lines until the table has been found; then they go in bottom text lines
-                    self.TopTextLines.append(line)
-                else:
-                    self.BottomTextLines.append(line)
-                    pasttable=True  # Now we can't go back to adding on table lines
+                self.TopTextLines.append(line)
 
-        if len(self.TopTextLines) == 0:
-            Bailout(ValueError, "No top text lines found", "LST Generator: Read LST file")
+        # Time to read the table header and rows
+        while contents:
+            line=contents.pop(0).strip()    # Grab the top line
+            if not line:
+                continue    # Skip blank lines
+            if not IsTableLine(line):
+                break       # If we hit a line that is not a table line, we must be past the table
+            rowLines.append(line)
+
         if len(rowLines) == 0:
             Bailout(ValueError, "No row lines found", "LST Generator: Read LST file")
         if len(rowLines) == 1:
             Bailout(ValueError, "Only one row line found -- either header or contents missing", "LST Generator: Read LST file")
-
-        # The column headers are in the first table line
-        colHeaderLine=rowLines[0]
-        rowLines=rowLines[1:]
 
         # Change the column headers to their standard form
         self.ColumnHeaders=[CanonicizeColumnHeaders(h.strip()) for h in colHeaderLine.split(";") if len(h) > 0]
@@ -255,8 +264,8 @@ class LSTFile:
             if not re.match("^[>;\s]*$", out):  # Save only null rows
                 content.append(out)
 
-        if len(self.BottomTextLines) > 0:
-            for line in self.BottomTextLines:
+        if len(self.Locale) > 0:
+            for line in self.Locale:
                 content.append(line)
             content.append("")
 

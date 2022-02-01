@@ -18,7 +18,7 @@ import wx.grid
 class MainFrame ( wx.Frame ):
 
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 1000,700 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 1000,772 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 
@@ -35,34 +35,43 @@ class MainFrame ( wx.Frame ):
 
 		bSizerMain = wx.BoxSizer( wx.VERTICAL )
 
-		bSizerTopMatter = wx.BoxSizer( wx.HORIZONTAL )
-
-		self.m_staticText1 = wx.StaticText( self, wx.ID_ANY, u"Top matter:", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_staticText1.Wrap( -1 )
-
-		bSizerTopMatter.Add( self.m_staticText1, 0, wx.ALL, 5 )
-
-		self.tTopMatter = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 800,-1 ), 0 )
-		bSizerTopMatter.Add( self.tTopMatter, 0, wx.ALL|wx.EXPAND, 5 )
-
-
-		bSizerMain.Add( bSizerTopMatter, 1, wx.EXPAND, 5 )
-
-		fgSizerComments = wx.FlexGridSizer( 1, 2, 0, 0 )
+		fgSizerComments = wx.FlexGridSizer( 3, 2, 0, 0 )
 		fgSizerComments.AddGrowableCol( 1 )
 		fgSizerComments.AddGrowableRow( 0 )
 		fgSizerComments.SetFlexibleDirection( wx.BOTH )
 		fgSizerComments.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
-		self.m_staticText2 = wx.StaticText( self, wx.ID_ANY, u"<P>Comments</P>:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText1 = wx.StaticText( self, wx.ID_ANY, u"Top matter:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText1.Wrap( -1 )
+
+		fgSizerComments.Add( self.m_staticText1, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+		self.tTopMatter = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 800,-1 ), 0 )
+		self.tTopMatter.SetMinSize( wx.Size( -1,30 ) )
+		self.tTopMatter.SetMaxSize( wx.Size( -1,30 ) )
+
+		fgSizerComments.Add( self.tTopMatter, 0, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_staticText2 = wx.StaticText( self, wx.ID_ANY, u"Top Comments: ", wx.Point( -1,-1 ), wx.DefaultSize, 0 )
 		self.m_staticText2.Wrap( -1 )
 
-		fgSizerComments.Add( self.m_staticText2, 1, wx.ALL, 5 )
+		fgSizerComments.Add( self.m_staticText2, 1, wx.ALIGN_RIGHT|wx.ALL, 5 )
 
-		self.tPText = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
-		self.tPText.SetMinSize( wx.Size( -1,100 ) )
+		self.tTopText = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+		self.tTopText.SetMinSize( wx.Size( -1,100 ) )
 
-		fgSizerComments.Add( self.tPText, 1, wx.ALL|wx.EXPAND, 5 )
+		fgSizerComments.Add( self.tTopText, 1, wx.ALL|wx.EXPAND, 5 )
+
+		self.m_staticText21 = wx.StaticText( self, wx.ID_ANY, u"Local Info:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText21.Wrap( -1 )
+
+		fgSizerComments.Add( self.m_staticText21, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+		self.tLocaleText = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+		self.tLocaleText.SetMinSize( wx.Size( -1,30 ) )
+		self.tLocaleText.SetMaxSize( wx.Size( -1,30 ) )
+
+		fgSizerComments.Add( self.tLocaleText, 0, wx.ALL|wx.EXPAND, 5 )
 
 
 		bSizerMain.Add( fgSizerComments, 1, wx.ALL|wx.EXPAND, 5 )
@@ -146,7 +155,8 @@ class MainFrame ( wx.Frame ):
 		self.bSaveLSTFile.Bind( wx.EVT_BUTTON, self.OnSaveLSTFile )
 		self.bExit.Bind( wx.EVT_BUTTON, self.OnExitClicked )
 		self.tTopMatter.Bind( wx.EVT_TEXT, self.OnTextTopMatter )
-		self.tPText.Bind( wx.EVT_TEXT, self.OnTextComments )
+		self.tTopText.Bind( wx.EVT_TEXT, self.OnTextTopComments )
+		self.tLocaleText.Bind( wx.EVT_TEXT, self.OnTextLocale )
 		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged )
 		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnGridCellDoubleClick )
 		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnGridCellRightClick )
@@ -189,7 +199,10 @@ class MainFrame ( wx.Frame ):
 	def OnTextTopMatter( self, event ):
 		event.Skip()
 
-	def OnTextComments( self, event ):
+	def OnTextTopComments( self, event ):
+		event.Skip()
+
+	def OnTextLocale( self, event ):
 		event.Skip()
 
 	def OnGridCellChanged( self, event ):
