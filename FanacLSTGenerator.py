@@ -59,17 +59,6 @@ class MainWindow(MainFrame):
         if lstfile is None:
             return
 
-        self.InitializeDatasourceFromLSTfile(lstfile)
-        self._dataGrid.RefreshWxGridFromDatasource()
-
-        # Fill in the upper stuff
-        self.ClearDisplay()
-        self.tTopMatter.SetValue(lstfile.FirstLine)
-        if len(lstfile.TopTextLines) > 0:
-            self.tPText.SetValue("\n".join(lstfile.TopTextLines))
-        elif len(lstfile.BottomTextLines) > 0:
-            self.tPText.SetValue("\n".join(lstfile.BottomTextLines))
-
         # Position the window on the screen it was on before
         tlwp=Settings().Get("Top Level Window Position")
         if tlwp:
@@ -121,8 +110,16 @@ class MainWindow(MainFrame):
             Log(f"MainWindow: Failure reading LST file '{pathname}'", isError=True)
             Bailout(e, f"MainWindow: Failure reading LST file '{pathname}'", "LSTError")
 
-        # And now determine the identities of the column headers. (There are many ways to label a column that amount to the same thing.)
-        # lstfile.IdentifyColumnHeaders()
+        self.InitializeDatasourceFromLSTfile(lstfile)
+        self._dataGrid.RefreshWxGridFromDatasource()
+
+        # Fill in the upper stuff
+        self.ClearDisplay()
+        self.tTopMatter.SetValue(lstfile.FirstLine)
+        if len(lstfile.TopTextLines) > 0:
+            self.tTopText.SetValue("\n".join(lstfile.TopTextLines))
+        elif len(lstfile.BottomTextLines) > 0:
+            self.tBottomText.SetValue("\n".join(lstfile.BottomTextLines))
 
         return lstfile
 
@@ -242,17 +239,6 @@ class MainWindow(MainFrame):
         lstfile=self.LoadLSTFile()
         if lstfile is None:
             return
-
-        self.InitializeDatasourceFromLSTfile(lstfile)
-        self._dataGrid.RefreshWxGridFromDatasource()
-
-        # Fill in the upper stuff
-        self.ClearDisplay()
-        self.tTopMatter.SetValue(lstfile.FirstLine)
-        if len(lstfile.TopTextLines) > 0:
-            self.tPText.SetValue("\n".join(lstfile.TopTextLines))
-        elif len(lstfile.BottomTextLines) > 0:
-            self.tPText.SetValue("\n".join(lstfile.BottomTextLines))
 
         self.MarkAsSaved()
         self.RefreshWindow()
