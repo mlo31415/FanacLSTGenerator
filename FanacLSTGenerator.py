@@ -166,9 +166,9 @@ class MainWindow(MainFrame):
         lstfile=LSTFile()
 
         # Fill in the upper stuff
-        lstfile.FirstLine=self.tTopMatter.GetValue()
-        lstfile.TopTextLines=self.tTopText.GetValue().split()
-        lstfile.Locale=self.tLocaleText.GetValue().split()
+        lstfile.FirstLine=self.tTopMatter.GetValue().strip()
+        lstfile.TopTextLines=self.tTopText.GetValue().split("\n")
+        lstfile.Locale=[self.tLocaleText.GetValue().strip()]
 
         # Copy over the column headers
         lstfile.ColumnHeaders=self.Datasource.ColHeaders
@@ -583,9 +583,9 @@ class FanzineTablePage(GridDataSource):
         self._gridDataRowClass=FanzineTableRow
         self._name: str=""
         self._specialTextColor: Optional[Color, bool]=True
-        self.TopTextLines: str=""
-        self.Locale: str=""
-        self.FirstLine=""
+        self.TopTextLines: list[str]=[]
+        self.Locale: list[str]=[]
+        self.FirstLine: str=""
 
 
     def Signature(self) -> int:

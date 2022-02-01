@@ -211,8 +211,13 @@ class LSTFile:
 
         content=[self.FirstLine, ""]
 
-        if len(self.TopTextLines) > 0:
+        if self.TopTextLines:
             for line in self.TopTextLines:
+                content.append(line)
+            content.append("")
+
+        if self.Locale:
+            for line in self.Locale:
                 content.append(line)
             content.append("")
 
@@ -263,11 +268,6 @@ class LSTFile:
             out=out+ "; " + ("; ".join(row[2:]))
             if not re.match("^[>;\s]*$", out):  # Save only null rows
                 content.append(out)
-
-        if len(self.Locale) > 0:
-            for line in self.Locale:
-                content.append(line)
-            content.append("")
 
         # And write it out
         with open(filename, "w+") as f:
