@@ -17,7 +17,7 @@ class LSTFile:
 
     #---------------------------------
     # Read an LST file, returning its contents as an LSTFile
-    def Read(self, filename: str) -> None:
+    def Load(self, filename: str) -> None:
 
         # Open the file, read the lines in it and strip leading and trailing whitespace (including '\n')
         try:

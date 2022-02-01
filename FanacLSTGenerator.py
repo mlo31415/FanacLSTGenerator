@@ -116,7 +116,7 @@ class MainWindow(MainFrame):
         # Read the lst file
         pathname=os.path.join(self.dirname, self.lstFilename)
         try:
-            lstfile.Read(pathname)
+            lstfile.Load(pathname)
         except Exception as e:
             Log(f"MainWindow: Failure reading LST file '{pathname}'", isError=True)
             Bailout(e, f"MainWindow: Failure reading LST file '{pathname}'", "LSTError")
