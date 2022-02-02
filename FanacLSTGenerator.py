@@ -10,7 +10,8 @@ from GenGUIClass import MainFrame
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from WxHelpers import OnCloseHandling
 from LSTFile import *
-from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone
+from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, FindIndexOfStringInList
+from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, Log, LogClose
 from Settings import Settings
 from FanzineIssueSpecPackage import MonthNameToInt
@@ -220,9 +221,26 @@ class MainWindow(MainFrame):
         # We have a list of file names. Sort them and add them to the rows at the bottom
         files.sort()
         nrows=self.Datasource.NumRows
+        iPdf=-1
+        # Are any of these PDFs?
+        if any([file.lower().endswith(".pdf") for file in files]):
+            # Do we need to add a PDF column?
+            if not any([(header.lower() == "pdf") for header in self.Datasource.ColHeaders]):
+                self.ColumnHeaders=self.Datasource.ColHeaders[:2]+["PDF"]+self.Datasource.ColHeaders[2:]         # Add the PDF column as the third column
+            # What is the PDF column's index?
+            iPdf=[header.lower() for header in self.ColumnHeaders].index("pdf")
+
         self.Datasource.AppendEmptyRows(len(files))
         for i, file in enumerate(files):
             self.Datasource.Rows[nrows+i][0]=file
+            # If it's a PDF, get its pagecount and add it to the row
+            if file.lower().endswith(".pdf"):
+                self.Datasource.Rows[nrows+i][iPdf]="PDF"
+                pages=GetPdfPageCount(file)
+                if pages is not None:
+                    pagesCol=FindIndexOfStringInList(self.Datasource.ColHeaders, "Pages", IgnoreCase=True)
+                    if pagesCol is not None:
+                        self.Datasource.Rows[nrows+i][pagesCol]=str(pages)
 
         self._dataGrid.RefreshWxGridFromDatasource()
 

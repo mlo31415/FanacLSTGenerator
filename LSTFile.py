@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 import re
 
 from HelpersPackage import CanonicizeColumnHeaders, Bailout
+from PDFHelpers import GetPdfPageCount
 
 
 @dataclass(order=False)
@@ -210,13 +211,16 @@ class LSTFile:
         if any([row[0].lower().endswith(".pdf") for row in self.Rows]):
             # Do we need to add a PDF column?
             if not any([(header.lower() == "pdf") for header in self.ColumnHeaders]):
-                # Add the PDF column as column 3
-                self.ColumnHeaders=self.ColumnHeaders[:2]+["PDF"]+self.ColumnHeaders[2:]
+                self.ColumnHeaders=self.ColumnHeaders[:2]+["PDF"]+self.ColumnHeaders[2:]         # Add the PDF column as the third column
                 for i, row in enumerate(self.Rows):
                     self.Rows[i]=row[:2]+[""]+row[2:]
-                    if row[0].lower().endswith(".pdf"):
-                        self.Rows[i][2]="PDF"
-
+            # What is the PDF column's index?
+            iPdf=[header.lower() for header in self.ColumnHeaders].index("pdf")
+            # Go through all rows and make sure the PDF colum is set correctly
+            for i, row in enumerate(self.Rows):
+                if row[0].lower().endswith(".pdf"):
+                    self.Rows[i][iPdf]="PDF"
+        i=0
 
 
     # ---------------------------------
