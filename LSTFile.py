@@ -203,6 +203,21 @@ class LSTFile:
                         row.append("")
                     row[mailcol]=mailing[i]
 
+        # If there are any rows with a pdf we want to make sure they are listed as PDF in a PDF column
+        # Add the PDF column if necessary
+
+        # We only do this if there are pdf files
+        if any([row[0].lower().endswith(".pdf") for row in self.Rows]):
+            # Do we need to add a PDF column?
+            if not any([(header.lower() == "pdf") for header in self.ColumnHeaders]):
+                # Add the PDF column as column 3
+                self.ColumnHeaders=self.ColumnHeaders[:2]+["PDF"]+self.ColumnHeaders[2:]
+                for i, row in enumerate(self.Rows):
+                    self.Rows[i]=row[:2]+[""]+row[2:]
+                    if row[0].lower().endswith(".pdf"):
+                        self.Rows[i][2]="PDF"
+
+
 
     # ---------------------------------
     # Format the data and save it as an LST file on disk
