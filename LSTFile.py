@@ -140,8 +140,7 @@ class LSTFile:
             col1, colrest=row.split(";", 1)
             # Look for case (2), and add the ">" to make it case 1
             if col1.find(">") == -1:    # If there's no ">" in col1, put it there.
-                assert False    # What does this do???
-                row=">"+row
+                row=">"+row.strip() # Because there are some cases where there is no filename, the ">" is missing and we need to supply one
                 col1=row.split(";", 1)[0]
 
             # The characteristic of Case (3) is that it starts "<a href...".  Look for that and handle it, turning it into Case (1)
