@@ -216,14 +216,19 @@ class MainWindow(MainFrame):
         # We have a list of file names. Sort them and add them to the rows at the bottom
         files.sort()
         nrows=self.Datasource.NumRows
-        iPdf=-1
+        iPdf=-1     # Just to make static error checking happy
         # Are any of these PDFs?
         if any([file.lower().endswith(".pdf") for file in files]):
             # Do we need to add a PDF column?
-            if not any([(header.lower() == "pdf") for header in self.Datasource.ColHeaders]):
-                self.ColumnHeaders=self.Datasource.ColHeaders[:2]+["PDF"]+self.Datasource.ColHeaders[2:]         # Add the PDF column as the third column
-            # What is the PDF column's index?
-            iPdf=[header.lower() for header in self.ColumnHeaders].index("pdf")
+            iPdf=self.Datasource.ColHeaderIndex("pdf")
+            if iPdf == -1:
+                # Add the PDF column as the third column
+                c=ColDefinition("PDF")
+                self.Datasource.InsertColumnHeader(2, c)
+                for i, row in enumerate(self.Datasource.Rows):
+                    cells=self.Datasource.Rows[i].Cells
+                    self.Datasource.Rows[i].Cells=cells[:2]+[""]+cells[2:]
+                iPdf=2
 
         self.Datasource.AppendEmptyRows(len(files))
         for i, file in enumerate(files):
@@ -233,8 +238,8 @@ class MainWindow(MainFrame):
                 self.Datasource.Rows[nrows+i][iPdf]="PDF"
                 pages=GetPdfPageCount(file)
                 if pages is not None:
-                    pagesCol=FindIndexOfStringInList(self.Datasource.ColHeaders, "Pages", IgnoreCase=True)
-                    if pagesCol is not None:
+                    pagesCol=self.Datasource.ColHeaderIndex("pages")
+                    if pagesCol != -1:
                         self.Datasource.Rows[nrows+i][pagesCol]=str(pages)
 
         self._dataGrid.RefreshWxGridFromDatasource()
@@ -559,6 +564,12 @@ class FanzineTableRow(GridDataRowClass):
     def Signature(self) -> int:      # FanzineTableRow(GridDataRowClass)
         return sum([(i+1)*hash(x) for i, x in enumerate(self._cells)])
 
+    @property
+    def Cells(self) -> list[str]:
+        return self._cells
+    @Cells.setter
+    def Cells(self, newcells: list[str]):
+        self._cells=newcells
 
     @property
     def CanDeleteColumns(self) -> bool:      # FanzineTableRow(GridDataRowClass)
