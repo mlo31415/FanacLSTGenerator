@@ -223,8 +223,7 @@ class MainWindow(MainFrame):
             iPdf=self.Datasource.ColHeaderIndex("pdf")
             if iPdf == -1:
                 # Add the PDF column as the third column
-                c=ColDefinition("PDF")
-                self.Datasource.InsertColumnHeader(2, c)
+                self.Datasource.InsertColumnHeader(2, ColDefinition("PDF"))
                 for i, row in enumerate(self.Datasource.Rows):
                     cells=self.Datasource.Rows[i].Cells
                     self.Datasource.Rows[i].Cells=cells[:2]+[""]+cells[2:]
