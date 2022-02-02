@@ -119,8 +119,6 @@ class LSTFile:
 
         if len(rowLines) == 0:
             Bailout(ValueError, "No row lines found", "LST Generator: Read LST file")
-        if len(rowLines) == 1:
-            Bailout(ValueError, "Only one row line found -- either header or contents missing", "LST Generator: Read LST file")
 
         # Change the column headers to their standard form
         self.ColumnHeaders=[CanonicizeColumnHeaders(h.strip()) for h in colHeaderLine.split(";") if len(h) > 0]
