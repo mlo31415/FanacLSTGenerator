@@ -143,7 +143,10 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource()
 
         # Fill in the upper stuff
-        self.ClearDisplay()
+        self.tTopMatter.SetValue("")
+        self.tTopText.SetValue("")
+        self.tLocaleText.SetValue("")
+        self.wxGrid.ClearGrid()
         self.tTopMatter.SetValue(lstfile.FirstLine)
         if len(lstfile.TopTextLines) > 0:
             self.tTopText.SetValue("\n".join(lstfile.TopTextLines))
@@ -151,14 +154,6 @@ class MainWindow(MainFrame):
             self.tLocaleText.SetValue("\n".join(lstfile.Locale))
 
         return True
-
-
-    #TODO: Either use this more widely or merge it in
-    def ClearDisplay(self):       # MainWindow(MainFrame)
-        self.tTopMatter.SetValue("")
-        self.tTopText.SetValue("")
-        self.tLocaleText.SetValue("")
-        self.wxGrid.ClearGrid()
 
 
     # Create a new LSTFile from the datasource
