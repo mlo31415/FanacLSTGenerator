@@ -224,7 +224,7 @@ class LSTFile:
 
         content=[self.FirstLine, ""]
 
-        if self.TopTextLines:
+        if self.TopTextLines and "".join(self.TopTextLines):    # Only write these lines if there is at least one non-empty line
             for line in self.TopTextLines:
                 content.append(line)
             content.append("")
