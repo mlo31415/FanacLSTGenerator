@@ -297,6 +297,7 @@ class MainWindow(MainFrame):
     # Save an LSTFile object to disk.
     def OnSaveLSTFile(self, event):       # MainWindow(MainFrame)
 
+        # Handle the case where we are saving a new file
         if self.lstFilename == "":
             # Use the Save dialog to decide where to save it.
             dlg=wx.FileDialog(self, "Save LST file", self.dirname, "", "*.LST", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT | wx.FD_CHANGE_DIR)
@@ -318,7 +319,6 @@ class MainWindow(MainFrame):
 
             self.SaveFile(lstfile, self.lstFilename)
             return
-
 
         lstfile=self.CreateLSTFileFromDatasourceEtc()
 
