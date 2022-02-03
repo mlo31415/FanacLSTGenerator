@@ -10,7 +10,7 @@ from GenGUIClass import MainFrame
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from WxHelpers import OnCloseHandling
 from LSTFile import *
-from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, FindIndexOfStringInList
+from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, Log, LogClose
 from Settings import Settings
