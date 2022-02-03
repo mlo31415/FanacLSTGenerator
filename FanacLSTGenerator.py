@@ -93,6 +93,7 @@ class MainWindow(MainFrame):
         if dlg.ShowModal() != wx.ID_OK:
             dlg.Raise()
             dlg.Destroy()
+            self.OnCreateNewLSTFile(None)
             return False
 
         # Clear out old information from form.
@@ -253,6 +254,49 @@ class MainWindow(MainFrame):
 
         self.MarkAsSaved()
         self.RefreshWindow()
+
+    # ------------------
+    # Create a new, empty LST file
+    def OnCreateNewLSTFile(self, event):       # MainWindow(MainFrame)
+
+        # Create an empty LSTFile object
+        self.lstfile=LSTFile()
+
+        self.lstFilename=""
+        self.dirname=""
+
+        self.FirstLine=""
+        self.TopTextLines=[]
+        self.Locale=[]
+
+        # Create Column headers
+        self._Datasource.ColDefs=ColDefinitionsList([
+            self.stdColHeaders["Filename"],
+            self.stdColHeaders["Issue"],
+            self.stdColHeaders["Whole"],
+            self.stdColHeaders["Vol"],
+            self.stdColHeaders["Number"],
+            self.stdColHeaders["Month"],
+            self.stdColHeaders["Day"],
+            self.stdColHeaders["Year"],
+            self.stdColHeaders["Pages"],
+            self.stdColHeaders["Notes"]
+        ])
+
+        # Create one row
+        self.Datasource._fanzineList=[FanzineTableRow([""]*self.Datasource.NumCols)]
+
+        self._dataGrid.RefreshWxGridFromDatasource()
+
+        # Fill in the upper stuff
+        self.tTopMatter.SetValue("")
+        self.tTopText.SetValue("")
+        self.tLocaleText.SetValue("")
+        self.wxGrid.ClearGrid()
+
+        self.MarkAsSaved()
+        self.RefreshWindow()
+        self.Show(True)
 
 
     #------------------

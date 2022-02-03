@@ -27,6 +27,8 @@ class MainFrame ( wx.Frame ):
 		self.m_toolBarTop.AddControl( self.mLoadNewIssues )
 		self.bLoadNewLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Load New LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bLoadNewLSTFile )
+		self.bCreateNewLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Create New LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_toolBarTop.AddControl( self.bCreateNewLSTFile )
 		self.bSaveLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Save LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bSaveLSTFile )
 		self.bExit = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Exit", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -152,6 +154,7 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_CLOSE, self.OnClose )
 		self.mLoadNewIssues.Bind( wx.EVT_BUTTON, self.OnLoadNewIssues )
 		self.bLoadNewLSTFile.Bind( wx.EVT_BUTTON, self.OnLoadNewLSTFile )
+		self.bCreateNewLSTFile.Bind( wx.EVT_BUTTON, self.OnCreateNewLSTFile )
 		self.bSaveLSTFile.Bind( wx.EVT_BUTTON, self.OnSaveLSTFile )
 		self.bExit.Bind( wx.EVT_BUTTON, self.OnExitClicked )
 		self.tTopMatter.Bind( wx.EVT_TEXT, self.OnTextTopMatter )
@@ -188,6 +191,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnLoadNewLSTFile( self, event ):
+		event.Skip()
+
+	def OnCreateNewLSTFile( self, event ):
 		event.Skip()
 
 	def OnSaveLSTFile( self, event ):
