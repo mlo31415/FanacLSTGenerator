@@ -259,17 +259,11 @@ class MainWindow(MainFrame):
     # Create a new, empty LST file
     def OnCreateNewLSTFile(self, event):       # MainWindow(MainFrame)
 
-        # Create an empty LSTFile object
-        self.lstfile=LSTFile()
-
+        # THe strategy is to fill in the dialog and then create the LSTfile from it
         self.lstFilename=""
         self.dirname=""
 
-        self.FirstLine=""
-        self.TopTextLines=[]
-        self.Locale=[]
-
-        # Create Column headers
+        # Create default column headers
         self._Datasource.ColDefs=ColDefinitionsList([
             self.stdColHeaders["Filename"],
             self.stdColHeaders["Issue"],
@@ -283,12 +277,13 @@ class MainWindow(MainFrame):
             self.stdColHeaders["Notes"]
         ])
 
-        # Create one row
+        # Create one empty row
         self.Datasource._fanzineList=[FanzineTableRow([""]*self.Datasource.NumCols)]
 
+        # Update the dialog's grid from the data
         self._dataGrid.RefreshWxGridFromDatasource()
 
-        # Fill in the upper stuff
+        # Fill in the dialog's upper stuff
         self.tTopMatter.SetValue("")
         self.tTopText.SetValue("")
         self.tLocaleText.SetValue("")
