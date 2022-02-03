@@ -23,7 +23,7 @@ class MainWindow(MainFrame):
         self.Datasource=FanzineTablePage()
 
         self._signature=0
-        self.lstFilename="Init value"
+        self.lstFilename=""
         self.dirname="Init value"
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
@@ -302,6 +302,25 @@ class MainWindow(MainFrame):
     #------------------
     # Save an LSTFile object to disk.
     def OnSaveLSTFile(self, event):       # MainWindow(MainFrame)
+
+        if self.lstFilename == "":
+            # Use the Save dialog to decide where to save it.
+            dlg=wx.FileDialog(self, "Save LST file", self.dirname, "", "*.LST", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT | wx.FD_CHANGE_DIR)
+            dlg.SetWindowStyle(wx.STAY_ON_TOP)
+
+            if dlg.ShowModal() != wx.ID_OK:
+                dlg.Raise()
+                dlg.Destroy()
+                return False
+
+            self.lstFilename=dlg.GetFilename()
+            name, ext=self.lstFilename.splitext()
+            if ext.lower() != ".lst":
+                self.lstFilename=name+".LST"
+            self.dirname=dlg.GetDirectory()
+            dlg.Destroy()
+            return
+
 
         lstfile=self.CreateLSTFileFromDatasourceEtc()
 
