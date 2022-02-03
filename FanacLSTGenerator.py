@@ -287,7 +287,6 @@ class MainWindow(MainFrame):
         self.tTopMatter.SetValue("")
         self.tTopText.SetValue("")
         self.tLocaleText.SetValue("")
-        self.wxGrid.ClearGrid()
 
         self.MarkAsSaved()
         self.RefreshWindow()
