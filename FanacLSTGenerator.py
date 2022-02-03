@@ -308,11 +308,15 @@ class MainWindow(MainFrame):
                 return False
 
             self.lstFilename=dlg.GetFilename()
-            name, ext=self.lstFilename.splitext()
+            name, ext=os.path.splitext(self.lstFilename)
             if ext.lower() != ".lst":
                 self.lstFilename=name+".LST"
             self.dirname=dlg.GetDirectory()
             dlg.Destroy()
+
+            lstfile=self.CreateLSTFileFromDatasourceEtc()
+
+            self.SaveFile(lstfile, self.lstFilename)
             return
 
 
@@ -332,13 +336,16 @@ class MainWindow(MainFrame):
             Log(f"OnSaveLSTFile fails when trying to rename {oldname} to {newname}", isError=True)
             Bailout(PermissionError, f"OnSaveLSTFile fails when trying to rename {oldname} to {newname}", "LSTError")
 
+        self.SaveFile(lstfile, oldname)
+
+    # Save an LST file
+    def SaveFile(self, lstfile, name):
         try:
-            lstfile.Save(oldname)
+            lstfile.Save(name)
             self.MarkAsSaved()
         except:
-            Log(f"OnSaveLSTFile failed while trying to save {oldname}", isError=True)
-            Bailout(PermissionError, "OnSaveLSTFile failed when trying to write file "+oldname, "LSTError")
-
+            Log(f"OnSaveLSTFile failed while trying to save {name}", isError=True)
+            Bailout(PermissionError, "OnSaveLSTFile failed when trying to write file "+name, "LSTError")
 
     def MaybeSetNeedsSavingFlag(self):
         s="Editing "+self.lstFilename
