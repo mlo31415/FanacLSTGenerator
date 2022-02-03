@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 import re
 
-from HelpersPackage import CanonicizeColumnHeaders, Bailout
+from HelpersPackage import CanonicizeColumnHeaders, Bailout, StripSpecificTag
 from PDFHelpers import GetPdfPageCount
 
 
@@ -100,6 +100,7 @@ class LSTFile:
                 break
             # Once we find a line that starts with <fanac-type>, we send the lines to local until we find a line that ends with </fanac-type>
             if inFanacType or line.startswith("<fanac-type>"):
+                line=StripSpecificTag(StripSpecificTag(line, "fanac-type"), "h2")
                 self.Locale.append(line)
                 if not line.endswith("</fanac-type>"):
                     inFanacType=True
@@ -233,7 +234,7 @@ class LSTFile:
 
         if self.Locale:
             for line in self.Locale:
-                content.append(line)
+                content.append(f"<fanac-type><h2>{line}</fanac-type></h2>")
             content.append("")
 
         # Go through the headers and rows and trim any trailing columns which are entirely empty.
