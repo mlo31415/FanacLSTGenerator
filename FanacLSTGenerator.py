@@ -284,9 +284,9 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource()
 
         # Fill in the dialog's upper stuff
-        self.tTopMatter.SetValue("")
-        self.tTopText.SetValue("")
-        self.tLocaleText.SetValue("")
+        self.tTopMatter.SetValue("Fanzine Name; Editor(s); Dates; Fanzine Type")
+        self.tTopText.SetValue("Other comments...")
+        self.tLocaleText.SetValue("NY: Yorktown Heights")
 
         self.MarkAsSaved()
         self.RefreshWindow()
