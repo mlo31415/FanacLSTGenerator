@@ -231,7 +231,7 @@ class LSTFile:
 
         if self.Locale:
             for line in self.Locale:
-                content.append(f"<fanac-type><h2>{line}</fanac-type></h2>")
+                content.append(f"<fanac-type><h2>{line}</h2></fanac-type>")
             content.append("")
 
         # Go through the headers and rows and trim any trailing columns which are entirely empty.
