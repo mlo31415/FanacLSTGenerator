@@ -25,7 +25,7 @@ class MainFrame ( wx.Frame ):
 		self.m_toolBarTop = self.CreateToolBar( wx.TB_HORIZONTAL, wx.ID_ANY )
 		self.mLoadNewIssues = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Load New Issue(s)", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.mLoadNewIssues )
-		self.bLoadNewLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Load New LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.bLoadNewLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Load LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bLoadNewLSTFile )
 		self.bCreateNewLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Create New LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bCreateNewLSTFile )
