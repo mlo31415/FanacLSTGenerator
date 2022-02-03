@@ -285,7 +285,7 @@ class MainWindow(MainFrame):
 
         # Fill in the dialog's upper stuff
         self.tTopMatter.SetValue("Fanzine Name; Editor(s); Dates; Fanzine Type")
-        self.tTopText.SetValue("Other comments...")
+        self.tTopText.SetValue("")
         self.tLocaleText.SetValue("NY: Yorktown Heights")
 
         self.MarkAsSaved()
