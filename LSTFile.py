@@ -100,7 +100,7 @@ class LSTFile:
                 break
             # Once we find a line that starts with <fanac-type>, we send the lines to local until we find a line that ends with </fanac-type>
             if inFanacType or line.startswith("<fanac-type>"):
-                line=StripSpecificTag(StripSpecificTag(line, "fanac-type"), "h2")
+                line=StripSpecificTag(StripSpecificTag(line, "fanac-type"), "h2")   # But we don't want to show the tags
                 self.Locale.append(line)
                 if not line.endswith("</fanac-type>"):
                     inFanacType=True
@@ -117,9 +117,6 @@ class LSTFile:
             if not IsTableLine(line):
                 break       # If we hit a line that is not a table line, we must be past the table
             rowLines.append(line)
-
-        if len(rowLines) == 0:
-            Bailout(ValueError, "No row lines found", "LST Generator: Read LST file")
 
         # Change the column headers to their standard form
         self.ColumnHeaders=[CanonicizeColumnHeaders(h.strip()) for h in colHeaderLine.split(";") if len(h) > 0]
