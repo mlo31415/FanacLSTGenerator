@@ -169,37 +169,6 @@ class LSTFile:
             if len(row) < len(self.ColumnHeaders):
                 row.extend([""]*(len(self.ColumnHeaders)-len(row)))
 
-        # Run through the rows and columns and look at the Notes column  If an APA mailing note is present,
-        # move it to a "Mailing" column (which may need to be created).  Remove the text from the Notes column.
-        # Find the Notes column. If there is none, we're done.
-        if "Notes" in self.ColumnHeaders:
-            notescol=self.ColumnHeaders.index("Notes")
-
-            # Look through the rows and extract mailing info, if any
-            # We're looking for things like [for/in] <apa> nnn
-            apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP"]
-            mailing=[""]*len(self.Rows)
-            found=False
-            for i, row in enumerate(self.Rows):
-                for apa in apas:
-                    pat=f"(?:for|in|)[^a-zA-Z]+{apa}\s+([0-9]+)[,;]?"
-                    m=re.search(pat, row[notescol])
-                    if m is not None:
-                        mailing[i]=apa+" "+m.groups()[0]
-                        row[notescol]=re.sub(pat, "", row[notescol]).strip()
-                        found=True
-
-            if found:
-                # Append a mailing column if needed
-                if "Mailing" not in self.ColumnHeaders:
-                    self.ColumnHeaders.append("Mailing")
-                mailcol=self.ColumnHeaders.index("Mailing")
-
-                for i, row in enumerate(self.Rows):
-                    if len(row) < len(self.ColumnHeaders):
-                        row.append("")
-                    row[mailcol]=mailing[i]
-
         # If there are any rows with a pdf we want to make sure they are listed as PDF in a PDF column
         # Add the PDF column if necessary
 

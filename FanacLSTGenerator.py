@@ -141,6 +141,8 @@ class MainWindow(MainFrame):
 
         self.Datasource._fanzineList=FTRList
 
+        self.ExtractApaMailings()
+
         self._dataGrid.RefreshWxGridFromDatasource()
 
         # Fill in the upper stuff
@@ -470,7 +472,6 @@ class MainWindow(MainFrame):
             Enable("Rename Column")
 
         # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
-        mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem("Extract Scanner"))
         if self.Datasource.ColDefs[self._dataGrid.clickedColumn].Preferred == "Notes":
             # We only want to enable the "Extract Scanner" item if the Notes column contains scanned by information
             for row in self.Datasource.Rows:
@@ -480,8 +481,11 @@ class MainWindow(MainFrame):
                         "scanned by" in note or \
                         "scanning by" in note or \
                         "scanned at" in note:
-                    mi.Enable(True)
+                    Enable("Extract Scanner")
+                    break
 
+        if self.Datasource.ColHeaders[self._dataGrid.clickedColumn] == "Notes":
+            Enable("Extract APA Mailings")
 
         # Pop the menu up.
         self.PopupMenu(self.m_GridPopup)
@@ -598,6 +602,43 @@ class MainWindow(MainFrame):
     def OnPopupExtractScanner(self, event):       # MainWindow(MainFrame)
         self.ExtractScanner(self.Datasource.ColDefs.index("Notes"))
         self.RefreshWindow()
+
+    def OnPopupExtractApaMailings(self, event):
+        self.ExtractApaMailings()
+        self.RefreshWindow()
+
+
+    # Run through the rows and columns and look at the Notes column  If an APA mailing note is present,
+    # move it to a "Mailing" column (which may need to be created).  Remove the text from the Notes column.
+    # Find the Notes column. If there is none, we're done.
+    def ExtractApaMailings(self):
+        if "Notes" in self._Datasource.ColHeaders:
+            notescol=self._Datasource.ColHeaders.index("Notes")
+
+            # Look through the rows and extract mailing info, if any
+            # We're looking for things like [for/in] <apa> nnn
+            apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP"]
+            mailing=[""]*len(self._Datasource.Rows)
+            found=False
+            for i, row in enumerate(self._Datasource.Rows):
+                for apa in apas:
+                    pat=f"(?:for|in|)[^a-zA-Z]+{apa}\s+([0-9]+)[,;]?"
+                    m=re.search(pat, row[notescol])
+                    if m is not None:
+                        mailing[i]=apa+" "+m.groups()[0]
+                        row[notescol]=re.sub(pat, "", row[notescol]).strip()
+                        found=True
+
+            if found:
+                # Append a mailing column if needed
+                if "Mailing" not in self._Datasource.ColHeaders:
+                    self._Datasource.InsertColumnHeader(-1, self.stdColHeaders["Mailing"])
+                mailcol=self._Datasource.ColHeaders.index("Mailing")
+
+                for i, row in enumerate(self._Datasource.Rows):
+                    if len(row) < len(self._Datasource.ColHeaders):
+                        self._Datasource.Rows[i].Extend([""])
+                    row[mailcol]=mailing[i]
 
 
 # An individual file to be listed under a convention
