@@ -218,7 +218,6 @@ class MainWindow(MainFrame):
 
         # We have a list of file names. Sort them and add them to the rows at the bottom
         files.sort()
-        nrows=self.Datasource.NumRows
         iPdf=-1     # Just to make static error checking happy
         # Are any of these PDFs?
         if any([file.lower().endswith(".pdf") for file in files]):
@@ -232,6 +231,7 @@ class MainWindow(MainFrame):
                     self.Datasource.Rows[i].Cells=cells[:2]+[""]+cells[2:]
                 iPdf=2
 
+        nrows=self.Datasource.NumRows
         self.Datasource.AppendEmptyRows(len(files))
         for i, file in enumerate(files):
             self.Datasource.Rows[nrows+i][0]=file
