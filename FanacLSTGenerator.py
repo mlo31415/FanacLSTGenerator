@@ -198,7 +198,7 @@ class MainWindow(MainFrame):
 
         self.Destroy()
 
-    def OnLoadNewIssues(self, event):       # MainWindow(MainFrame)
+    def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
         files=[]
         # Call the File Open dialog to select PDF files
         with wx.FileDialog(self,
@@ -280,7 +280,7 @@ class MainWindow(MainFrame):
         ])
 
         # Create one empty row
-        self.Datasource._fanzineList=[FanzineTableRow([""]*self.Datasource.NumCols)]
+        self.Datasource._fanzineList=[]#[FanzineTableRow([""]*self.Datasource.NumCols)]
 
         # Update the dialog's grid from the data
         self._dataGrid.RefreshWxGridFromDatasource()
