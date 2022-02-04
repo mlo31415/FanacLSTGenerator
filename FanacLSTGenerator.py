@@ -56,6 +56,7 @@ class MainWindow(MainFrame):
             self.dirname=os.getcwd()
 
         # Read the LST file
+        self.MarkAsSaved()      # We don't need to save whatever it is that is present now.
         if not self.LoadLSTFile():
             return
 
@@ -189,6 +190,7 @@ class MainWindow(MainFrame):
     def OnClose(self, event):       # MainWindow(MainFrame)
         if OnCloseHandling(event, self.NeedsSaving(), "The LST file has been updated and not yet saved. Exit anyway?"):
             return
+        self.MarkAsSaved()  # The contents have been declared doomed
 
         # Save the window's position
         pos=self.GetPosition()
@@ -251,6 +253,10 @@ class MainWindow(MainFrame):
     # Load an LST file from disk into an LSTFile class
     def OnLoadNewLSTFile(self, event):       # MainWindow(MainFrame)
 
+        if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Replace anyway?"):
+            return
+        self.MarkAsSaved()  # The contents have been declared doomed
+
         if not self.LoadLSTFile():
             return
 
@@ -260,6 +266,10 @@ class MainWindow(MainFrame):
     # ------------------
     # Create a new, empty LST file
     def OnCreateNewLSTFile(self, event):       # MainWindow(MainFrame)
+
+        if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
+            return
+        self.MarkAsSaved()  # The contents have been declared doomed
 
         # THe strategy is to fill in the dialog and then create the LSTfile from it
         self.lstFilename=""
