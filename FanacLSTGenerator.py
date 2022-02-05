@@ -627,30 +627,34 @@ class MainWindow(MainFrame):
 
             # Look through the rows and extract mailing info, if any
             # We're looking for things like [for/in] <apa> nnn
+            mailings=[""]*len(self._Datasource.Rows)     # Collect the mailing into in this until later when we have a chance to put it in its own column
             apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP"]
-            mailing=[""]*len(self._Datasource.Rows)
-            found=False
             for i, row in enumerate(self._Datasource.Rows):
                 for apa in apas:
                     pat=f"(?:for|in|)[^a-zA-Z]+{apa}\s+([0-9]+)[,;]?"
                     m=re.search(pat, row[notescol])
                     if m is not None:
-                        mailing[i]=apa+" "+m.groups()[0]
+                        # We found a mailing.  Add it to the tenporary list of mailings and remove it from the mailings column
+                        mailings[i]=apa+" "+m.groups()[0]
                         row[notescol]=re.sub(pat, "", row[notescol]).strip()
-                        found=True
 
-            if found:
+            # If any mailings were found, we need to put them into their new column (and maybe create the new column as well.)
+            if any([m for m in mailings]):
                 # Append a mailing column if needed
                 if "Mailing" not in self._Datasource.ColHeaders:
                     self._Datasource.InsertColumnHeader(-1, self.stdColHeaders["Mailing"])
-                mailcol=self._Datasource.ColHeaders.index("Mailing")
-
+                # And in each row append an empty cell
                 for i, row in enumerate(self._Datasource.Rows):
                     if len(row) < len(self._Datasource.ColHeaders):
                         self._Datasource.Rows[i].Extend([""])
-                    row[mailcol]=mailing[i]
+
+                # And move the mailing info
+                mailcol=self._Datasource.ColHeaders.index("Mailing")
+                for i, row in enumerate(self._Datasource.Rows):
+                    row[mailcol]=mailings[i]
 
 
+#=============================================================
 # An individual file to be listed under a convention
 # This is a single row
 class FanzineTableRow(GridDataRowClass):
