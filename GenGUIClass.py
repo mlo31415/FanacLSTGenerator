@@ -37,22 +37,71 @@ class MainFrame ( wx.Frame ):
 
 		bSizerMain = wx.BoxSizer( wx.VERTICAL )
 
-		fgSizerComments = wx.FlexGridSizer( 3, 2, 0, 0 )
+		gSizer2 = wx.GridSizer( 2, 4, 0, 0 )
+
+		gSizer2.SetMinSize( wx.Size( 900,60 ) )
+		self.m_staticText4 = wx.StaticText( self, wx.ID_ANY, u"Fanzine Name", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText4.Wrap( -1 )
+
+		self.m_staticText4.SetMinSize( wx.Size( 200,-1 ) )
+		self.m_staticText4.SetMaxSize( wx.Size( -1,50 ) )
+
+		gSizer2.Add( self.m_staticText4, 0, wx.ALL|wx.FIXED_MINSIZE, 5 )
+
+		self.m_staticText5 = wx.StaticText( self, wx.ID_ANY, u"Editor(s)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText5.Wrap( -1 )
+
+		self.m_staticText5.SetMinSize( wx.Size( 200,-1 ) )
+		self.m_staticText5.SetMaxSize( wx.Size( -1,50 ) )
+
+		gSizer2.Add( self.m_staticText5, 0, wx.ALL|wx.FIXED_MINSIZE, 5 )
+
+		self.m_staticText6 = wx.StaticText( self, wx.ID_ANY, u"Dates", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText6.Wrap( -1 )
+
+		self.m_staticText6.SetMinSize( wx.Size( 200,-1 ) )
+		self.m_staticText6.SetMaxSize( wx.Size( -1,50 ) )
+
+		gSizer2.Add( self.m_staticText6, 0, wx.ALL|wx.FIXED_MINSIZE, 5 )
+
+		self.m_staticText7 = wx.StaticText( self, wx.ID_ANY, u"Fanzine Type", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText7.Wrap( -1 )
+
+		self.m_staticText7.SetMinSize( wx.Size( 200,-1 ) )
+		self.m_staticText7.SetMaxSize( wx.Size( -1,50 ) )
+
+		gSizer2.Add( self.m_staticText7, 0, wx.ALL|wx.FIXED_MINSIZE, 5 )
+
+		self.tFanzineName = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
+		self.tFanzineName.SetMinSize( wx.Size( 200,-1 ) )
+
+		gSizer2.Add( self.tFanzineName, 0, wx.ALL|wx.FIXED_MINSIZE, 0 )
+
+		self.tEditors = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
+		self.tEditors.SetMinSize( wx.Size( 200,-1 ) )
+
+		gSizer2.Add( self.tEditors, 0, wx.ALL|wx.FIXED_MINSIZE, 0 )
+
+		self.tDates = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.tDates.SetMinSize( wx.Size( 200,-1 ) )
+
+		gSizer2.Add( self.tDates, 0, wx.ALL|wx.FIXED_MINSIZE, 0 )
+
+		tFanzineTypeChoices = [ u" ", u"Newszine", u"Clubzine", u"Genzine" ]
+		self.tFanzineType = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, tFanzineTypeChoices, 0 )
+		self.tFanzineType.SetSelection( 0 )
+		self.tFanzineType.SetMinSize( wx.Size( 200,-1 ) )
+
+		gSizer2.Add( self.tFanzineType, 0, wx.ALL|wx.FIXED_MINSIZE, 0 )
+
+
+		bSizerMain.Add( gSizer2, 0, wx.FIXED_MINSIZE, 5 )
+
+		fgSizerComments = wx.FlexGridSizer( 4, 2, 0, 0 )
 		fgSizerComments.AddGrowableCol( 1 )
 		fgSizerComments.AddGrowableRow( 0 )
 		fgSizerComments.SetFlexibleDirection( wx.BOTH )
 		fgSizerComments.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
-
-		self.m_staticText1 = wx.StaticText( self, wx.ID_ANY, u"Top matter:", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_staticText1.Wrap( -1 )
-
-		fgSizerComments.Add( self.m_staticText1, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
-
-		self.tTopMatter = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 800,30 ), wx.TE_MULTILINE )
-		self.tTopMatter.SetMinSize( wx.Size( -1,30 ) )
-		self.tTopMatter.SetMaxSize( wx.Size( -1,30 ) )
-
-		fgSizerComments.Add( self.tTopMatter, 0, wx.ALL|wx.EXPAND, 5 )
 
 		self.m_staticText2 = wx.StaticText( self, wx.ID_ANY, u"Top Comments: ", wx.Point( -1,-1 ), wx.DefaultSize, 0 )
 		self.m_staticText2.Wrap( -1 )
@@ -160,7 +209,10 @@ class MainFrame ( wx.Frame ):
 		self.bCreateNewLSTFile.Bind( wx.EVT_BUTTON, self.OnCreateNewLSTFile )
 		self.bSaveLSTFile.Bind( wx.EVT_BUTTON, self.OnSaveLSTFile )
 		self.bExit.Bind( wx.EVT_BUTTON, self.OnExitClicked )
-		self.tTopMatter.Bind( wx.EVT_TEXT, self.OnTextTopMatter )
+		self.tFanzineName.Bind( wx.EVT_TEXT, self.OnFanzineName )
+		self.tEditors.Bind( wx.EVT_TEXT, self.OnEditors )
+		self.tDates.Bind( wx.EVT_TEXT, self.OnDates )
+		self.tFanzineType.Bind( wx.EVT_CHOICE, self.OnFanzineType )
 		self.tTopText.Bind( wx.EVT_TEXT, self.OnTextTopComments )
 		self.tLocaleText.Bind( wx.EVT_TEXT, self.OnTextLocale )
 		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged )
@@ -206,7 +258,16 @@ class MainFrame ( wx.Frame ):
 	def OnExitClicked( self, event ):
 		event.Skip()
 
-	def OnTextTopMatter( self, event ):
+	def OnFanzineName( self, event ):
+		event.Skip()
+
+	def OnEditors( self, event ):
+		event.Skip()
+
+	def OnDates( self, event ):
+		event.Skip()
+
+	def OnFanzineType( self, event ):
 		event.Skip()
 
 	def OnTextTopComments( self, event ):

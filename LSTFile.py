@@ -7,8 +7,12 @@ from PDFHelpers import GetPdfPageCount
 
 @dataclass(order=False)
 class LSTFile:
-    FirstLine: str=""
-    TopTextLines: list[str] = field(default_factory=list)
+    FanzineName: str=""
+    Editors: str=""
+    Dates: str=""
+    FanzineType: str=""
+
+    TopComments: list[str] = field(default_factory=list)
     Locale: list[str] = field(default_factory=list)
     ColumnHeaders: list[str] = field(default_factory=list)        # The actual text of the column headers
     #ColumnHeaderTypes: list[str] = field(default_factory=list)    # The single character types for the corresponding ColumnHeaders
@@ -74,7 +78,17 @@ class LSTFile:
         # The first non-empty line is the first line. (Since we've already collapsed runs of multiple empty lines to one, we only have to check the 1st line.)
         if not contents[0]:
             contents.pop(0)
-        self.FirstLine=contents.pop(0)
+        firstLine=contents.pop(0)
+        # The Firstline is Name;Editor;Dates;Type, so parse it into fields
+        parsed=firstLine.split(";")
+        if len(parsed) > 0:
+            self.FanzineName=parsed[0]
+        if len(parsed) > 1:
+            self.Editors=parsed[1]
+        if len(parsed) > 2:
+            self.Dates=parsed[2]
+        if len(parsed) > 3:
+            self.FanzineType=parsed[3]
 
         # Inline function to test if a line is a table row
         # Because we have already extracted the top line (which looks line a table line), we can use this function to detect the column headers
@@ -86,7 +100,7 @@ class LSTFile:
         # Go through the lines one-by-one, looking for a table line. Until that is found, accumulate toptext lines
         # Be on the lookout for Locale lines (bracketed by <<fanac-type>>)
         # Once we hit the table, we move to a new loop.
-        self.TopTextLines=[]
+        self.TopComments=[]
         self.Locale=[]
         rowLines=[]     # This will accumulate the column header line and row lines
         colHeaderLine=""
@@ -107,7 +121,7 @@ class LSTFile:
                     continue
                 inFanacType=False
             else:
-                self.TopTextLines.append(line)
+                self.TopComments.append(line)
 
         # Time to read the table header and rows
         while contents:
@@ -191,10 +205,10 @@ class LSTFile:
     # Format the data and save it as an LST file on disk
     def Save(self, filename: str) -> None:
 
-        content=[self.FirstLine, ""]
+        content=[f"{self.FanzineName};{self.Editors};{self.Dates};{self.FanzineType}", ""]
 
-        if self.TopTextLines and "".join(self.TopTextLines):    # Only write these lines if there is at least one non-empty line
-            for line in self.TopTextLines:
+        if self.TopComments and "".join(self.TopComments):    # Only write these lines if there is at least one non-empty line
+            for line in self.TopComments:
                 content.append(line)
             content.append("")
 

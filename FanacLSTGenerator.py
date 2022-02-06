@@ -147,13 +147,18 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource()
 
         # Fill in the upper stuff
-        self.tTopMatter.SetValue("")
         self.tTopText.SetValue("")
         self.tLocaleText.SetValue("")
         self.wxGrid.ClearGrid()
-        self.tTopMatter.SetValue(lstfile.FirstLine)
-        if len(lstfile.TopTextLines) > 0:
-            self.tTopText.SetValue("\n".join(lstfile.TopTextLines))
+        self.tFanzineName.SetValue(lstfile.FanzineName)
+        self.tEditors.SetValue(lstfile.Editors)
+        self.tDates.SetValue(lstfile.Dates)
+        num=self.tFanzineType.FindString(lstfile.FanzineType)
+        if num == -1:
+            num=0
+        self.tFanzineType.SetSelection(num)
+        if len(lstfile.TopComments) > 0:
+            self.tTopText.SetValue("\n".join(lstfile.TopComments))
         if lstfile.Locale:
             self.tLocaleText.SetValue("\n".join(lstfile.Locale))
 
@@ -166,8 +171,12 @@ class MainWindow(MainFrame):
         lstfile=LSTFile()
 
         # Fill in the upper stuff
-        lstfile.FirstLine=self.tTopMatter.GetValue().strip()
-        lstfile.TopTextLines=self.tTopText.GetValue().split("\n")
+        lstfile.FanzineName=self.tFanzineName.GetValue().strip()
+        lstfile.Editors=self.tEditors.GetValue().strip()
+        lstfile.Dates=self.tDates.GetValue().strip()
+        lstfile.FanzineType=self.tFanzineType.GetString(self.tFanzineType.GetSelection()).strip()
+
+        lstfile.TopComments=self.tTopText.GetValue().split("\n")
         lstfile.Locale=[self.tLocaleText.GetValue().strip()]
 
         # Copy over the column headers
@@ -296,9 +305,11 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource()
 
         # Fill in the dialog's upper stuff
-        self.tTopMatter.SetValue("Fanzine Name; Editor(s); Dates; Fanzine Type")
-        self.tTopText.SetValue("")
-        self.tLocaleText.SetValue("NY: Yorktown Heights")
+        self.tFanzineName.SetValue("")
+        self.tEditors.SetValue("")
+        self.tDates.SetValue("")
+        self.tFanzineType.SetSelection(0)
+        self.tLocaleText.SetValue("")
 
         self.MarkAsSaved()
         self.RefreshWindow()
@@ -373,9 +384,9 @@ class MainWindow(MainFrame):
     # ----------------------------------------------
     # Used to determine if anything has been updated
     def Signature(self) -> int:       # MainWindow(MainFrame)
-        h=hash("".join(self.Datasource.TopTextLines))
+        h=hash("".join(self.Datasource.TopComments))
+        h+=hash(f"{self.Datasource.FanzineName};{self.Datasource.Editors};{self.Datasource.Dates};{self.Datasource.FanzineType}")
         h+=hash("".join(self.Datasource.Locale))
-        h+=hash(self.tTopMatter.GetValue())
         h+=self.Datasource.Signature()
         return h
 
@@ -385,17 +396,32 @@ class MainWindow(MainFrame):
     def NeedsSaving(self):       # MainWindow(MainFrame)
         return self._signature != self.Signature()
 
-    #------------------
-    def OnTextTopMatter(self, event):       # MainWindow(MainFrame)
-        self.FirstLine=self.tTopMatter.GetValue()
+    # #------------------
+    # def OnTextTopMatter(self, event):       # MainWindow(MainFrame)
+    #     self.FirstLine=self.tTopMatter.GetValue()
+    #     self.RefreshWindow()
+
+    def OnFanzineName(self, event):
+        self.Datasource.FanzineName=self.tFanzineName.GetValue()
         self.RefreshWindow()
 
+    def OnEditors(self, event):
+        self.Datasource.Editors=self.tEditors.GetValue()
+        self.RefreshWindow()
+
+    def OnDates(self, event):
+        self.Datasource.Dates=self.tDates.GetValue()
+        self.RefreshWindow()
+
+    def OnFanzineType(self, event):
+        self.Datasource.FanzineType=self.tFanzineType.GetSelection()
+        self.RefreshWindow()
     #------------------
     def OnTextTopComments(self, event):       # MainWindow(MainFrame)
-        if self.Datasource.TopTextLines is not None and len(self.Datasource.TopTextLines) > 0:
-            self.Datasource.TopTextLines=self.tTopText.GetValue().split("\n")
+        if self.Datasource.TopComments is not None and len(self.Datasource.TopComments) > 0:
+            self.Datasource.TopComments=self.tTopText.GetValue().split("\n")
         else:
-            self.Datasource.TopTextLines=self.tTopText.GetValue().split("\n")
+            self.Datasource.TopComments=self.tTopText.GetValue().split("\n")
 
         self.RefreshWindow()
 
@@ -725,14 +751,19 @@ class FanzineTablePage(GridDataSource):
         self._gridDataRowClass=FanzineTableRow
         self._name: str=""
         self._specialTextColor: Optional[Color, bool]=True
-        self.TopTextLines: list[str]=[]
+        self.TopComments: list[str]=[]
         self.Locale: list[str]=[]
-        self.FirstLine: str=""
+        self.FanzineName: str=""
+        self.Editors: str=""
+        self.Dates: str=""
+        self.FanzineType: str=""
+
 
 
     def Signature(self) -> int:
         s=self._colDefs.Signature()
-        s+=hash(self._name.strip()+"".join(self.TopTextLines).strip()+"".join(self.Locale).strip()+self.FirstLine.strip())
+        s+=hash(self._name.strip()+"".join(self.TopComments).strip()+"".join(self.Locale).strip())
+        s+=hash(f"{self.FanzineName};{self.Editors};{self.Dates};{self.FanzineType}")
         s+=sum([x.Signature()*(i+1) for i, x in enumerate(self._fanzineList)])
         return s+hash(self._specialTextColor)+self._colDefs.Signature()
 
