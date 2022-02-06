@@ -396,11 +396,6 @@ class MainWindow(MainFrame):
     def NeedsSaving(self):       # MainWindow(MainFrame)
         return self._signature != self.Signature()
 
-    # #------------------
-    # def OnTextTopMatter(self, event):       # MainWindow(MainFrame)
-    #     self.FirstLine=self.tTopMatter.GetValue()
-    #     self.RefreshWindow()
-
     def OnFanzineName(self, event):
         self.Datasource.FanzineName=self.tFanzineName.GetValue()
         self.RefreshWindow()
