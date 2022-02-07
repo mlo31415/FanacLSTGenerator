@@ -246,17 +246,42 @@ class MainWindow(MainFrame):
         self.Datasource.AppendEmptyRows(len(files))
         for i, file in enumerate(files):
             self.Datasource.Rows[nrows+i][0]=file
-            # If it's a PDF, get its pagecount and add it to the row
-            if file.lower().endswith(".pdf"):
-                self.Datasource.Rows[nrows+i][iPdf]="PDF"
-                pages=GetPdfPageCount(file)
-                if pages is not None:
-                    pagesCol=self.Datasource.ColHeaderIndex("pages")
-                    if pagesCol != -1:
-                        self.Datasource.Rows[nrows+i][pagesCol]=str(pages)
+
+        rows=slice(nrows, nrows+len(files))     # Slice of the new rows
+        self.UpdatePDFColumn(rows)
 
         self._dataGrid.RefreshWxGridFromDatasource()
 
+    #--------------------------
+    # Check a specific subset of rows (as defined by the slice) to see if one of the file is a pdf
+    # If a pdf is found possibly add a PDF column and fill the PDF column in for those rows.
+    def UpdatePDFColumn(self, rows: slice):
+        assert rows.step == 1 or rows.step is None
+        # Are any of these PDFs?
+        if not any([row[0].lower().endswith(".pdf") for row in self.Datasource.Rows[rows]]):
+            return
+
+        # Do we need to add a PDF column?
+        iPdf=self.Datasource.ColHeaderIndex("pdf")
+        if iPdf == -1:
+            # We don't have an existing PDF column, but we now have at least one pdf file
+            # Add the PDF column as the third column to the existing rows
+            self.Datasource.InsertColumnHeader(2, ColDefinition("PDF"))
+            for i, row in enumerate(self.Datasource.Rows):
+                self.Datasource.Rows[i].Cells=row.Cells[:2]+[""]+row.Cells[2:]
+            iPdf=2
+
+        self.Datasource.AppendEmptyRows(len(self.Datasource.Rows[rows]))
+        for i, row in enumerate(self.Datasource.Rows[rows]):
+            # If it's a PDF, get its pagecount and add it to the row
+            irow=rows.start+i   # We know that the step is always 1 for a slice argument to this function
+            if row[0].lower().endswith(".pdf"):
+                self.Datasource.Rows[irow][iPdf]="PDF"
+                pages=GetPdfPageCount(row[0])
+                if pages is not None:
+                    pagesCol=self.Datasource.ColHeaderIndex("pages")
+                    if pagesCol != -1:
+                        self.Datasource.Rows[irow][pagesCol]=str(pages)
 
     #------------------
     # Load an LST file from disk into an LSTFile class
@@ -437,6 +462,11 @@ class MainWindow(MainFrame):
     #------------------
     def OnGridCellChanged(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnGridCellChanged(event)  # Pass event handling to WxDataGrid
+
+        row=event.GetRow()
+        col=event.GetCol()
+        if col == 0:    # If the Filename changes
+            self.UpdatePDFColumn(slice(row, row+1))
         self.RefreshWindow()
 
     #------------------
