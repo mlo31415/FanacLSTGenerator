@@ -229,19 +229,6 @@ class MainWindow(MainFrame):
 
         # We have a list of file names. Sort them and add them to the rows at the bottom
         files.sort()
-        iPdf=-1     # Just to make static error checking happy
-        # Are any of these PDFs?
-        if any([file.lower().endswith(".pdf") for file in files]):
-            # Do we need to add a PDF column?
-            iPdf=self.Datasource.ColHeaderIndex("pdf")
-            if iPdf == -1:
-                # Add the PDF column as the third column
-                self.Datasource.InsertColumnHeader(2, ColDefinition("PDF"))
-                for i, row in enumerate(self.Datasource.Rows):
-                    cells=self.Datasource.Rows[i].Cells
-                    self.Datasource.Rows[i].Cells=cells[:2]+[""]+cells[2:]
-                iPdf=2
-
         nrows=self.Datasource.NumRows
         self.Datasource.AppendEmptyRows(len(files))
         for i, file in enumerate(files):
