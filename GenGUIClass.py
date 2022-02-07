@@ -97,6 +97,33 @@ class MainFrame ( wx.Frame ):
 
 		bSizerMain.Add( gSizer2, 0, wx.FIXED_MINSIZE, 5 )
 
+		fgSizer2 = wx.FlexGridSizer( 0, 2, 0, 0 )
+		fgSizer2.SetFlexibleDirection( wx.BOTH )
+		fgSizer2.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+
+		self.m_staticText71 = wx.StaticText( self, wx.ID_ANY, u"Local Directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText71.Wrap( -1 )
+
+		fgSizer2.Add( self.m_staticText71, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+		self.tDirectoryLocal = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
+		self.tDirectoryLocal.SetMinSize( wx.Size( 500,-1 ) )
+
+		fgSizer2.Add( self.tDirectoryLocal, 0, wx.ALL, 5 )
+
+		self.m_staticText711 = wx.StaticText( self, wx.ID_ANY, u"Server Directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText711.Wrap( -1 )
+
+		fgSizer2.Add( self.m_staticText711, 0, wx.ALL, 5 )
+
+		self.tDirectoryServer = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
+		self.tDirectoryServer.SetMinSize( wx.Size( 500,-1 ) )
+
+		fgSizer2.Add( self.tDirectoryServer, 0, wx.ALL, 5 )
+
+
+		bSizerMain.Add( fgSizer2, 0, wx.EXPAND, 5 )
+
 		fgSizerComments = wx.FlexGridSizer( 4, 2, 0, 0 )
 		fgSizerComments.AddGrowableCol( 1 )
 		fgSizerComments.AddGrowableRow( 0 )
@@ -213,6 +240,8 @@ class MainFrame ( wx.Frame ):
 		self.tEditors.Bind( wx.EVT_TEXT, self.OnEditors )
 		self.tDates.Bind( wx.EVT_TEXT, self.OnDates )
 		self.tFanzineType.Bind( wx.EVT_CHOICE, self.OnFanzineType )
+		self.tDirectoryLocal.Bind( wx.EVT_TEXT, self.OnDirectoryLocal )
+		self.tDirectoryServer.Bind( wx.EVT_TEXT, self.OnDirectoryServer )
 		self.tTopText.Bind( wx.EVT_TEXT, self.OnTextTopComments )
 		self.tLocaleText.Bind( wx.EVT_TEXT, self.OnTextLocale )
 		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged )
@@ -268,6 +297,12 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnFanzineType( self, event ):
+		event.Skip()
+
+	def OnDirectoryLocal( self, event ):
+		event.Skip()
+
+	def OnDirectoryServer( self, event ):
 		event.Skip()
 
 	def OnTextTopComments( self, event ):

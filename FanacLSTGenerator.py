@@ -24,7 +24,8 @@ class MainWindow(MainFrame):
 
         self._signature=0
         self.lstFilename=""
-        self.dirname="Init value"
+        self.DirectoryLocal=""  # Local directory where the LST file, etc., reside
+        self.DirectoryServer="" # Server directory to be created under /fanzines
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
@@ -51,9 +52,9 @@ class MainWindow(MainFrame):
                                                               ColDefinition("Repro", Type="str", Width=75)
                                                               ])
 
-        self.dirname=''
+        self.DirectoryLocal=''
         if len(sys.argv) > 1:
-            self.dirname=os.getcwd()
+            self.DirectoryLocal=os.getcwd()
 
         # Read the LST file
         self.MarkAsSaved()      # We don't need to save whatever it is that is present now.
@@ -88,7 +89,7 @@ class MainWindow(MainFrame):
     def LoadLSTFile(self) -> bool:       # MainWindow(MainFrame)
 
         # Call the File Open dialog to get an LST file
-        dlg=wx.FileDialog(self, "Select LST file to load", self.dirname, "", "*.LST", wx.FD_OPEN)
+        dlg=wx.FileDialog(self, "Select LST file to load", self.DirectoryLocal, "", "*.LST", wx.FD_OPEN)
         dlg.SetWindowStyle(wx.STAY_ON_TOP)
 
         if dlg.ShowModal() != wx.ID_OK:
@@ -101,11 +102,11 @@ class MainWindow(MainFrame):
         lstfile=LSTFile()
 
         self.lstFilename=dlg.GetFilename()
-        self.dirname=dlg.GetDirectory()
+        self.DirectoryLocal=dlg.GetDirectory()
         dlg.Destroy()
 
         # Read the lst file
-        pathname=os.path.join(self.dirname, self.lstFilename)
+        pathname=os.path.join(self.DirectoryLocal, self.lstFilename)
         try:
             lstfile.Load(pathname)
         except Exception as e:
@@ -214,7 +215,7 @@ class MainWindow(MainFrame):
         # Call the File Open dialog to select PDF files
         with wx.FileDialog(self,
                            message="Select PDF files to add",
-                           defaultDir=self.dirname,
+                           defaultDir=self.DirectoryLocal,
                            wildcard="PDF files (*.pdf)|*.pdf",
                            style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_FILE_MUST_EXIST | wx.STAY_ON_TOP) as dlg:
 
@@ -222,7 +223,7 @@ class MainWindow(MainFrame):
                 return
 
             files=dlg.GetFilenames()
-            self.dirname=dlg.GetDirectory()
+            self.DirectoryLocal=dlg.GetDirectory()
 
         if not files:  # Empty selection
             return
@@ -294,7 +295,7 @@ class MainWindow(MainFrame):
 
         # THe strategy is to fill in the dialog and then create the LSTfile from it
         self.lstFilename=""
-        self.dirname=""
+        self.DirectoryLocal=""
 
         # Create default column headers
         self._Datasource.ColDefs=ColDefinitionsList([
@@ -335,7 +336,7 @@ class MainWindow(MainFrame):
         # Handle the case where we are saving a new file
         if self.lstFilename == "":
             # Use the Save dialog to decide where to save it.
-            dlg=wx.FileDialog(self, "Save LST file", self.dirname, "", "*.LST", wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT | wx.FD_CHANGE_DIR)
+            dlg=wx.FileDialog(self, "Save LST file", self.DirectoryLocal, "", "*.LST", wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT|wx.FD_CHANGE_DIR)
             dlg.SetWindowStyle(wx.STAY_ON_TOP)
 
             if dlg.ShowModal() != wx.ID_OK:
@@ -347,7 +348,7 @@ class MainWindow(MainFrame):
             name, ext=os.path.splitext(self.lstFilename)
             if ext.lower() != ".lst":
                 self.lstFilename=name+".LST"
-            self.dirname=dlg.GetDirectory()
+            self.DirectoryLocal=dlg.GetDirectory()
             dlg.Destroy()
 
             lstfile=self.CreateLSTFileFromDatasourceEtc()
@@ -358,13 +359,13 @@ class MainWindow(MainFrame):
         lstfile=self.CreateLSTFileFromDatasourceEtc()
 
         # Rename the old file
-        oldname=os.path.join(self.dirname, self.lstFilename)
-        newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
+        oldname=os.path.join(self.DirectoryLocal, self.lstFilename)
+        newname=os.path.join(self.DirectoryLocal, os.path.splitext(self.lstFilename)[0]+"-old.LST")
         try:
             i=0
             while os.path.exists(newname):
                 i+=1
-                newname=os.path.join(self.dirname, os.path.splitext(self.lstFilename)[0]+"-old-"+str(i)+".LST")
+                newname=os.path.join(self.DirectoryLocal, os.path.splitext(self.lstFilename)[0]+"-old-"+str(i)+".LST")
 
             os.rename(oldname, newname)
         except:
@@ -423,6 +424,7 @@ class MainWindow(MainFrame):
     def OnFanzineType(self, event):
         self.Datasource.FanzineType=self.tFanzineType.GetSelection()
         self.RefreshWindow()
+
     #------------------
     def OnTextTopComments(self, event):       # MainWindow(MainFrame)
         if self.Datasource.TopComments is not None and len(self.Datasource.TopComments) > 0:
@@ -431,6 +433,14 @@ class MainWindow(MainFrame):
             self.Datasource.TopComments=self.tTopText.GetValue().split("\n")
 
         self.RefreshWindow()
+
+    # ------------------
+    def OnDirectoryLocal(self, event):
+        self.DirectoryLocal=self.tDirectoryLocal.GetValue()
+
+    # ------------------
+    def OnDirectoryServer(self, event):
+        self.DirectoryServer=self.tDirectoryServer.GetValue()
 
     #------------------
     def OnTextLocale(self, event):       # MainWindow(MainFrame)
