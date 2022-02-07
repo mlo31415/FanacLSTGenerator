@@ -37,16 +37,22 @@ class MainFrame ( wx.Frame ):
 
 		bSizerMain = wx.BoxSizer( wx.VERTICAL )
 
-		gSizer2 = wx.GridSizer( 2, 4, 0, 0 )
+		fgSizer4 = wx.FlexGridSizer( 2, 8, 0, 0 )
+		fgSizer4.SetFlexibleDirection( wx.BOTH )
+		fgSizer4.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
-		gSizer2.SetMinSize( wx.Size( 900,60 ) )
 		self.m_staticText4 = wx.StaticText( self, wx.ID_ANY, u"Fanzine Name", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText4.Wrap( -1 )
 
 		self.m_staticText4.SetMinSize( wx.Size( 200,-1 ) )
 		self.m_staticText4.SetMaxSize( wx.Size( -1,50 ) )
 
-		gSizer2.Add( self.m_staticText4, 0, wx.ALL|wx.FIXED_MINSIZE, 5 )
+		fgSizer4.Add( self.m_staticText4, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 5 )
+
+		self.tFanzineName = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
+		self.tFanzineName.SetMinSize( wx.Size( 200,-1 ) )
+
+		fgSizer4.Add( self.tFanzineName, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 0 )
 
 		self.m_staticText5 = wx.StaticText( self, wx.ID_ANY, u"Editor(s)", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText5.Wrap( -1 )
@@ -54,7 +60,12 @@ class MainFrame ( wx.Frame ):
 		self.m_staticText5.SetMinSize( wx.Size( 200,-1 ) )
 		self.m_staticText5.SetMaxSize( wx.Size( -1,50 ) )
 
-		gSizer2.Add( self.m_staticText5, 0, wx.ALL|wx.FIXED_MINSIZE, 5 )
+		fgSizer4.Add( self.m_staticText5, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 5 )
+
+		self.tEditors = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.tEditors.SetMinSize( wx.Size( 200,-1 ) )
+
+		fgSizer4.Add( self.tEditors, 0, wx.ALL, 5 )
 
 		self.m_staticText6 = wx.StaticText( self, wx.ID_ANY, u"Dates", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText6.Wrap( -1 )
@@ -62,7 +73,12 @@ class MainFrame ( wx.Frame ):
 		self.m_staticText6.SetMinSize( wx.Size( 200,-1 ) )
 		self.m_staticText6.SetMaxSize( wx.Size( -1,50 ) )
 
-		gSizer2.Add( self.m_staticText6, 0, wx.ALL|wx.FIXED_MINSIZE, 5 )
+		fgSizer4.Add( self.m_staticText6, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 5 )
+
+		self.tDates = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.tDates.SetMinSize( wx.Size( 200,-1 ) )
+
+		fgSizer4.Add( self.tDates, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 0 )
 
 		self.m_staticText7 = wx.StaticText( self, wx.ID_ANY, u"Fanzine Type", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText7.Wrap( -1 )
@@ -70,30 +86,24 @@ class MainFrame ( wx.Frame ):
 		self.m_staticText7.SetMinSize( wx.Size( 200,-1 ) )
 		self.m_staticText7.SetMaxSize( wx.Size( -1,50 ) )
 
-		gSizer2.Add( self.m_staticText7, 0, wx.ALL|wx.FIXED_MINSIZE, 5 )
-
-		self.tFanzineName = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
-		self.tFanzineName.SetMinSize( wx.Size( 200,-1 ) )
-
-		gSizer2.Add( self.tFanzineName, 0, wx.ALL|wx.FIXED_MINSIZE, 0 )
-
-		self.tEditors = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
-		self.tEditors.SetMinSize( wx.Size( 200,-1 ) )
-
-		gSizer2.Add( self.tEditors, 0, wx.ALL|wx.FIXED_MINSIZE, 0 )
-
-		self.tDates = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.tDates.SetMinSize( wx.Size( 200,-1 ) )
-
-		gSizer2.Add( self.tDates, 0, wx.ALL|wx.FIXED_MINSIZE, 0 )
+		fgSizer4.Add( self.m_staticText7, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 5 )
 
 		tFanzineTypeChoices = [ u" ", u"Newszine", u"Clubzine", u"Genzine" ]
 		self.tFanzineType = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, tFanzineTypeChoices, 0 )
 		self.tFanzineType.SetSelection( 0 )
 		self.tFanzineType.SetMinSize( wx.Size( 200,-1 ) )
 
-		gSizer2.Add( self.tFanzineType, 0, wx.ALL|wx.FIXED_MINSIZE, 0 )
+		fgSizer4.Add( self.tFanzineType, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 0 )
 
+		self.m_radioBtnComplete = wx.RadioButton( self, wx.ID_ANY, u"Complete?", wx.DefaultPosition, wx.DefaultSize, 0 )
+		fgSizer4.Add( self.m_radioBtnComplete, 0, wx.ALL, 5 )
+
+
+		bSizerMain.Add( fgSizer4, 1, wx.EXPAND, 5 )
+
+		gSizer2 = wx.GridSizer( 2, 4, 0, 0 )
+
+		gSizer2.SetMinSize( wx.Size( 900,60 ) )
 
 		bSizerMain.Add( gSizer2, 0, wx.FIXED_MINSIZE, 5 )
 
@@ -240,6 +250,7 @@ class MainFrame ( wx.Frame ):
 		self.tEditors.Bind( wx.EVT_TEXT, self.OnEditors )
 		self.tDates.Bind( wx.EVT_TEXT, self.OnDates )
 		self.tFanzineType.Bind( wx.EVT_CHOICE, self.OnFanzineType )
+		self.m_radioBtnComplete.Bind( wx.EVT_RADIOBUTTON, self.OnCompleteButton )
 		self.tDirectoryLocal.Bind( wx.EVT_TEXT, self.OnDirectoryLocal )
 		self.tDirectoryServer.Bind( wx.EVT_TEXT, self.OnDirectoryServer )
 		self.tTopText.Bind( wx.EVT_TEXT, self.OnTextTopComments )
@@ -297,6 +308,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnFanzineType( self, event ):
+		event.Skip()
+
+	def OnCompleteButton( self, event ):
 		event.Skip()
 
 	def OnDirectoryLocal( self, event ):

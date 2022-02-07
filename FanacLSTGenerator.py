@@ -26,6 +26,7 @@ class MainWindow(MainFrame):
         self.lstFilename=""
         self.DirectoryLocal=""  # Local directory where the LST file, etc., reside
         self.DirectoryServer="" # Server directory to be created under /fanzines
+        self.Complete=False     # Is this fanzine series complete?
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
@@ -433,6 +434,10 @@ class MainWindow(MainFrame):
             self.Datasource.TopComments=self.tTopText.GetValue().split("\n")
 
         self.RefreshWindow()
+
+    # ------------------
+    def OnCompleteButton(self, event):
+        self.Complete=self.m_radioBtnComplete.GetValue()
 
     # ------------------
     def OnDirectoryLocal(self, event):
