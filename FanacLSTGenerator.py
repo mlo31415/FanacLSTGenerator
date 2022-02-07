@@ -271,7 +271,7 @@ class MainWindow(MainFrame):
                 self.Datasource.Rows[i].Cells=row.Cells[:2]+[""]+row.Cells[2:]
             iPdf=2
 
-        self.Datasource.AppendEmptyRows(len(self.Datasource.Rows[rows]))
+        self.Datasource.AppendEmptyRows(rows.stop-rows.start)
         for i, row in enumerate(self.Datasource.Rows[rows]):
             # If it's a PDF, get its pagecount and add it to the row
             irow=rows.start+i   # We know that the step is always 1 for a slice argument to this function
