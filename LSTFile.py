@@ -2,7 +2,6 @@ from dataclasses import dataclass, field
 import re
 
 from HelpersPackage import CanonicizeColumnHeaders, Bailout, StripSpecificTag
-from PDFHelpers import GetPdfPageCount
 
 
 @dataclass(order=False)
