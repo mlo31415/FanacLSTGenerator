@@ -27,6 +27,7 @@ class MainWindow(MainFrame):
         self.DirectoryLocal=""  # Local directory where the LST file, etc., reside
         self.DirectoryServer="" # Server directory to be created under /fanzines
         self.Complete=False     # Is this fanzine series complete?
+        self.NewDirectory=False # Are we creating a new directory? (Alternative is that we're editing and old oen.)
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
@@ -97,7 +98,11 @@ class MainWindow(MainFrame):
             dlg.Raise()
             dlg.Destroy()
             self.OnCreateNewLSTFile(None)
+            self.NewDirectory=True
+            self.bSaveLSTFile.Label="Create New Directory"
             return False
+
+        self.bSaveLSTFile.Label="Save LST File"
 
         # Clear out old information from form.
         lstfile=LSTFile()

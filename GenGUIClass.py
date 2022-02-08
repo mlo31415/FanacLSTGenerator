@@ -29,7 +29,7 @@ class MainFrame ( wx.Frame ):
 		self.m_toolBarTop.AddControl( self.bLoadNewLSTFile )
 		self.bCreateNewLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Create New LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bCreateNewLSTFile )
-		self.bSaveLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Save LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.bSaveLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Create New Directory", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bSaveLSTFile )
 		self.bExit = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Exit", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bExit )
