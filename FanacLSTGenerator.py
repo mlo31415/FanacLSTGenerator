@@ -284,6 +284,8 @@ class MainWindow(MainFrame):
         if not self.LoadLSTFile():
             return
 
+        #TODO Rummage through the auxillary files (which may not be there) to get things linke COMPLETE and Scanned BY
+
         self.tDirectoryLocal.SetValue(self.DirectoryLocal)
         self.tDirectoryLocal.SetEditable(False)
         self.tDirectoryServer.SetValue("")
