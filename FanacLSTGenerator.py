@@ -10,7 +10,7 @@ from GenGUIClass import MainFrame
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from WxHelpers import OnCloseHandling
 from LSTFile import *
-from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone
+from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, Log, LogClose
 from Settings import Settings
@@ -338,13 +338,24 @@ class MainWindow(MainFrame):
 
 
     #------------------
-    # Save an LSTFile object to disk.
+    # Save an LSTFile object to disk and maybe create a whole new directory
     def OnSaveLSTFile(self, event):       # MainWindow(MainFrame)
 
         # Handle the case where we are saving a new file
-        if self.lstFilename == "":
-            # Use the Save dialog to decide where to save it.
-            dlg=wx.FileDialog(self, "Save LST file", self.DirectoryLocal, "", "*.LST", wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT|wx.FD_CHANGE_DIR)
+        if self.NewDirectory:
+            self.CreateLSTDirectory()
+            return
+
+        self.SaveExistingLSTFile()
+
+
+    #------------------
+    # Create a new fanzine directory and LSTfile
+    def CreateLSTDirectory(self):       # MainWindow(MainFrame)
+
+        # If a directory was not specified, use the Save dialog to decide where to save it.
+        if not self.DirectoryLocal:
+            dlg=wx.DirDialog(self, "Create new directory", "", wx.DD_DEFAULT_STYLE)
             dlg.SetWindowStyle(wx.STAY_ON_TOP)
 
             if dlg.ShowModal() != wx.ID_OK:
@@ -352,18 +363,34 @@ class MainWindow(MainFrame):
                 dlg.Destroy()
                 return False
 
-            self.lstFilename=dlg.GetFilename()
-            name, ext=os.path.splitext(self.lstFilename)
-            if ext.lower() != ".lst":
-                self.lstFilename=name+".LST"
-            self.DirectoryLocal=dlg.GetDirectory()
+            self.DirectoryLocal=dlg.GetPath()
             dlg.Destroy()
 
-            lstfile=self.CreateLSTFileFromDatasourceEtc()
-
-            self.SaveFile(lstfile, self.lstFilename)
+        # The directory must not exist, otherwise
+        if os.path.exists(self.DirectoryLocal):
+            MessageBox(f"Directory {self.DirectoryLocal} already exists.")
             return
 
+        # Create the new directory
+        os.mkdir(self.DirectoryLocal)
+
+        # Save the LSTFile in the new directory
+        name, ext=os.path.splitext(self.DirectoryLocal)
+        if ext.lower() != ".lst":
+            self.lstFilename=name+".LST"
+
+        lstfile=self.CreateLSTFileFromDatasourceEtc()
+        self.SaveFile(lstfile, self.lstFilename)
+
+
+
+
+
+    # ------------------
+    # Save an LSTFile object to disk and maybe create a whole new directory
+    def SaveExistingLSTFile(self):
+
+        # Create an LSTfile class from the datasource
         lstfile=self.CreateLSTFileFromDatasourceEtc()
 
         # Rename the old file
@@ -382,6 +409,7 @@ class MainWindow(MainFrame):
 
         self.SaveFile(lstfile, oldname)
 
+
     # Save an LST file
     def SaveFile(self, lstfile, name):
         try:
@@ -390,6 +418,7 @@ class MainWindow(MainFrame):
         except:
             Log(f"OnSaveLSTFile failed while trying to save {name}", isError=True)
             Bailout(PermissionError, "OnSaveLSTFile failed when trying to write file "+name, "LSTError")
+
 
     def MaybeSetNeedsSavingFlag(self):
         s="Editing "+self.lstFilename
