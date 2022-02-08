@@ -460,7 +460,7 @@
                 <object class="sizeritem" expanded="1">
                     <property name="border">5</property>
                     <property name="flag">wxEXPAND</property>
-                    <property name="proportion">1</property>
+                    <property name="proportion">0</property>
                     <object class="wxFlexGridSizer" expanded="1">
                         <property name="cols">8</property>
                         <property name="flexible_direction">wxBOTH</property>

@@ -99,7 +99,7 @@ class MainFrame ( wx.Frame ):
 		fgSizer4.Add( self.m_radioBtnComplete, 0, wx.ALL, 5 )
 
 
-		bSizerMain.Add( fgSizer4, 1, wx.EXPAND, 5 )
+		bSizerMain.Add( fgSizer4, 0, wx.EXPAND, 5 )
 
 		gSizer2 = wx.GridSizer( 2, 4, 0, 0 )
 
