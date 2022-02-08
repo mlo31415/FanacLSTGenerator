@@ -330,6 +330,8 @@ class MainWindow(MainFrame):
         self.tFanzineType.SetSelection(0)
         self.tLocaleText.SetValue("")
 
+        self.bSaveLSTFile.Label="Create New Directory"
+
         self.MarkAsSaved()
         self.RefreshWindow()
         self.Show(True)
