@@ -295,7 +295,7 @@ class MainWindow(MainFrame):
 
     # ------------------
     # Create a new, empty LST file
-    def OnCreateNewLSTFile(self, event):       # MainWindow(MainFrame)
+    def OnCreateNewFanzineDir(self, event):       # MainWindow(MainFrame)
 
         if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
             return
