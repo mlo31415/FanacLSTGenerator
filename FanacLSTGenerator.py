@@ -27,7 +27,7 @@ class MainWindow(MainFrame):
         self.DirectoryLocal=""  # Local directory where the LST file, etc., reside
         self.DirectoryServer="" # Server directory to be created under /fanzines
         self.Complete=False     # Is this fanzine series complete?
-        self.NewDirectory=False # Are we creating a new directory? (Alternative is that we're editing and old oen.)
+        self.NewDirectory=False # Are we creating a new directory? (Alternative is that we're editing and old one.)
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
@@ -301,7 +301,6 @@ class MainWindow(MainFrame):
             return
         self.MarkAsSaved()  # The contents have been declared doomed
 
-        # THe strategy is to fill in the dialog and then create the LSTfile from it
         self.lstFilename=""
         self.DirectoryLocal=""
 
@@ -351,6 +350,28 @@ class MainWindow(MainFrame):
             return
 
         self.SaveExistingLSTFile()
+
+
+    # Save an existing LST file by simply overwriting what exists.
+    def SaveExistingLSTFile(self):
+        # Create an instance of the LSTfile class from the datasource
+        lstfile=self.CreateLSTFileFromDatasourceEtc()
+
+        # Rename the old file
+        oldname=os.path.join(self.DirectoryLocal, self.lstFilename)
+        newname=os.path.join(self.DirectoryLocal, os.path.splitext(self.lstFilename)[0]+"-old.LST")
+        try:
+            i=0
+            while os.path.exists(newname):
+                i+=1
+                newname=os.path.join(self.DirectoryLocal, os.path.splitext(self.lstFilename)[0]+"-old-"+str(i)+".LST")
+
+            os.rename(oldname, newname)
+        except Exception as e:
+            Log(f"OnSaveLSTFile fails when trying to rename {oldname} to {newname}", isError=True)
+            Bailout(PermissionError, f"OnSaveLSTFile fails when trying to rename {oldname} to {newname}", "LSTError")
+
+        self.SaveFile(lstfile, oldname)
 
 
     #------------------
