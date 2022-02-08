@@ -60,8 +60,6 @@ class MainWindow(MainFrame):
 
         # Read the LST file
         self.MarkAsSaved()      # We don't need to save whatever it is that is present now.
-        if not self.LoadLSTFile():
-            return
 
         # Position the window on the screen it was on before
         tlwp=Settings().Get("Top Level Window Position")
