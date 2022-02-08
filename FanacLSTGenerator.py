@@ -286,7 +286,7 @@ class MainWindow(MainFrame):
 
         self.tDirectoryLocal.SetValue(self.DirectoryLocal)
         self.tDirectoryLocal.SetEditable(False)
-        self.tDirectoryServer.SetValue(self.DirectoryLocal)
+        self.tDirectoryServer.SetValue("")
         self.tDirectoryServer.SetEditable(False)
         self.NewDirectory=False
 
