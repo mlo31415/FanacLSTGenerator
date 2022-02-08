@@ -722,10 +722,18 @@ class MainWindow(MainFrame):
             apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP"]
             for i, row in enumerate(self._Datasource.Rows):
                 for apa in apas:
+                    # Sometimes the apa reference is part of a hyperlink.  Look for that, first
+                    pat=f"(<a HREF=.+>)(?:for|in|[^a-zA-Z]*){apa}\s+([0-9]+[AB]?)(</a>)[,;]?"
+                    m=re.search(pat, row[notescol])
+                    if m is not None:
+                        # We found a mailing inside a hyperlink.  Add it to the temporary list of mailings and remove it from the mailings column
+                        mailings[i]=m.groups()[0]+apa+" "+m.groups()[1]+m.groups()[2]
+                        row[notescol]=re.sub(pat, "", row[notescol]).strip()
+
                     pat=f"(?:for|in|)[^a-zA-Z]+{apa}\s+([0-9]+)[,;]?"
                     m=re.search(pat, row[notescol])
                     if m is not None:
-                        # We found a mailing.  Add it to the tenporary list of mailings and remove it from the mailings column
+                        # We found a mailing.  Add it to the tenmorary list of mailings and remove it from the mailings column
                         mailings[i]=apa+" "+m.groups()[0]
                         row[notescol]=re.sub(pat, "", row[notescol]).strip()
 
