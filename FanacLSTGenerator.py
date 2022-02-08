@@ -281,6 +281,8 @@ class MainWindow(MainFrame):
         if not self.LoadLSTFile():
             return
 
+        self.tDirectoryLocal.SetValue(self.lstFilename)
+        self.tDirectoryLocal.SetEditable(False)
         self.MarkAsSaved()
         self.RefreshWindow()
 
