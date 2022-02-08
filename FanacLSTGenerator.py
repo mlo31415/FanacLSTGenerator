@@ -389,11 +389,14 @@ class MainWindow(MainFrame):
     # Save an LST file
     def SaveFile(self, lstfile, name):
         try:
-            lstfile.Save(name)
+            if not lstfile.Save(name):
+                Log(f"OnSaveLSTFile failed (1) while trying to save {name}", isError=True)
+                MessageBox(f"Failure saving {name}")
+                return
             self.MarkAsSaved()
         except:
             Log(f"OnSaveLSTFile failed while trying to save {name}", isError=True)
-            Bailout(PermissionError, "OnSaveLSTFile failed when trying to write file "+name, "LSTError")
+            Bailout(PermissionError, "OnSaveLSTFile failed (2) when trying to write file "+name, "LSTError")
 
 
     def MaybeSetNeedsSavingFlag(self):
