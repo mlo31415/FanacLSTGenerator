@@ -97,7 +97,7 @@ class MainWindow(MainFrame):
             dlg.Destroy()
             return False
 
-        # Clear out old information from form.
+        # Clear out any old information from form.
         lstfile=LSTFile()
 
         self.lstFilename=dlg.GetFilename()
@@ -272,7 +272,7 @@ class MainWindow(MainFrame):
 
     #------------------
     # Load an LST file from disk into an LSTFile class
-    def OnLoadNewLSTFile(self, event):       # MainWindow(MainFrame)
+    def OnLoadExistingLSTFile(self, event):       # MainWindow(MainFrame)
 
         if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Replace anyway?"):
             return
