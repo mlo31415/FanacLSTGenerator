@@ -95,8 +95,6 @@ class MainWindow(MainFrame):
         if dlg.ShowModal() != wx.ID_OK:
             dlg.Raise()
             dlg.Destroy()
-            self.OnCreateNewLSTFile(None)
-            self.NewDirectory=True
             return False
 
         # Clear out old information from form.
@@ -313,7 +311,7 @@ class MainWindow(MainFrame):
         ])
 
         # Create one empty row
-        self.Datasource._fanzineList=[]#[FanzineTableRow([""]*self.Datasource.NumCols)]
+        self.Datasource._fanzineList=[]
 
         # Update the dialog's grid from the data
         self._dataGrid.RefreshWxGridFromDatasource()
