@@ -286,6 +286,10 @@ class MainWindow(MainFrame):
 
         self.tDirectoryLocal.SetValue(self.DirectoryLocal)
         self.tDirectoryLocal.SetEditable(False)
+        self.tDirectoryServer.SetValue(self.DirectoryLocal)
+        self.tDirectoryServer.SetEditable(False)
+        self.NewDirectory=False
+
         self.MarkAsSaved()
         self.RefreshWindow()
 
@@ -327,6 +331,10 @@ class MainWindow(MainFrame):
         self.tDates.SetValue("")
         self.tFanzineType.SetSelection(0)
         self.tLocaleText.SetValue("")
+
+        self.tDirectoryLocal.SetEditable(True)
+        self.tDirectoryServer.SetEditable(True)
+        self.NewDirectory=True
 
         self.MarkAsSaved()
         self.RefreshWindow()
