@@ -202,7 +202,7 @@ class LSTFile:
 
     # ---------------------------------
     # Format the data and save it as an LST file on disk
-    def Save(self, filename: str) -> None:
+    def Save(self, filename: str) -> bool:
 
         content=[f"{self.FanzineName};{self.Editors};{self.Dates};{self.FanzineType}", ""]
 
@@ -218,6 +218,8 @@ class LSTFile:
 
         # Go through the headers and rows and trim any trailing columns which are entirely empty.
         # First find the last non-empty column
+        if not self.Rows:
+            return False
         maxlen=max([len(row) for row in self.Rows])
         maxlen=max(maxlen, len(self.ColumnHeaders))
         lastNonEmptyColumn=maxlen-1     # lastNonEmptyColumn is an index, not a length
@@ -267,3 +269,5 @@ class LSTFile:
         # And write it out
         with open(filename, "w+") as f:
             f.writelines([c+"\n" for c in content])
+
+        return True

@@ -375,34 +375,6 @@ class MainWindow(MainFrame):
         lstfile=self.CreateLSTFileFromDatasourceEtc()
         self.SaveFile(lstfile, self.lstFilename)
 
-
-
-
-
-    # ------------------
-    # Save an LSTFile object to disk and maybe create a whole new directory
-    def SaveExistingLSTFile(self):
-
-        # Create an LSTfile class from the datasource
-        lstfile=self.CreateLSTFileFromDatasourceEtc()
-
-        # Rename the old file
-        oldname=os.path.join(self.DirectoryLocal, self.lstFilename)
-        newname=os.path.join(self.DirectoryLocal, os.path.splitext(self.lstFilename)[0]+"-old.LST")
-        try:
-            i=0
-            while os.path.exists(newname):
-                i+=1
-                newname=os.path.join(self.DirectoryLocal, os.path.splitext(self.lstFilename)[0]+"-old-"+str(i)+".LST")
-
-            os.rename(oldname, newname)
-        except:
-            Log(f"OnSaveLSTFile fails when trying to rename {oldname} to {newname}", isError=True)
-            Bailout(PermissionError, f"OnSaveLSTFile fails when trying to rename {oldname} to {newname}", "LSTError")
-
-        self.SaveFile(lstfile, oldname)
-
-
     # Save an LST file
     def SaveFile(self, lstfile, name):
         try:
