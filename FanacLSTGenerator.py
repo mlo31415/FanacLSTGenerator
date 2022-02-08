@@ -97,10 +97,7 @@ class MainWindow(MainFrame):
             dlg.Destroy()
             self.OnCreateNewLSTFile(None)
             self.NewDirectory=True
-            self.bSaveLSTFile.Label="Create New Directory"
             return False
-
-        self.bSaveLSTFile.Label="Save LST File"
 
         # Clear out old information from form.
         lstfile=LSTFile()
@@ -327,8 +324,6 @@ class MainWindow(MainFrame):
         self.tDates.SetValue("")
         self.tFanzineType.SetSelection(0)
         self.tLocaleText.SetValue("")
-
-        self.bSaveLSTFile.Label="Create New Directory"
 
         self.MarkAsSaved()
         self.RefreshWindow()
