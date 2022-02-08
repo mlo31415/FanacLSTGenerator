@@ -23,8 +23,8 @@ class MainFrame ( wx.Frame ):
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 
 		self.m_toolBarTop = self.CreateToolBar( wx.TB_HORIZONTAL, wx.ID_ANY )
-		self.mAddNewIssues = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Add New Issue(s)", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_toolBarTop.AddControl( self.mAddNewIssues )
+		self.bAddNewIssues = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Add New Issue(s)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_toolBarTop.AddControl( self.bAddNewIssues )
 		self.bLoadExistingLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Load Existing LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bLoadExistingLSTFile )
 		self.bCreateNewLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Create New LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -241,7 +241,7 @@ class MainFrame ( wx.Frame ):
 
 		# Connect Events
 		self.Bind( wx.EVT_CLOSE, self.OnClose )
-		self.mAddNewIssues.Bind( wx.EVT_BUTTON, self.OnAddNewIssues )
+		self.bAddNewIssues.Bind( wx.EVT_BUTTON, self.OnAddNewIssues )
 		self.bLoadExistingLSTFile.Bind( wx.EVT_BUTTON, self.OnLoadExistingLSTFile )
 		self.bCreateNewLSTFile.Bind( wx.EVT_BUTTON, self.OnCreateNewLSTFile )
 		self.bSave.Bind( wx.EVT_BUTTON, self.OnSaveLSTFile )

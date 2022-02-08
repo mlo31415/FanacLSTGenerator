@@ -69,6 +69,9 @@ class MainWindow(MainFrame):
         if tlws:
             self.SetSize(tlws)
 
+        self.bSave.Enabled=False
+        self.bAddNewIssues.Enabled=False
+
         self.MarkAsSaved()
         self.RefreshWindow()
 
