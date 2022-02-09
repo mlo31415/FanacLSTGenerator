@@ -285,13 +285,16 @@ class MainWindow(MainFrame):
                 self.Datasource.Rows[i].Cells=row.Cells[:2]+[""]+row.Cells[2:]
             iPdf=2
 
+        rootDirectory=Settings().Get("Root directory", default=".")
+        fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.lstFilename))[0]
+
         self.Datasource.AppendEmptyRows(rows.stop-rows.start)
         for i, row in enumerate(self.Datasource.Rows[rows]):
             # If it's a PDF, get its pagecount and add it to the row
             irow=rows.start+i   # We know that the step is always 1 for a slice argument to this function
             if row[0].lower().endswith(".pdf"):
                 self.Datasource.Rows[irow][iPdf]="PDF"
-                pages=GetPdfPageCount(row[0])
+                pages=GetPdfPageCount(os.path.join(fanzineDirectory, row[0]))
                 if pages is not None:
                     pagesCol=self.Datasource.ColHeaderIndex("pages")
                     if pagesCol != -1:
