@@ -333,7 +333,12 @@ class MainWindow(MainFrame):
         self.tFanzineType.SetSelection(0)
         self.tLocaleText.SetValue("")
 
+        rootDirectory=Settings().Get("Root directory", default=".")
+        templateDirectory=Settings().Get("Template directory", default=".")
+
+        # Both directories are editable, for now at least.
         self.tDirectoryLocal.SetEditable(True)
+        self.tDirectoryLocal.SetValue(rootDirectory)
         self.tDirectoryServer.SetEditable(True)
         self.NewDirectory=True
 
