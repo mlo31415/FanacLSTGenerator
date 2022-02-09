@@ -301,7 +301,7 @@ class MainWindow(MainFrame):
 
         if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
             return
-        self.MarkAsSaved()  # The contents have been declared doomed
+        self.MarkAsSaved()  # Existing contents have been declared doomed
 
         self.lstFilename=""
         self.DirectoryLocal=""
