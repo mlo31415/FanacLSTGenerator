@@ -69,9 +69,6 @@ class MainWindow(MainFrame):
         if tlws:
             self.SetSize(tlws)
 
-        self.bSave.Enabled=False
-        self.bAddNewIssues.Enabled=False
-
         self.MarkAsSaved()
         self.RefreshWindow()
 
@@ -84,6 +81,27 @@ class MainWindow(MainFrame):
     def Datasource(self, val: FanzineTablePage):
         self._Datasource=val
         self._dataGrid.Datasource=val
+
+
+    # Look at information availabe and color buttons and fields accordingly.
+    def ColorFields(self):
+        self.bSave.Enabled=False
+
+        # Can't add new issues until we have a target directory defined
+        if self.tDirectoryLocal.GetValue() and self.tFanzineName.GetValue():
+            self.bAddNewIssues.Enabled=False
+
+        # The basic split is whether we are editing an existing LST or creating a new directory
+        if self.NewDirectory:
+            self.tDirectoryLocal.SetEditable(True)
+            self.tDirectoryServer.SetEditable(True)
+            if self.tDirectoryLocal.GetValue() and self.tDirectoryServer.GetValue() and self.tFanzineName.GetValue() and self.Datasource.Rows:
+                self.bSave.Enabled=True
+        else:
+            self.tDirectoryLocal.SetEditable(False)
+            self.tDirectoryServer.SetEditable(False)
+            if self.tFanzineName.GetValue() and self.Datasource.Rows:
+                self.bSave.Enabled=True
 
 
     #------------------
@@ -230,6 +248,12 @@ class MainWindow(MainFrame):
         if not files:  # Empty selection
             return
 
+        # Move the files from the source directory to the fanzine's directory.
+        rootDirectory=Settings().Get("Root directory", default=".")
+        fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.lstFilename))[0]
+        for file in files:
+            os.rename(os.path.join(sourceDirectory, file), os.path.join(fanzineDirectory, file))
+
         # We have a list of file names. Sort them and add them to the rows at the bottom
         files.sort()
         nrows=self.Datasource.NumRows
@@ -287,9 +311,7 @@ class MainWindow(MainFrame):
         #TODO Rummage through the auxillary files (which may not be there) to get things linke COMPLETE and Scanned BY
 
         self.tDirectoryLocal.SetValue(self.DirectoryLocal)
-        self.tDirectoryLocal.SetEditable(False)
         self.tDirectoryServer.SetValue("")
-        self.tDirectoryServer.SetEditable(False)
         self.NewDirectory=False
 
         self.MarkAsSaved()
@@ -337,9 +359,7 @@ class MainWindow(MainFrame):
         templateDirectory=Settings().Get("Template directory", default=".")
 
         # Both directories are editable, for now at least.
-        self.tDirectoryLocal.SetEditable(True)
         self.tDirectoryLocal.SetValue(rootDirectory)
-        self.tDirectoryServer.SetEditable(True)
         self.NewDirectory=True
 
         self.MarkAsSaved()
@@ -437,6 +457,8 @@ class MainWindow(MainFrame):
     def RefreshWindow(self)-> None:       # MainWindow(MainFrame)
         self.MaybeSetNeedsSavingFlag()
         self._dataGrid.RefreshWxGridFromDatasource()
+        self.ColorFields()
+
 
     # ----------------------------------------------
     # Used to determine if anything has been updated
