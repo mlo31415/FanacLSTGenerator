@@ -101,38 +101,37 @@ class MainFrame ( wx.Frame ):
 
 		bSizerMain.Add( fgSizer4, 0, wx.EXPAND, 5 )
 
-		gSizer2 = wx.GridSizer( 2, 4, 0, 0 )
-
-		gSizer2.SetMinSize( wx.Size( 900,60 ) )
-
-		bSizerMain.Add( gSizer2, 0, wx.FIXED_MINSIZE, 5 )
-
 		fgSizer2 = wx.FlexGridSizer( 0, 2, 0, 0 )
-		fgSizer2.SetFlexibleDirection( wx.BOTH )
+		fgSizer2.AddGrowableCol( 0 )
+		fgSizer2.SetFlexibleDirection( wx.HORIZONTAL )
 		fgSizer2.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
-		self.m_staticText71 = wx.StaticText( self, wx.ID_ANY, u"Local Directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_staticText71.Wrap( -1 )
+		self.lLocalDirectory = wx.StaticText( self, wx.ID_ANY, u"Local Directory:", wx.DefaultPosition, wx.Size( -1,-1 ), wx.ALIGN_RIGHT )
+		self.lLocalDirectory.Wrap( -1 )
 
-		fgSizer2.Add( self.m_staticText71, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+		self.lLocalDirectory.SetMinSize( wx.Size( 500,-1 ) )
+
+		fgSizer2.Add( self.lLocalDirectory, 0, wx.ALL, 5 )
 
 		self.tDirectoryLocal = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
-		self.tDirectoryLocal.SetMinSize( wx.Size( 500,-1 ) )
+		self.tDirectoryLocal.SetMinSize( wx.Size( 200,-1 ) )
 
-		fgSizer2.Add( self.tDirectoryLocal, 0, wx.ALL, 5 )
+		fgSizer2.Add( self.tDirectoryLocal, 0, wx.ALIGN_LEFT|wx.ALL, 5 )
 
-		self.m_staticText711 = wx.StaticText( self, wx.ID_ANY, u"Server Directory:", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_staticText711.Wrap( -1 )
+		self.lServerDirectory = wx.StaticText( self, wx.ID_ANY, u"Server Directory:", wx.DefaultPosition, wx.Size( -1,-1 ), wx.ALIGN_RIGHT )
+		self.lServerDirectory.Wrap( -1 )
 
-		fgSizer2.Add( self.m_staticText711, 0, wx.ALL, 5 )
+		self.lServerDirectory.SetMinSize( wx.Size( 500,-1 ) )
+
+		fgSizer2.Add( self.lServerDirectory, 0, wx.ALL, 5 )
 
 		self.tDirectoryServer = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
-		self.tDirectoryServer.SetMinSize( wx.Size( 500,-1 ) )
+		self.tDirectoryServer.SetMinSize( wx.Size( 200,-1 ) )
 
-		fgSizer2.Add( self.tDirectoryServer, 0, wx.ALL, 5 )
+		fgSizer2.Add( self.tDirectoryServer, 0, wx.ALIGN_LEFT|wx.ALL, 5 )
 
 
-		bSizerMain.Add( fgSizer2, 0, wx.EXPAND, 5 )
+		bSizerMain.Add( fgSizer2, 0, 0, 5 )
 
 		fgSizerComments = wx.FlexGridSizer( 4, 2, 0, 0 )
 		fgSizerComments.AddGrowableCol( 1 )
@@ -162,7 +161,7 @@ class MainFrame ( wx.Frame ):
 		fgSizerComments.Add( self.tLocaleText, 0, wx.ALL|wx.EXPAND, 5 )
 
 
-		bSizerMain.Add( fgSizerComments, 1, wx.ALL|wx.EXPAND, 5 )
+		bSizerMain.Add( fgSizerComments, 0, wx.ALL|wx.EXPAND, 5 )
 
 		theIssueGrid = wx.BoxSizer( wx.VERTICAL )
 
