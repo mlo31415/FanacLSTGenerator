@@ -320,7 +320,7 @@ class MainWindow(MainFrame):
             self.stdColHeaders["Notes"]
         ])
 
-        # Create one empty row
+        # Create an empty datasource
         self.Datasource._fanzineList=[]
 
         # Update the dialog's grid from the data
