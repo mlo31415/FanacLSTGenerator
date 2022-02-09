@@ -69,6 +69,12 @@ class MainWindow(MainFrame):
         if tlws:
             self.SetSize(tlws)
 
+        label=Settings().Get("Root directory", default=".").replace("\\", "/")
+        label="Local Directory: "+label+"/"
+        self.lLocalDirectory.SetWindowStyle(self.lLocalDirectory.GetWindowStyle() | wx.ST_ELLIPSIZE_MIDDLE)
+        self.lLocalDirectory.SetLabel(label)
+        self.lLocalDirectory.GetContainingSizer().Layout()
+
         self.MarkAsSaved()
         self.RefreshWindow()
 
