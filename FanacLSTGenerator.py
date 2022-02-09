@@ -475,6 +475,28 @@ class MainWindow(MainFrame):
     def NeedsSaving(self):       # MainWindow(MainFrame)
         return self._signature != self.Signature()
 
+    def FanzineNameToDirName(self, s: str) -> str:
+        return re.sub("[^a-zA-Z0-9\-]+", "_", s)
+
+
+    def AddChar(self, text: str, code) -> str:
+        if code == wx.WXK_BACK and len(text) > 0:
+            return text[:-1]
+        if code < 32 or code > 126:
+            return text
+        return text+chr(code)
+
+
+    def OnFanzineNameChar(self, event):
+        MainFrame.OnFanzineNameChar(self, event)
+        # The only time we update the local directory
+        fname=self.AddChar(self.tFanzineName.GetValue(), event.GetKeyCode())
+        Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
+        converted=self.FanzineNameToDirName(fname)
+        dname=self.tDirectoryLocal.GetValue()
+        if converted.startswith(dname) or dname.startswith(converted) or converted == dname:
+            self.tDirectoryLocal.SetValue(converted)
+
     def OnFanzineName(self, event):
         self.Datasource.FanzineName=self.tFanzineName.GetValue()
         self.RefreshWindow()

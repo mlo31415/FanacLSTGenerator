@@ -246,6 +246,7 @@ class MainFrame ( wx.Frame ):
 		self.bCreateNewFanzineDir.Bind( wx.EVT_BUTTON, self.OnCreateNewFanzineDir )
 		self.bSave.Bind( wx.EVT_BUTTON, self.OnSaveLSTFile )
 		self.bExit.Bind( wx.EVT_BUTTON, self.OnExitClicked )
+		self.tFanzineName.Bind( wx.EVT_CHAR, self.OnFanzineNameChar )
 		self.tFanzineName.Bind( wx.EVT_TEXT, self.OnFanzineName )
 		self.tEditors.Bind( wx.EVT_TEXT, self.OnEditors )
 		self.tDates.Bind( wx.EVT_TEXT, self.OnDates )
@@ -296,6 +297,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnExitClicked( self, event ):
+		event.Skip()
+
+	def OnFanzineNameChar( self, event ):
 		event.Skip()
 
 	def OnFanzineName( self, event ):
