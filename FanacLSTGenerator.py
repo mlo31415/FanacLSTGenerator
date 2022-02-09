@@ -261,6 +261,12 @@ class MainWindow(MainFrame):
             os.rename(os.path.join(sourceDirectory, file), os.path.join(fanzineDirectory, file))
 
         # We have a list of file names. Sort them and add them to the rows at the bottom
+        # Start by removing any empty trailing rows
+        while True:
+            last=self.Datasource.Rows.pop()
+            if any([cell != "" for cell in last.Cells]):
+                self.Datasource.Rows.append(last)
+                break
         files.sort()
         nrows=self.Datasource.NumRows
         self.Datasource.AppendEmptyRows(len(files))
