@@ -243,7 +243,7 @@ class MainWindow(MainFrame):
                 return
 
             files=dlg.GetFilenames()
-            self.DirectoryLocal=dlg.GetDirectory()
+            sourceDirectory=dlg.GetDirectory()
 
         if not files:  # Empty selection
             return
@@ -310,7 +310,7 @@ class MainWindow(MainFrame):
 
         #TODO Rummage through the auxillary files (which may not be there) to get things linke COMPLETE and Scanned BY
 
-        self.tDirectoryLocal.SetValue(self.DirectoryLocal)
+        self.tDirectoryLocal.SetValue("")
         self.tDirectoryServer.SetValue("")
         self.NewDirectory=False
 
@@ -359,7 +359,7 @@ class MainWindow(MainFrame):
         templateDirectory=Settings().Get("Template directory", default=".")
 
         # Both directories are editable, for now at least.
-        self.tDirectoryLocal.SetValue(rootDirectory)
+        self.tDirectoryLocal.SetValue("")
         self.NewDirectory=True
 
         self.MarkAsSaved()
