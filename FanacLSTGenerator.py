@@ -165,7 +165,7 @@ class MainWindow(MainFrame):
 
         self.ExtractApaMailings()
 
-        self._dataGrid.RefreshWxGridFromDatasource()
+        self._dataGrid.RefreshWxGridFromDatasource(IgnoreCurrentGrid=True)
 
         # Fill in the upper stuff
         self.tTopText.SetValue("")
@@ -346,7 +346,7 @@ class MainWindow(MainFrame):
         self.Datasource._fanzineList=[]
 
         # Update the dialog's grid from the data
-        self._dataGrid.RefreshWxGridFromDatasource()
+        self._dataGrid.RefreshWxGridFromDatasource(IgnoreCurrentGrid=True)
 
         # Fill in the dialog's upper stuff
         self.tFanzineName.SetValue("")
