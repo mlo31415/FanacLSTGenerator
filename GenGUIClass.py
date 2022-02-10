@@ -95,8 +95,8 @@ class MainFrame ( wx.Frame ):
 
 		fgSizer4.Add( self.tFanzineType, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 0 )
 
-		self.m_radioBtnComplete = wx.RadioButton( self, wx.ID_ANY, u"Complete?", wx.DefaultPosition, wx.DefaultSize, 0 )
-		fgSizer4.Add( self.m_radioBtnComplete, 0, wx.ALL, 5 )
+		self.rbComplete = wx.RadioButton( self, wx.ID_ANY, u"Complete?", wx.DefaultPosition, wx.DefaultSize, 0 )
+		fgSizer4.Add( self.rbComplete, 0, wx.ALL, 5 )
 
 
 		bSizerMain.Add( fgSizer4, 0, wx.EXPAND, 5 )
@@ -250,7 +250,7 @@ class MainFrame ( wx.Frame ):
 		self.tEditors.Bind( wx.EVT_TEXT, self.OnEditors )
 		self.tDates.Bind( wx.EVT_TEXT, self.OnDates )
 		self.tFanzineType.Bind( wx.EVT_CHOICE, self.OnFanzineType )
-		self.m_radioBtnComplete.Bind( wx.EVT_RADIOBUTTON, self.OnCompleteButton )
+		self.rbComplete.Bind( wx.EVT_RADIOBUTTON, self.OnCompleteButton )
 		self.tDirectoryLocal.Bind( wx.EVT_TEXT, self.OnDirectoryLocal )
 		self.tDirectoryServer.Bind( wx.EVT_TEXT, self.OnDirectoryServer )
 		self.tTopText.Bind( wx.EVT_TEXT, self.OnTextTopComments )
