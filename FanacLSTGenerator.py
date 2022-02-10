@@ -94,8 +94,7 @@ class MainWindow(MainFrame):
         self.bSave.Enabled=False
 
         # Can't add new issues until we have a target directory defined
-        if self.tDirectoryLocal.GetValue() and self.tFanzineName.GetValue():
-            self.bAddNewIssues.Enabled=False
+        self.bAddNewIssues.Enabled=len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0
 
         # The basic split is whether we are editing an existing LST or creating a new directory
         if self.NewDirectory:
