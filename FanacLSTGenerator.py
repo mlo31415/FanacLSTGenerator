@@ -261,7 +261,7 @@ class MainWindow(MainFrame):
 
         # We have a list of file names. Sort them and add them to the rows at the bottom
         # Start by removing any empty trailing rows
-        while True:
+        while self.Datasource.Rows:
             last=self.Datasource.Rows.pop()
             if any([cell != "" for cell in last.Cells]):
                 self.Datasource.Rows.append(last)
