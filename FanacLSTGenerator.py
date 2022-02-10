@@ -385,16 +385,15 @@ class MainWindow(MainFrame):
     # Save an LSTFile object to disk and maybe create a whole new directory
     def OnSave(self, event):       # MainWindow(MainFrame)
 
-        # Handle the case where we are saving a new file
         if self.NewDirectory:
             self.CreateLSTDirectory()
-            return
+        else:
+            self.SaveExistingLSTFile()
 
-        self.SaveExistingLSTFile()
 
-
+    #------------------
     # Save an existing LST file by simply overwriting what exists.
-    def SaveExistingLSTFile(self):
+    def SaveExistingLSTFile(self):       # MainWindow(MainFrame)
         # Create an instance of the LSTfile class from the datasource
         lstfile=self.CreateLSTFileFromDatasourceEtc()
 
@@ -449,7 +448,7 @@ class MainWindow(MainFrame):
         self.SaveFile(lstfile, self.lstFilename)
 
     # Save an LST file
-    def SaveFile(self, lstfile, name):
+    def SaveFile(self, lstfile, name):       # MainWindow(MainFrame)
         try:
             if not lstfile.Save(name):
                 Log(f"OnSave failed (1) while trying to save {name}", isError=True)
@@ -461,7 +460,7 @@ class MainWindow(MainFrame):
             Bailout(PermissionError, "OnSave failed (2) when trying to write file "+name, "LSTError")
 
 
-    def MaybeSetNeedsSavingFlag(self):
+    def MaybeSetNeedsSavingFlag(self):       # MainWindow(MainFrame)
         s="Editing "+self.lstFilename
         if self.NeedsSaving():
             s=s+" *"        # Add on a change marker if needed
@@ -489,11 +488,11 @@ class MainWindow(MainFrame):
     def NeedsSaving(self):       # MainWindow(MainFrame)
         return self._signature != self.Signature()
 
-    def FanzineNameToDirName(self, s: str) -> str:
+    def FanzineNameToDirName(self, s: str) -> str:       # MainWindow(MainFrame)
         return re.sub("[^a-zA-Z0-9\-]+", "_", s)
 
 
-    def AddChar(self, text: str, code) -> str:
+    def AddChar(self, text: str, code) -> str:       # MainWindow(MainFrame)
         if code == wx.WXK_BACK and len(text) > 0:
             return text[:-1]
         if code < 32 or code > 126:
@@ -501,7 +500,7 @@ class MainWindow(MainFrame):
         return text+chr(code)
 
 
-    def OnFanzineNameChar(self, event):
+    def OnFanzineNameChar(self, event):       # MainWindow(MainFrame)
         MainFrame.OnFanzineNameChar(self, event)
         # The only time we update the local directory
         fname=self.AddChar(self.tFanzineName.GetValue(), event.GetKeyCode())
@@ -511,19 +510,19 @@ class MainWindow(MainFrame):
         if converted.startswith(dname) or dname.startswith(converted) or converted == dname:
             self.tDirectoryLocal.SetValue(converted)
 
-    def OnFanzineName(self, event):
+    def OnFanzineName(self, event):       # MainWindow(MainFrame)
         self.Datasource.FanzineName=self.tFanzineName.GetValue()
         self.RefreshWindow()
 
-    def OnEditors(self, event):
+    def OnEditors(self, event):       # MainWindow(MainFrame)
         self.Datasource.Editors=self.tEditors.GetValue()
         self.RefreshWindow()
 
-    def OnDates(self, event):
+    def OnDates(self, event):       # MainWindow(MainFrame)
         self.Datasource.Dates=self.tDates.GetValue()
         self.RefreshWindow()
 
-    def OnFanzineType(self, event):
+    def OnFanzineType(self, event):       # MainWindow(MainFrame)
         self.Datasource.FanzineType=self.tFanzineType.GetSelection()
         self.RefreshWindow()
 
@@ -537,15 +536,15 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
     # ------------------
-    def OnCompleteButton(self, event):
+    def OnCompleteButton(self, event):       # MainWindow(MainFrame)
         self.Complete=self.m_radioBtnComplete.GetValue()
 
     # ------------------
-    def OnDirectoryLocal(self, event):
+    def OnDirectoryLocal(self, event):       # MainWindow(MainFrame)
         self.DirectoryLocal=self.tDirectoryLocal.GetValue()
 
     # ------------------
-    def OnDirectoryServer(self, event):
+    def OnDirectoryServer(self, event):       # MainWindow(MainFrame)
         self.DirectoryServer=self.tDirectoryServer.GetValue()
 
     #------------------
@@ -767,7 +766,7 @@ class MainWindow(MainFrame):
         self.ExtractScanner(self.Datasource.ColDefs.index("Notes"))
         self.RefreshWindow()
 
-    def OnPopupExtractApaMailings(self, event):
+    def OnPopupExtractApaMailings(self, event):       # MainWindow(MainFrame)
         self.ExtractApaMailings()
         self.RefreshWindow()
 
@@ -775,7 +774,7 @@ class MainWindow(MainFrame):
     # Run through the rows and columns and look at the Notes column  If an APA mailing note is present,
     # move it to a "Mailing" column (which may need to be created).  Remove the text from the Notes column.
     # Find the Notes column. If there is none, we're done.
-    def ExtractApaMailings(self):
+    def ExtractApaMailings(self):       # MainWindow(MainFrame)
         if "Notes" in self._Datasource.ColHeaders:
             notescol=self._Datasource.ColHeaders.index("Notes")
 
@@ -845,7 +844,7 @@ class FanzineTableRow(GridDataRowClass):
         return sum([(i+1)*hash(x) for i, x in enumerate(self._cells)])
 
     @property
-    def Cells(self) -> list[str]:
+    def Cells(self) -> list[str]:      # FanzineTableRow(GridDataRowClass)
         return self._cells
     @Cells.setter
     def Cells(self, newcells: list[str]):
@@ -896,7 +895,7 @@ class FanzineTablePage(GridDataSource):
 
 
 
-    def Signature(self) -> int:
+    def Signature(self) -> int:        # FanzineTablePage(GridDataSource)
         s=self._colDefs.Signature()
         s+=hash(self._name.strip()+"".join(self.TopComments).strip()+"".join(self.Locale).strip())
         s+=hash(f"{self.FanzineName};{self.Editors};{self.Dates};{self.FanzineType}")
@@ -933,7 +932,7 @@ class FanzineTablePage(GridDataSource):
     def CanAddColumns(self) -> bool:        # FanzineTablePage(GridDataSource)
         return True
 
-    def InsertEmptyRows(self, insertat: int, num: int=1) -> None:
+    def InsertEmptyRows(self, insertat: int, num: int=1) -> None:        # FanzineTablePage(GridDataSource)
         for i in range(num):
             ftr=FanzineTableRow([""]*self.NumCols)
             self._fanzineList.insert(insertat+i, ftr)
