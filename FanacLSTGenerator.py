@@ -27,7 +27,8 @@ class MainWindow(MainFrame):
         self.DirectoryLocal=""  # Local directory where the LST file, etc., reside
         self.DirectoryServer="" # Server directory to be created under /fanzines
         self.Complete=False     # Is this fanzine series complete?
-        self.NewDirectory=False # Are we creating a new directory? (Alternative is that we're editing and old one.)
+        self.NewDirectory=False # Are we creating a new directory? (Alternative is that we're editing an old one.)
+        self.OldDirectory=False
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
@@ -91,22 +92,48 @@ class MainWindow(MainFrame):
 
     # Look at information availabe and color buttons and fields accordingly.
     def ColorFields(self):
-        self.bSave.Enabled=False
 
-        # Can't add new issues until we have a target directory defined
-        self.bAddNewIssues.Enabled=len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0
+        # To start with, everything is disabled except the buttons to Load an old LST file or to create a new one
+        self.bSave.Enabled=False
+        self.bAddNewIssues.Enabled=False
+        self.tFanzineName.SetEditable(False)
+        self.tEditors.SetEditable(False)
+        self.tDates.SetEditable(False)
+        self.tFanzineType.Enabled=False
+        self.tTopText.SetEditable(False)
+        self.tLocaleText.SetEditable(False)
+        self.rbComplete.Enabled=True
+        self.tDirectoryLocal.SetEditable(False)
+        self.tDirectoryServer.SetEditable(False)
+        self.wxGrid.Enabled=False
+
+        # Some things are turned on for both Load and Create
+        if self.NewDirectory or self.OldDirectory:
+            self.bAddNewIssues.Enabled=True
+            self.tFanzineName.SetEditable(True)
+            self.tEditors.SetEditable(True)
+            self.tDates.SetEditable(True)
+            self.tFanzineType.Enabled=True
+            self.tTopText.SetEditable(True)
+            self.tLocaleText.SetEditable(True)
+            self.rbComplete.Enabled=True
+            self.wxGrid.Enabled=True
 
         # The basic split is whether we are editing an existing LST or creating a new directory
         if self.NewDirectory:
             self.tDirectoryLocal.SetEditable(True)
             self.tDirectoryServer.SetEditable(True)
-            if self.tDirectoryLocal.GetValue() and self.tDirectoryServer.GetValue() and self.tFanzineName.GetValue() and self.Datasource.Rows:
+            if len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tDirectoryServer.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0 and len(self.Datasource.Rows) > 0:
                 self.bSave.Enabled=True
-        else:
-            self.tDirectoryLocal.SetEditable(False)
-            self.tDirectoryServer.SetEditable(False)
+            # Can't add new issues until we have a target directory defined
+            self.bAddNewIssues.Enabled=len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0
+
+        elif self.OldDirectory:
             if self.tFanzineName.GetValue() and self.Datasource.Rows:
                 self.bSave.Enabled=True
+                # Can't add new issues until we have a target directory defined
+                self.bAddNewIssues.Enabled=True
+
 
 
     #------------------
@@ -327,6 +354,7 @@ class MainWindow(MainFrame):
         self.tDirectoryLocal.SetValue("")
         self.tDirectoryServer.SetValue("")
         self.NewDirectory=False
+        self.OldDirectory=True
 
         self.MarkAsSaved()
         self.RefreshWindow()
@@ -375,6 +403,7 @@ class MainWindow(MainFrame):
         # Both directories are editable, for now at least.
         self.tDirectoryLocal.SetValue("")
         self.NewDirectory=True
+        self.OldDirectory=False
 
         self.MarkAsSaved()
         self.RefreshWindow()
@@ -446,6 +475,7 @@ class MainWindow(MainFrame):
 
         lstfile=self.CreateLSTFileFromDatasourceEtc()
         self.SaveFile(lstfile, self.lstFilename)
+
 
     # Save an LST file
     def SaveFile(self, lstfile, name):       # MainWindow(MainFrame)
