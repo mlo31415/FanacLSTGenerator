@@ -469,7 +469,7 @@ class MainWindow(MainFrame):
         if os.path.exists(newDirectory):
             MessageBox(f"Directory {newDirectory} already exists.")
             #return         For now, just keep going
-
+        else:
             # Create the new directory
             os.mkdir(newDirectory)
 
