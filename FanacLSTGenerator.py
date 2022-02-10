@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Union, Optional
 
 import os
+import shutil
 import wx
 import wx.grid
 import sys
@@ -446,8 +447,9 @@ class MainWindow(MainFrame):
     #------------------
     # Create a new fanzine directory and LSTfile
     def CreateLSTDirectory(self):       # MainWindow(MainFrame)
+        rootDirectory=Settings().Get("Root directory", default=".")
 
-        # If a directory was not specified, use the Save dialog to decide where to save it.
+        # If a directory was not specified in the main dialog, use the Save dialog to decide where to save it.
         if not self.DirectoryLocal:
             dlg=wx.DirDialog(self, "Create new directory", "", wx.DD_DEFAULT_STYLE)
             dlg.SetWindowStyle(wx.STAY_ON_TOP)
@@ -460,13 +462,44 @@ class MainWindow(MainFrame):
             self.DirectoryLocal=dlg.GetPath()
             dlg.Destroy()
 
+        newDirectory=os.path.join(rootDirectory, self.DirectoryLocal)
+
         # The directory must not exist, otherwise
-        if os.path.exists(self.DirectoryLocal):
-            MessageBox(f"Directory {self.DirectoryLocal} already exists.")
+        if os.path.exists(newDirectory):
+            MessageBox(f"Directory {newDirectory} already exists.")
+            #return         For now, just keep going
+
+            # Create the new directory
+            os.mkdir(newDirectory)
+
+        # Copy the files setup.ftp and setup.bld from the templates source and edit them based on what the user filled in in the main dialog
+        templateDirectory=Settings().Get("Template directory", default=".")
+
+        # First setup.ftp
+        setupTemplateName=Settings().Get("setup.ftp template", default="")
+        if not setupTemplateName:
+            MessageBox("Settings files does not contain value for 'setup.ftp template'. Save failed.")
             return
 
-        # Create the new directory
-        os.mkdir(self.DirectoryLocal)
+        filename=os.path.join(newDirectory, setupTemplateName)
+        if os.path.exists(filename):    # Delete any existing file
+            Log(f"CreateLSTDirectory: {filename} already exists")
+            os.remove(filename)
+        filename=os.path.join(templateDirectory, setupTemplateName)
+        shutil.copy(filename, newDirectory)
+
+        # Read setup.ftp, edit it, and save the result back
+        with open(filename, "r") as fd:
+            lines=fd.readlines()
+        m=re.match("(.*);(.*)/[a-zA-Z]+", lines[0])
+        if not m:
+            MessageBox("Can't edit setup.ftp. Save failed.")
+            Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
+            Log(f"CreateLSTDirectory: {lines[0]=}")
+            return
+        lines[0]=m.groups()[0]+";"+m.groups()[1]+"/"+self.DirectoryServer
+        with open(filename, "w") as fd:
+            fd.writelines(lines)
 
         # Save the LSTFile in the new directory
         name, ext=os.path.splitext(self.DirectoryLocal)
