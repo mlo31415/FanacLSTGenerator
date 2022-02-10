@@ -482,7 +482,7 @@ class MainWindow(MainFrame):
             MessageBox("Settings files does not contain value for 'setup.ftp template'. Save failed.")
             return
 
-        filename=os.path.join(newDirectory, setupTemplateName)
+        filename=os.path.join(templateDirectory, setupTemplateName)
         if os.path.exists(filename):    # Delete any existing file
             Log(f"CreateLSTDirectory: {filename} already exists")
             os.remove(filename)
