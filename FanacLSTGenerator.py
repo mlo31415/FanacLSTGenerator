@@ -383,7 +383,7 @@ class MainWindow(MainFrame):
 
     #------------------
     # Save an LSTFile object to disk and maybe create a whole new directory
-    def OnSaveLSTFile(self, event):       # MainWindow(MainFrame)
+    def OnSave(self, event):       # MainWindow(MainFrame)
 
         # Handle the case where we are saving a new file
         if self.NewDirectory:
@@ -409,8 +409,8 @@ class MainWindow(MainFrame):
 
             os.rename(oldname, newname)
         except Exception as e:
-            Log(f"OnSaveLSTFile fails when trying to rename {oldname} to {newname}", isError=True)
-            Bailout(PermissionError, f"OnSaveLSTFile fails when trying to rename {oldname} to {newname}", "LSTError")
+            Log(f"OnSave fails when trying to rename {oldname} to {newname}", isError=True)
+            Bailout(PermissionError, f"OnSave fails when trying to rename {oldname} to {newname}", "LSTError")
 
         self.SaveFile(lstfile, oldname)
 
@@ -452,13 +452,13 @@ class MainWindow(MainFrame):
     def SaveFile(self, lstfile, name):
         try:
             if not lstfile.Save(name):
-                Log(f"OnSaveLSTFile failed (1) while trying to save {name}", isError=True)
+                Log(f"OnSave failed (1) while trying to save {name}", isError=True)
                 MessageBox(f"Failure saving {name}")
                 return
             self.MarkAsSaved()
         except:
-            Log(f"OnSaveLSTFile failed while trying to save {name}", isError=True)
-            Bailout(PermissionError, "OnSaveLSTFile failed (2) when trying to write file "+name, "LSTError")
+            Log(f"OnSave failed while trying to save {name}", isError=True)
+            Bailout(PermissionError, "OnSave failed (2) when trying to write file "+name, "LSTError")
 
 
     def MaybeSetNeedsSavingFlag(self):

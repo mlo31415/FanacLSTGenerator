@@ -168,7 +168,7 @@ class MainFrame ( wx.Frame ):
 		self.wxGrid = wx.grid.Grid( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, 0 )
 
 		# Grid
-		self.wxGrid.CreateGrid( 100, 15 )
+		self.wxGrid.CreateGrid( 150, 15 )
 		self.wxGrid.EnableEditing( True )
 		self.wxGrid.EnableGridLines( True )
 		self.wxGrid.EnableDragGridSize( False )
@@ -243,7 +243,7 @@ class MainFrame ( wx.Frame ):
 		self.bAddNewIssues.Bind( wx.EVT_BUTTON, self.OnAddNewIssues )
 		self.bLoadExistingLSTFile.Bind( wx.EVT_BUTTON, self.OnLoadExistingLSTFile )
 		self.bCreateNewFanzineDir.Bind( wx.EVT_BUTTON, self.OnCreateNewFanzineDir )
-		self.bSave.Bind( wx.EVT_BUTTON, self.OnSaveLSTFile )
+		self.bSave.Bind( wx.EVT_BUTTON, self.OnSave )
 		self.bExit.Bind( wx.EVT_BUTTON, self.OnExitClicked )
 		self.tFanzineName.Bind( wx.EVT_CHAR, self.OnFanzineNameChar )
 		self.tFanzineName.Bind( wx.EVT_TEXT, self.OnFanzineName )
@@ -292,7 +292,7 @@ class MainFrame ( wx.Frame ):
 	def OnCreateNewFanzineDir( self, event ):
 		event.Skip()
 
-	def OnSaveLSTFile( self, event ):
+	def OnSave( self, event ):
 		event.Skip()
 
 	def OnExitClicked( self, event ):

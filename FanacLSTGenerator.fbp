@@ -381,7 +381,7 @@
                     <property name="window_extra_style"></property>
                     <property name="window_name"></property>
                     <property name="window_style"></property>
-                    <event name="OnButtonClick">OnSaveLSTFile</event>
+                    <event name="OnButtonClick">OnSave</event>
                 </object>
                 <object class="wxButton" expanded="1">
                     <property name="BottomDockable">1</property>
