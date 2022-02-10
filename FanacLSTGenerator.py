@@ -623,7 +623,7 @@ class MainWindow(MainFrame):
         MainFrame.OnFanzineNameChar(self, event)
         # The only time we update the local directory
         fname=self.AddChar(self.tFanzineName.GetValue(), event.GetKeyCode())
-        Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
+        #Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
         converted=self.FanzineNameToDirName(fname)
         dname=self.tDirectoryLocal.GetValue()
         if converted.startswith(dname) or dname.startswith(converted) or converted == dname:
