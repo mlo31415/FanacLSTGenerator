@@ -9,7 +9,7 @@ import sys
 from GenGUIClass import MainFrame
 
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
-from WxHelpers import OnCloseHandling
+from WxHelpers import OnCloseHandling, ProgressMessage
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox
 from PDFHelpers import GetPdfPageCount
@@ -466,6 +466,9 @@ class MainWindow(MainFrame):
 
         newDirectory=os.path.join(rootDirectory, self.DirectoryLocal)
 
+        progMsg=ProgressMessage(self)
+        progMsg.Show(f"Creating {self.tFanzineName.GetValue()}")
+
         # The directory must not exist, otherwise
         if os.path.exists(newDirectory):
             MessageBox(f"Directory {newDirectory} already exists.")
@@ -509,6 +512,8 @@ class MainWindow(MainFrame):
 
         lstfile=self.CreateLSTFileFromDatasourceEtc()
         self.SaveFile(lstfile, self.lstFilename)
+
+        progMsg.Close(delay=1)
 
 
     # Save an LST file
