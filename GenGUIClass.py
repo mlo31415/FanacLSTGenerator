@@ -160,6 +160,17 @@ class MainFrame ( wx.Frame ):
 
 		fgSizerComments.Add( self.tLocaleText, 0, wx.ALL|wx.EXPAND, 5 )
 
+		self.m_staticText9 = wx.StaticText( self, wx.ID_ANY, u"Credits: ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText9.Wrap( -1 )
+
+		fgSizerComments.Add( self.m_staticText9, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+		self.tCredits = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.tCredits.SetMinSize( wx.Size( -1,30 ) )
+		self.tCredits.SetMaxSize( wx.Size( -1,30 ) )
+
+		fgSizerComments.Add( self.tCredits, 0, wx.ALL|wx.EXPAND, 5 )
+
 
 		bSizerMain.Add( fgSizerComments, 0, wx.ALL|wx.EXPAND, 5 )
 
@@ -255,6 +266,7 @@ class MainFrame ( wx.Frame ):
 		self.tDirectoryServer.Bind( wx.EVT_TEXT, self.OnDirectoryServer )
 		self.tTopText.Bind( wx.EVT_TEXT, self.OnTextTopComments )
 		self.tLocaleText.Bind( wx.EVT_TEXT, self.OnTextLocale )
+		self.tCredits.Bind( wx.EVT_TEXT, self.OnCredits )
 		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged )
 		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_LEFT_DCLICK, self.OnGridCellDoubleClick )
 		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_RIGHT_CLICK, self.OnGridCellRightClick )
@@ -326,6 +338,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnTextLocale( self, event ):
+		event.Skip()
+
+	def OnCredits( self, event ):
 		event.Skip()
 
 	def OnGridCellChanged( self, event ):

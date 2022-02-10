@@ -30,6 +30,7 @@ class MainWindow(MainFrame):
         self.Complete=False     # Is this fanzine series complete?
         self.NewDirectory=False # Are we creating a new directory? (Alternative is that we're editing an old one.)
         self.OldDirectory=False
+        self.Credits=""         # Who is to be credited for this affair?
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
@@ -618,6 +619,10 @@ class MainWindow(MainFrame):
         self.Datasource.Locale=self.tLocaleText.GetValue().split("\n")
         self.RefreshWindow()
 
+    #------------------
+    def OnCredits(self, event):
+        self.Credits=self.tCredits.GetValue()
+        self.RefreshWindow()
 
     #-------------------
     def OnKeyDown(self, event):       # MainWindow(MainFrame)
