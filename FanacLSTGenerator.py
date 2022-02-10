@@ -486,24 +486,74 @@ class MainWindow(MainFrame):
             MessageBox("Settings files does not contain value for 'setup.ftp template'. Save failed.")
             return
 
+        # Remove the template if it already exists in the target directory
         filename=os.path.join(newDirectory, setupTemplateName)
         if os.path.exists(filename):    # Delete any existing file
             Log(f"CreateLSTDirectory: {filename} already exists")
             os.remove(filename)
-        filename=os.path.join(templateDirectory, setupTemplateName)
-        shutil.copy(filename, newDirectory)
+
+        # Copy the template over, renaming it setup.ftp
+        filename=os.path.join(newDirectory, "setup.ftp")
+        shutil.copy(os.path.join(templateDirectory, setupTemplateName), filename)
 
         # Read setup.ftp, edit it, and save the result back
+        Log(f"Opening {filename}")
         with open(filename, "r") as fd:
             lines=fd.read()
+        Log(f"Read {lines=}")
         if lines.find("<<dir name>>") == -1:
             MessageBox("Can't edit setup.ftp. Save failed.")
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
-            Log(f"CreateLSTDirectory: {lines[0]=}")
             return
         lines=lines.replace("<<dir name>>", self.DirectoryServer)
+        Log(f"Write {lines=}")
+        with open(filename, "w") as fd:
+            fd.write(lines)
+
+        # Next setup.bld
+        setupTemplateName=Settings().Get("setup.bld template", default="")
+        if not setupTemplateName:
+            MessageBox("Settings files does not contain value for 'setup.bld template'. Save failed.")
+            return
+
+        # Remove the template if it already exists in the target directory
+        filename=os.path.join(newDirectory, setupTemplateName)
+        if os.path.exists(filename):    # Delete any existing file
+            Log(f"CreateLSTDirectory: {filename} already exists")
+            os.remove(filename)
+
+        # Copy the template over, renaming it setup.ftp
+        filename=os.path.join(newDirectory, "setup.bld")
+        shutil.copy(os.path.join(templateDirectory, setupTemplateName), filename)
+
+        # Read setup.bld, edit it, and save the result back
+        # The file consists of lots of lines of the form xxx=yyy
+        # We want to edit two of them.
+        Log(f"Opening {filename}")
+        with open(filename, "r") as fd:
+            lines=fd.readlines()
+        lines=[line.removesuffix("\n") for line in lines]
+        Log(f"Read {lines=}")
+        found=False
+        for i, line in enumerate(lines):
+            m=re.match("([a-zA-Z0-9_ ])=(.*)$", line)
+            if m:
+                if m.groups[0].lower() == "credit":
+                    lines[i]=m.groups()[0]+"="+self.Credits
+                    found=True
+                if m.groups[0].lower() == "complete":
+                    lines[i]=m.groups()[0]+"="+"TRUE" if self.rbComplete.GetValue() != 0 else "FALSE"
+                    found=True
+
+        if not found:
+            MessageBox("Can't edit setup.bld. Save failed.")
+            Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
+            return
+        Log(f"Write {lines=}")
         with open(filename, "w") as fd:
             fd.writelines(lines)
+
+
 
         # Save the LSTFile in the new directory
         name, ext=os.path.splitext(self.DirectoryLocal)
