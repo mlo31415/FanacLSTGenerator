@@ -567,7 +567,7 @@ class MainWindow(MainFrame):
 
     # ------------------
     def OnCompleteButton(self, event):       # MainWindow(MainFrame)
-        self.Complete=self.m_radioBtnComplete.GetValue()
+        self.Complete=self.rbComplete.GetValue()
 
     # ------------------
     def OnDirectoryLocal(self, event):       # MainWindow(MainFrame)
