@@ -491,14 +491,13 @@ class MainWindow(MainFrame):
 
         # Read setup.ftp, edit it, and save the result back
         with open(filename, "r") as fd:
-            lines=fd.readlines()
-        m=re.match("(.*);(.*)/[a-zA-Z]+", lines[0])
-        if not m:
+            lines=fd.read()
+        if lines.find("<<dir name>>") == -1:
             MessageBox("Can't edit setup.ftp. Save failed.")
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
             Log(f"CreateLSTDirectory: {lines[0]=}")
             return
-        lines[0]=m.groups()[0]+";"+m.groups()[1]+"/"+self.DirectoryServer
+        lines=lines.replace("<<dir name>>", self.DirectoryServer)
         with open(filename, "w") as fd:
             fd.writelines(lines)
 
