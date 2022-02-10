@@ -304,6 +304,7 @@ class MainWindow(MainFrame):
         self.UpdatePDFColumn(rows)
 
         self._dataGrid.RefreshWxGridFromDatasource()
+        self.RefreshWindow()
 
     #--------------------------
     # Check a specific subset of rows (as defined by the slice) to see if one of the file is a pdf
@@ -601,19 +602,23 @@ class MainWindow(MainFrame):
     # ------------------
     def OnCompleteButton(self, event):       # MainWindow(MainFrame)
         self.Complete=self.rbComplete.GetValue()
+        self.RefreshWindow()
 
     # ------------------
     def OnDirectoryLocal(self, event):       # MainWindow(MainFrame)
         self.DirectoryLocal=self.tDirectoryLocal.GetValue()
+        self.RefreshWindow()
 
     # ------------------
     def OnDirectoryServer(self, event):       # MainWindow(MainFrame)
         self.DirectoryServer=self.tDirectoryServer.GetValue()
+        self.RefreshWindow()
 
     #------------------
     def OnTextLocale(self, event):       # MainWindow(MainFrame)
         self.Datasource.Locale=self.tLocaleText.GetValue().split("\n")
         self.RefreshWindow()
+
 
     #-------------------
     def OnKeyDown(self, event):       # MainWindow(MainFrame)
