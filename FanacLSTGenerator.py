@@ -143,21 +143,8 @@ class MainWindow(MainFrame):
     # Load it (and some other stuff) into self's 'LSFFile() object
     def LoadLSTFile(self) -> bool:       # MainWindow(MainFrame)
 
-        # Call the File Open dialog to get an LST file
-        dlg=wx.FileDialog(self, "Select LST file to load", self.DirectoryLocal, "", "*.LST", wx.FD_OPEN)
-        dlg.SetWindowStyle(wx.STAY_ON_TOP)
-
-        if dlg.ShowModal() != wx.ID_OK:
-            dlg.Raise()
-            dlg.Destroy()
-            return False
-
         # Clear out any old information from form.
         lstfile=LSTFile()
-
-        self.lstFilename=dlg.GetFilename()
-        self.DirectoryLocal=dlg.GetDirectory()
-        dlg.Destroy()
 
         # Read the lst file
         pathname=os.path.join(self.DirectoryLocal, self.lstFilename)
@@ -350,6 +337,19 @@ class MainWindow(MainFrame):
         if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Replace anyway?"):
             return
         self.MarkAsSaved()  # The contents have been declared doomed
+
+        # Call the File Open dialog to get an LST file
+        dlg=wx.FileDialog(self, "Select LST file to load", self.DirectoryLocal, "", "*.LST", wx.FD_OPEN)
+        dlg.SetWindowStyle(wx.STAY_ON_TOP)
+
+        if dlg.ShowModal() != wx.ID_OK:
+            dlg.Raise()
+            dlg.Destroy()
+            return False
+
+        self.lstFilename=dlg.GetFilename()
+        self.DirectoryLocal=dlg.GetDirectory()
+        dlg.Destroy()
 
         if not self.LoadLSTFile():
             return
