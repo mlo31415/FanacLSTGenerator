@@ -583,16 +583,18 @@ class MainWindow(MainFrame):
         filename=os.path.join(path, "setup.ftp")
         Log(f"Opening {filename}")
         with open(filename, "r") as fd:
-            lines=fd.read()
+            lines=fd.readlines()
         Log(f"Read {lines=}")
-        if lines.find("<<dir name>>") == -1:
-            MessageBox("Can't edit setup.ftp. Save failed.")
-            Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
-            return False
-        lines=lines.replace("<<dir name>>", self.DirectoryServer)
+        for i, line in enumerate(lines):
+            m=re.match("(^.*/fanzines/)(.*)$", line)
+            if m is None:
+                MessageBox("Can't edit setup.ftp. Save failed.")
+                Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
+                return False
+            lines[i]=m.groups()[0]+self.DirectoryServer
         Log(f"Write {lines=}")
         with open(filename, "w") as fd:
-            fd.write(lines)
+            fd.writelines(lines)
         return True
 
 
