@@ -453,16 +453,20 @@ class MainWindow(MainFrame):
     #------------------
     # Save an existing LST file by simply overwriting what exists.
     def SaveExistingLSTFile(self):       # MainWindow(MainFrame)
+
+        progMsg=ProgressMessage(self)
+        progMsg.Show(f"Creating {self.tFanzineName.GetValue()}")
+
         # Create an instance of the LSTfile class from the datasource
         lstfile=self.CreateLSTFileFromDatasourceEtc()
 
         # Edit the templated files based on what the user filled in in the main dialog
         if self.DirectoryServer:
             if not self.UpdateSetupFtp(self.DirectoryLocal):
-                #progMsg.Close(delay=1)
+                progMsg.Close(delay=1)
                 return
         if not self.UpdateSetupBld(self.DirectoryLocal):
-            #progMsg.Close(delay=1)
+            progMsg.Close(delay=1)
             return
 
         # Rename the old file
@@ -480,6 +484,8 @@ class MainWindow(MainFrame):
             Bailout(PermissionError, f"OnSave fails when trying to rename {oldname} to {newname}", "LSTError")
 
         self.SaveFile(lstfile, oldname)
+
+        progMsg.Close(delay=1)
 
 
     #------------------
