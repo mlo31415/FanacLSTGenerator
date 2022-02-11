@@ -514,6 +514,7 @@ class MainWindow(MainFrame):
         setupTemplateName=Settings().Get("setup.bld template", default="")
         if not setupTemplateName:
             MessageBox("Settings files does not contain value for 'setup.bld template'. Save failed.")
+            progMsg.Close()
             return
 
         # Remove the template if it already exists in the target directory
@@ -548,6 +549,7 @@ class MainWindow(MainFrame):
         if not found:
             MessageBox("Can't edit setup.bld. Save failed.")
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
+            progMsg.Close()
             return
         Log(f"Write {lines=}")
         with open(filename, "w") as fd:
