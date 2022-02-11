@@ -307,6 +307,7 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource()
         self.RefreshWindow()
 
+
     #--------------------------
     # Check a specific subset of rows (as defined by the slice) to see if one of the file is a pdf
     # If a pdf is found possibly add a PDF column and fill the PDF column in for those rows.
@@ -340,6 +341,7 @@ class MainWindow(MainFrame):
                     pagesCol=self.Datasource.ColHeaderIndex("pages")
                     if pagesCol != -1:
                         self.Datasource.Rows[irow][pagesCol]=str(pages)
+
 
     #------------------
     # Load an LST file from disk into an LSTFile class
@@ -399,6 +401,9 @@ class MainWindow(MainFrame):
         self.tDates.SetValue("")
         self.tFanzineType.SetSelection(0)
         self.tLocaleText.SetValue("")
+
+        self.Credits=Settings().Get("Credits", default="")
+        self.tCredits.SetValue(self.Credits)
 
         rootDirectory=Settings().Get("Root directory", default=".")
         templateDirectory=Settings().Get("Template directory", default=".")
