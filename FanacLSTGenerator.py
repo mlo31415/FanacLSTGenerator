@@ -537,12 +537,13 @@ class MainWindow(MainFrame):
         Log(f"Read {lines=}")
         found=False
         for i, line in enumerate(lines):
-            m=re.match("([a-zA-Z0-9_ ])=(.*)$", line)
+            m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
             if m:
-                if m.groups[0].lower() == "credit":
-                    lines[i]=m.groups()[0]+"="+self.Credits
+                if m.groups()[0].lower().strip() == "credit":
+                    if self.Credits:
+                        lines[i]=m.groups()[0]+"="+self.Credits
                     found=True
-                if m.groups[0].lower() == "complete":
+                if m.groups()[0].lower().strip() == "complete":
                     lines[i]=m.groups()[0]+"="+"TRUE" if self.rbComplete.GetValue() != 0 else "FALSE"
                     found=True
 
@@ -554,7 +555,6 @@ class MainWindow(MainFrame):
         Log(f"Write {lines=}")
         with open(filename, "w") as fd:
             fd.writelines(lines)
-
 
 
         # Save the LSTFile in the new directory
