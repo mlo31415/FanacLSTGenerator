@@ -360,28 +360,13 @@ class MainWindow(MainFrame):
             return
 
         # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
-        # The file consists of lots of lines of the form xxx=yyy
-        # We want to edit two of them.
-        filename=os.path.join(self.DirectoryLocal, "setup.bld")
-        if os.path.exists(filename):
-            Log(f"Opening {filename}")
-            with open(filename, "r") as fd:
-                lines=fd.readlines()
-            lines=[line.removesuffix("\n") for line in lines]
-            Log(f"Read {lines=}")
-            for i, line in enumerate(lines):
-                m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
-                if m:
-                    if m.groups()[0].lower().strip() == "credit":
-                        if not self.Credits:
-                            self.Credits=m.groups()[1].strip().strip("'")   # The text is quoted in the LST file
-                            self.tCredits.SetValue(self.Credits)
-                    if m.groups()[0].lower().strip() == "complete":
-                        self.Complete=(m.groups()[1].lower() == "true")
-                        self.rbComplete.SetValue(self.Complete)
-        else:
-            Log(f"{filename} not found")
-
+        complete, credits=self.ReadSetupBld(self.DirectoryLocal)
+        if complete is not None:
+            self.rbComplete.SetValue(complete)
+            self.Complete=complete
+        if credits is not None:
+            self.tCredits.SetValue(credits)
+            self.Credits=credits
 
         self.MarkAsSaved()
         self.RefreshWindow()
@@ -548,7 +533,6 @@ class MainWindow(MainFrame):
 
         progMsg.Close(delay=1)
 
-
     def UpdateSetupBld(self, path) -> bool:
         # Read setup.bld, edit it, and save the result back
         # The file consists of lots of lines of the form xxx=yyy
@@ -579,6 +563,28 @@ class MainWindow(MainFrame):
         return True
 
 
+    def ReadSetupBld(self, path) -> tuple[Optional[bool], Optional[str]]:
+        # Read setup.bld, edit it, and save the result back
+        # The file consists of lots of lines of the form xxx=yyy
+        # We want to edit two of them.
+        filename=os.path.join(path, "setup.bld")
+        Log(f"Opening {filename}")
+        with open(filename, "r") as fd:
+            lines=fd.readlines()
+        Log(f"Read {lines=}")
+        credits=None
+        complete=None
+        for i, line in enumerate(lines):
+            m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
+            if m:
+                if m.groups()[0].lower().strip() == "credit":
+                    credits=m.groups()[1].strip().strip("'")
+                if m.groups()[0].lower().strip() == "complete":
+                    complete='TRUE' == m.groups()[1]
+
+        return complete, credits
+
+
     def UpdateSetupFtp(self, path) -> bool:
         filename=os.path.join(path, "setup.ftp")
         Log(f"Opening {filename}")
@@ -599,6 +605,21 @@ class MainWindow(MainFrame):
         with open(filename, "w") as fd:
             fd.writelines(lines)
         return True
+
+
+    # Read the setup.ftp file, returning the name of the server directory or the empty string
+    def ReadSetupFtp(self, path) -> str:
+        filename=os.path.join(path, "setup.ftp")
+        Log(f"Opening {filename}")
+        with open(filename, "r") as fd:
+            lines=fd.readlines()
+        Log(f"Read {lines=}")
+        for i, line in enumerate(lines):
+            m=re.match("(^.*/fanzines/)(.*)$", line)
+            if m is not None:
+                return m.groups()[1]
+
+        return ""
 
 
     def CopyTemplateFile(self, settingName: str, newName: str, newDirectory: str, templateDirectory: str) -> bool:
