@@ -567,7 +567,7 @@ class MainWindow(MainFrame):
                         lines[i]=f"{m.groups()[0]}='{self.Credits}'\n"
                     found=True
                 if m.groups()[0].lower().strip() == "complete":
-                    lines[i]=f"{m.groups()[0]}={'TRUE' if self.rbComplete.GetValue() != 0 else 'FALSE'}\m"
+                    lines[i]=f"{m.groups()[0]}={'TRUE' if self.rbComplete.GetValue() != 0 else 'FALSE'}\n"
                     found=True
         if not found:
             MessageBox("Can't edit setup.bld. Save failed.")
