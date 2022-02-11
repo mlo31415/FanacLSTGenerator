@@ -338,6 +338,11 @@ class MainWindow(MainFrame):
             return
         self.MarkAsSaved()  # The contents have been declared doomed
 
+        self.tDirectoryLocal.SetValue("")
+        self.tDirectoryServer.SetValue("")
+        self.NewDirectory=False
+        self.OldDirectory=True
+
         # Call the File Open dialog to get an LST file
         dlg=wx.FileDialog(self, "Select LST file to load", self.DirectoryLocal, "", "*.LST", wx.FD_OPEN)
         dlg.SetWindowStyle(wx.STAY_ON_TOP)
@@ -377,10 +382,6 @@ class MainWindow(MainFrame):
         else:
             Log(f"{filename} not found")
 
-        self.tDirectoryLocal.SetValue("")
-        self.tDirectoryServer.SetValue("")
-        self.NewDirectory=False
-        self.OldDirectory=True
 
         self.MarkAsSaved()
         self.RefreshWindow()
