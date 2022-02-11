@@ -358,23 +358,24 @@ class MainWindow(MainFrame):
         # The file consists of lots of lines of the form xxx=yyy
         # We want to edit two of them.
         filename=os.path.join(self.DirectoryLocal, "setup.bld")
-        Log(f"Opening {filename}")
-        with open(filename, "r") as fd:
-            lines=fd.readlines()
-        lines=[line.removesuffix("\n") for line in lines]
-        Log(f"Read {lines=}")
-        complete=False
-        for i, line in enumerate(lines):
-            m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
-            if m:
-                if m.groups()[0].lower().strip() == "credit":
-                    if not self.Credits:
-                        self.Credits=m.groups()[1].strip().strip("'")   # The text is quoted in the LST file
-                        self.tCredits.SetValue(self.Credits)
-                if m.groups()[0].lower().strip() == "complete":
-                    complete=m.groups()[1].lower() == "true"
-                    self.rbComplete.SetValue(1 if complete else 0)
-
+        if os.path.exists(filename):
+            Log(f"Opening {filename}")
+            with open(filename, "r") as fd:
+                lines=fd.readlines()
+            lines=[line.removesuffix("\n") for line in lines]
+            Log(f"Read {lines=}")
+            for i, line in enumerate(lines):
+                m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
+                if m:
+                    if m.groups()[0].lower().strip() == "credit":
+                        if not self.Credits:
+                            self.Credits=m.groups()[1].strip().strip("'")   # The text is quoted in the LST file
+                            self.tCredits.SetValue(self.Credits)
+                    if m.groups()[0].lower().strip() == "complete":
+                        self.Complete=(m.groups()[1].lower() == "true")
+                        self.rbComplete.SetValue(self.Complete)
+        else:
+            Log(f"{filename} not found")
 
 
         self.tDirectoryLocal.SetValue("")
