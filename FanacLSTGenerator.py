@@ -503,59 +503,41 @@ class MainWindow(MainFrame):
             # Create the new directory
             os.mkdir(newDirectory)
 
-        # Copy the files setup.ftp and setup.bld from the templates source and edit them based on what the user filled in in the main dialog
+        # Copy the files setup.ftp and setup.bld from the templates source to the new directory.
         templateDirectory=Settings().Get("Template directory", default=".")
 
-        # First setup.ftp
-        setupTemplateName=Settings().Get("setup.ftp template", default="")
-        if not setupTemplateName:
-            MessageBox("Settings files does not contain value for 'setup.ftp template'. Save failed.")
+        # Look in Settings to find the names of the template files.
+        # Copy them from the template directory to the LST file's directory
+        if not self.CopyTemplateFile("setup.ftp template", "setup.ftp", newDirectory, templateDirectory):
+            progMsg.Close(delay=1)
+            return
+        if not self.CopyTemplateFile("setup.bld template", "setup.bld", newDirectory, templateDirectory):
+            progMsg.Close(delay=1)
+            return
+        # Edit them based on what the user filled in in the main dialog
+        if not self.UpdateSetupFtp(newDirectory):
+            progMsg.Close(delay=1)
+            return
+        if not self.UpdateSetupBld(newDirectory):
+            progMsg.Close(delay=1)
             return
 
-        # Remove the template if it already exists in the target directory
-        filename=os.path.join(newDirectory, setupTemplateName)
-        if os.path.exists(filename):    # Delete any existing file
-            Log(f"CreateLSTDirectory: {filename} already exists")
-            os.remove(filename)
+        # Save the LSTFile in the new directory
+        name, ext=os.path.splitext(self.DirectoryLocal)
+        if ext.lower() != ".lst":
+            self.lstFilename=name+".LST"
 
-        # Copy the template over, renaming it setup.ftp
-        filename=os.path.join(newDirectory, "setup.ftp")
-        shutil.copy(os.path.join(templateDirectory, setupTemplateName), filename)
+        lstfile=self.CreateLSTFileFromDatasourceEtc()
+        self.SaveFile(lstfile, self.lstFilename)
 
-        # Read setup.ftp, edit it, and save the result back
-        Log(f"Opening {filename}")
-        with open(filename, "r") as fd:
-            lines=fd.read()
-        Log(f"Read {lines=}")
-        if lines.find("<<dir name>>") == -1:
-            MessageBox("Can't edit setup.ftp. Save failed.")
-            Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
-            return
-        lines=lines.replace("<<dir name>>", self.DirectoryServer)
-        Log(f"Write {lines=}")
-        with open(filename, "w") as fd:
-            fd.write(lines)
+        progMsg.Close(delay=1)
 
-        # Next setup.bld
-        setupTemplateName=Settings().Get("setup.bld template", default="")
-        if not setupTemplateName:
-            MessageBox("Settings files does not contain value for 'setup.bld template'. Save failed.")
-            progMsg.Close()
-            return
 
-        # Remove the template if it already exists in the target directory
-        filename=os.path.join(newDirectory, setupTemplateName)
-        if os.path.exists(filename):    # Delete any existing file
-            Log(f"CreateLSTDirectory: {filename} already exists")
-            os.remove(filename)
-
-        # Copy the template over, renaming it setup.ftp
-        filename=os.path.join(newDirectory, "setup.bld")
-        shutil.copy(os.path.join(templateDirectory, setupTemplateName), filename)
-
+    def UpdateSetupBld(self, path) -> bool:
         # Read setup.bld, edit it, and save the result back
         # The file consists of lots of lines of the form xxx=yyy
         # We want to edit two of them.
+        filename=os.path.join(path, "setup.bld")
         Log(f"Opening {filename}")
         with open(filename, "r") as fd:
             lines=fd.readlines()
@@ -567,31 +549,54 @@ class MainWindow(MainFrame):
             if m:
                 if m.groups()[0].lower().strip() == "credit":
                     if self.Credits:
-                        lines[i]=m.groups()[0]+"="+self.Credits
+                        lines[i]=f"{m.groups()[0]}='{self.Credits}'"
                     found=True
                 if m.groups()[0].lower().strip() == "complete":
-                    lines[i]=m.groups()[0]+"="+"TRUE" if self.rbComplete.GetValue() != 0 else "FALSE"
+                    lines[i]=f"{m.groups()[0]}={'TRUE' if self.rbComplete.GetValue() != 0 else 'FALSE'}"
                     found=True
-
         if not found:
             MessageBox("Can't edit setup.bld. Save failed.")
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
-            progMsg.Close()
-            return
+            return False
         Log(f"Write {lines=}")
         with open(filename, "w") as fd:
             fd.writelines(lines)
+        return True
 
 
-        # Save the LSTFile in the new directory
-        name, ext=os.path.splitext(self.DirectoryLocal)
-        if ext.lower() != ".lst":
-            self.lstFilename=name+".LST"
+    def UpdateSetupFtp(self, path) -> bool:
+        filename=os.path.join(path, "setup.ftp")
+        Log(f"Opening {filename}")
+        with open(filename, "r") as fd:
+            lines=fd.read()
+        Log(f"Read {lines=}")
+        if lines.find("<<dir name>>") == -1:
+            MessageBox("Can't edit setup.ftp. Save failed.")
+            Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
+            return False
+        lines=lines.replace("<<dir name>>", self.DirectoryServer)
+        Log(f"Write {lines=}")
+        with open(filename, "w") as fd:
+            fd.write(lines)
+        return True
 
-        lstfile=self.CreateLSTFileFromDatasourceEtc()
-        self.SaveFile(lstfile, self.lstFilename)
 
-        progMsg.Close(delay=1)
+    def CopyTemplateFile(self, settingName: str, newName: str, newDirectory: str, templateDirectory: str) -> bool:
+        setupTemplateName=Settings().Get(settingName, default="")
+        if not setupTemplateName:
+            MessageBox(f"Settings files does not contain value for {settingName}. Save failed.")
+            return False
+
+        # Remove the template if it already exists in the target directory
+        filename=os.path.join(newDirectory, setupTemplateName)
+        if os.path.exists(filename):  # Delete any existing file
+            Log(f"CreateLSTDirectory: {filename} already exists")
+            os.remove(filename)
+
+        # Copy the template over, renaming it setup.ftp
+        filename=os.path.join(newDirectory, newName)
+        shutil.copy(os.path.join(templateDirectory, setupTemplateName), filename)
+        return True
 
 
     # Save an LST file
