@@ -551,7 +551,6 @@ class MainWindow(MainFrame):
         Log(f"Opening {filename}")
         with open(filename, "r") as fd:
             lines=fd.readlines()
-        lines=[line.removesuffix("\n") for line in lines]
         Log(f"Read {lines=}")
         found=False
         for i, line in enumerate(lines):
@@ -559,10 +558,10 @@ class MainWindow(MainFrame):
             if m:
                 if m.groups()[0].lower().strip() == "credit":
                     if self.Credits:
-                        lines[i]=f"{m.groups()[0]}='{self.Credits}'"
+                        lines[i]=f"{m.groups()[0]}='{self.Credits}'\n"
                     found=True
                 if m.groups()[0].lower().strip() == "complete":
-                    lines[i]=f"{m.groups()[0]}={'TRUE' if self.rbComplete.GetValue() != 0 else 'FALSE'}"
+                    lines[i]=f"{m.groups()[0]}={'TRUE' if self.rbComplete.GetValue() != 0 else 'FALSE'}\m"
                     found=True
         if not found:
             MessageBox("Can't edit setup.bld. Save failed.")
