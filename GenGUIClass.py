@@ -23,12 +23,12 @@ class MainFrame ( wx.Frame ):
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 
 		self.m_toolBarTop = self.CreateToolBar( wx.TB_HORIZONTAL, wx.ID_ANY )
-		self.bAddNewIssues = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Add New Issue(s)", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_toolBarTop.AddControl( self.bAddNewIssues )
 		self.bLoadExistingLSTFile = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Load Existing LST File", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bLoadExistingLSTFile )
 		self.bCreateNewFanzineDir = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Create New Fanzine Dir.", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bCreateNewFanzineDir )
+		self.bAddNewIssues = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Add New Issue(s)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_toolBarTop.AddControl( self.bAddNewIssues )
 		self.bSave = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Save", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bSave )
 		self.bExit = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Exit", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -251,9 +251,9 @@ class MainFrame ( wx.Frame ):
 
 		# Connect Events
 		self.Bind( wx.EVT_CLOSE, self.OnClose )
-		self.bAddNewIssues.Bind( wx.EVT_BUTTON, self.OnAddNewIssues )
 		self.bLoadExistingLSTFile.Bind( wx.EVT_BUTTON, self.OnLoadExistingLSTFile )
 		self.bCreateNewFanzineDir.Bind( wx.EVT_BUTTON, self.OnCreateNewFanzineDir )
+		self.bAddNewIssues.Bind( wx.EVT_BUTTON, self.OnAddNewIssues )
 		self.bSave.Bind( wx.EVT_BUTTON, self.OnSave )
 		self.bExit.Bind( wx.EVT_BUTTON, self.OnExitClicked )
 		self.tFanzineName.Bind( wx.EVT_CHAR, self.OnFanzineNameChar )
@@ -295,13 +295,13 @@ class MainFrame ( wx.Frame ):
 	def OnClose( self, event ):
 		event.Skip()
 
-	def OnAddNewIssues( self, event ):
-		event.Skip()
-
 	def OnLoadExistingLSTFile( self, event ):
 		event.Skip()
 
 	def OnCreateNewFanzineDir( self, event ):
+		event.Skip()
+
+	def OnAddNewIssues( self, event ):
 		event.Skip()
 
 	def OnSave( self, event ):

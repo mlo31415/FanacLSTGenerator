@@ -377,7 +377,6 @@ class MainWindow(MainFrame):
         else:
             Log(f"{filename} not found")
 
-
         self.tDirectoryLocal.SetValue("")
         self.tDirectoryServer.SetValue("")
         self.NewDirectory=False
