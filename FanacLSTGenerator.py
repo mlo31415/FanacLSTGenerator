@@ -456,6 +456,15 @@ class MainWindow(MainFrame):
         # Create an instance of the LSTfile class from the datasource
         lstfile=self.CreateLSTFileFromDatasourceEtc()
 
+        # Edit the templated files based on what the user filled in in the main dialog
+        if self.DirectoryServer:
+            if not self.UpdateSetupFtp(self.DirectoryLocal):
+                #progMsg.Close(delay=1)
+                return
+        if not self.UpdateSetupBld(self.DirectoryLocal):
+            #progMsg.Close(delay=1)
+            return
+
         # Rename the old file
         oldname=os.path.join(self.DirectoryLocal, self.lstFilename)
         newname=os.path.join(self.DirectoryLocal, os.path.splitext(self.lstFilename)[0]+"-old.LST")
