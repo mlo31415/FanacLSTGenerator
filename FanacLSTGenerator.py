@@ -560,10 +560,13 @@ class MainWindow(MainFrame):
             if m:
                 if m.groups()[0].lower().strip() == "credit":
                     if self.Credits:
-                        lines[i]=f"{m.groups()[0]}='{self.Credits}'\n"
+                        lines[i]=f"{m.groups()[0]}= '{self.Credits}'\n"
                     found=True
                 if m.groups()[0].lower().strip() == "complete":
-                    lines[i]=f"{m.groups()[0]}={'TRUE' if self.cbComplete.GetValue() != 0 else 'FALSE'}\n"
+                    if self.cbComplete.GetValue() != 0:
+                        lines[i]=f"{m.groups()[0]}= 'TRUE'\n"
+                    else:
+                        lines[i]=""
                     found=True
         if not found:
             MessageBox("Can't edit setup.bld. Save failed.")
@@ -592,9 +595,9 @@ class MainWindow(MainFrame):
             m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
             if m:
                 if m.groups()[0].lower().strip() == "credit":
-                    credits=m.groups()[1].strip().strip("'")
+                    credits=m.groups()[1].strip(" '")
                 if m.groups()[0].lower().strip() == "complete":
-                    complete='TRUE' == m.groups()[1]
+                    complete='TRUE' == m.groups()[1].strip(" '")
 
         return complete, credits
 
