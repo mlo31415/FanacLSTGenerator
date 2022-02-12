@@ -104,7 +104,7 @@ class MainWindow(MainFrame):
         self.tFanzineType.Enabled=False
         self.tTopText.SetEditable(False)
         self.tLocaleText.SetEditable(False)
-        self.rbComplete.Enabled=True
+        self.cbComplete.Enabled=False
         self.tDirectoryLocal.SetEditable(False)
         self.tDirectoryServer.SetEditable(False)
         self.wxGrid.Enabled=False
@@ -118,7 +118,7 @@ class MainWindow(MainFrame):
             self.tFanzineType.Enabled=True
             self.tTopText.SetEditable(True)
             self.tLocaleText.SetEditable(True)
-            self.rbComplete.Enabled=True
+            self.cbComplete.Enabled=True
             self.wxGrid.Enabled=True
 
         # The basic split is whether we are editing an existing LST or creating a new directory
@@ -362,7 +362,7 @@ class MainWindow(MainFrame):
         # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
         complete, credits=self.ReadSetupBld(self.DirectoryLocal)
         if complete is not None:
-            self.rbComplete.SetValue(complete)
+            self.cbComplete.SetValue(complete)
             self.Complete=complete
         if credits is not None:
             self.tCredits.SetValue(credits)
@@ -557,7 +557,7 @@ class MainWindow(MainFrame):
                         lines[i]=f"{m.groups()[0]}='{self.Credits}'\n"
                     found=True
                 if m.groups()[0].lower().strip() == "complete":
-                    lines[i]=f"{m.groups()[0]}={'TRUE' if self.rbComplete.GetValue() != 0 else 'FALSE'}\n"
+                    lines[i]=f"{m.groups()[0]}={'TRUE' if self.cbComplete.GetValue() != 0 else 'FALSE'}\n"
                     found=True
         if not found:
             MessageBox("Can't edit setup.bld. Save failed.")
@@ -735,8 +735,8 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
     # ------------------
-    def OnCompleteButton(self, event):       # MainWindow(MainFrame)
-        self.Complete=self.rbComplete.GetValue()
+    def OnCheckComplete(self, event):       # MainWindow(MainFrame)
+        self.Complete=self.cbComplete.GetValue()
         self.RefreshWindow()
 
     # ------------------
