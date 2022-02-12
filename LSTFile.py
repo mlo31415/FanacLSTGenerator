@@ -264,8 +264,7 @@ class LSTFile:
                 out=" "     # Leave the first column entirely blank. (Shouldn't happen, but...)
             # Now append the rest of the columns
             out=out+ "; " + ("; ".join(row[2:]))
-            if not re.match("^[>;\s]*$", out):  # Save only null rows
-                content.append(out)
+            content.append(out)
 
         # And write it out
         with open(filename, "w+") as f:
