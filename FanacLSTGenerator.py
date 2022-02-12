@@ -41,7 +41,7 @@ class MainWindow(MainFrame):
                                                               ColDefinition("Vol", Type="int", Width=50),
                                                               ColDefinition("Volume", Type="int", Width=50, preferred="Vol"),
                                                               ColDefinition("Num", Type="int", Width=50),
-                                                              ColDefinition("Numver", Type="int", Width=50, preferred="Num"),
+                                                              ColDefinition("Number", Type="int", Width=50, preferred="Num"),
                                                               ColDefinition("Month", Type="str", Width=75),
                                                               ColDefinition("Day", Type="int", Width=50),
                                                               ColDefinition("Year", Type="int", Width=50),
@@ -49,7 +49,7 @@ class MainWindow(MainFrame):
                                                               ColDefinition("PDF", Type="str", Width=50),
                                                               ColDefinition("Notes", Type="str", Width=120),
                                                               ColDefinition("Scanned", Type="str", Width=100),
-                                                              ColDefinition("APA", Type="str", Width=100),
+                                                              ColDefinition("Scanned BY", Type="str", Width=100),
                                                               ColDefinition("Country", Type="str", Width=50),
                                                               ColDefinition("Editor", Type="str", Width=75),
                                                               ColDefinition("Author", Type="str", Width=75),
@@ -273,7 +273,7 @@ class MainWindow(MainFrame):
         rootDirectory=Settings().Get("Root directory", default=".")
         fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.lstFilename))[0]
         for file in files:
-            os.rename(os.path.join(sourceDirectory, file), os.path.join(fanzineDirectory, file))
+            shutil.move(os.path.join(sourceDirectory, file), fanzineDirectory)
 
         # We have a list of file names. Sort them and add them to the rows at the bottom
         # Start by removing any empty trailing rows
