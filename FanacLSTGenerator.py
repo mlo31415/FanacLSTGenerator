@@ -18,7 +18,7 @@ from Settings import Settings
 from FanzineIssueSpecPackage import MonthNameToInt
 
 class MainWindow(MainFrame):
-    def __init__(self, parent, title):
+    def __init__(self, parent):
         MainFrame.__init__(self, parent)
         self._dataGrid: DataGrid=DataGrid(self.wxGrid)
         self.Datasource=FanzineTablePage()
@@ -1193,7 +1193,7 @@ def main():
     Settings().Load("FanacLSTGenerator settings.json")
 
     app=wx.App(False)
-    frame=MainWindow(None, "Sample editor")
+    frame=MainWindow(None)
     app.MainLoop()
 
     LogClose()
