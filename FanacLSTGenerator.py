@@ -992,7 +992,8 @@ class MainWindow(MainFrame):
                 self.Datasource.Rows.sort(key=lambda x: ZeroIfNone(MonthNameToInt(x[col])))
             else:
                 testIsSortaNum=self.Datasource.ColDefs[col].Name == "WholeNum" or self.Datasource.ColDefs[col].Name == "Whole" or \
-                               self.Datasource.ColDefs[col].Name == "Vol" or self.Datasource.ColDefs[col].Name == "Num"
+                               self.Datasource.ColDefs[col].Name == "Vol" or self.Datasource.ColDefs[col].Name == "Volume" or \
+                               self.Datasource.ColDefs[col].Name == "Num" or self.Datasource.ColDefs[col].Name == "Number"
                 if testIsSortaNum:
                     self.Datasource.Rows.sort(key=lambda x: self.PseudonumericSort(x[col]))
                 else:
