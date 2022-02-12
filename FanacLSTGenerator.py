@@ -368,6 +368,12 @@ class MainWindow(MainFrame):
             self.tCredits.SetValue(credits)
             self.Credits=credits
 
+        # And see if we can pick up the server directory from setup.ftp
+        dir=self.ReadSetupFtp(self.DirectoryLocal)
+        if dir != "":
+            self.tDirectoryServer.SetValue(dir)
+            self.DirectoryServer=dir
+
         self.MarkAsSaved()
         self.RefreshWindow()
 
