@@ -451,14 +451,18 @@ class MainWindow(MainFrame):
         # Create an instance of the LSTfile class from the datasource
         lstfile=self.CreateLSTFileFromDatasourceEtc()
 
+        newDirectory=os.path.join(Settings().Get("Root directory", default="."), self.DirectoryLocal)
+        templateDirectory=Settings().Get("Template directory", default=".")
         # Edit the templated files based on what the user filled in in the main dialog
         if self.DirectoryServer:
             if not self.UpdateSetupFtp(self.DirectoryLocal):
-                progMsg.Close(delay=1)
-                return
+                Log(f"Creating setup.ftp")
+                if not self.CopyTemplateFile("setup.ftp template", "setup.ftp", newDirectory, templateDirectory):
+                    Log(f"Could not create setup.ftp")
         if not self.UpdateSetupBld(self.DirectoryLocal):
-            progMsg.Close(delay=1)
-            return
+            Log(f"Creating setup.bld")
+            if not self.CopyTemplateFile("setup.bld template", "setup.bld", newDirectory, templateDirectory):
+                Log(f"Could not create setup.bld")
 
         # Rename the old file
         oldname=os.path.join(self.DirectoryLocal, self.lstFilename)
