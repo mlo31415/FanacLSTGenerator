@@ -108,7 +108,7 @@ class LSTFile:
             line=contents.pop(0).strip()    # Grab the top line
             if not line:
                 continue    # Skip blank lines
-            if IsTableLine(line):   # If we come to a table line, we havew found the colum headers (which must start the table). Save it and then drop down to table row processing.
+            if IsTableLine(line):   # If we come to a table line, we have found the colum headers (which must start the table). Save it and then drop down to table row processing.
                 colHeaderLine=line
                 break
             # Once we find a line that starts with <fanac-type>, we send the lines to local until we find a line that ends with </fanac-type>
@@ -165,11 +165,12 @@ class LSTFile:
             elif row.find(">") != -1 and row.find(">") < row.find(";"):
                 row=row[:row.find(">")]+";"+row[row.find(">")+1:]
 
-            # If the line has no content (other than ">" and ";" and whitespace, skip it.
+            # If the line has no content (other than ">" and ";" and whitespace, append an empty line
             if re.match("^[>;\s]*$", row):
+                self.Rows.append([""]*len(self.ColumnHeaders))
                 continue
 
-            # Split the row on ";"
+            # Split the row on ";" and append it
             self.Rows.append([h.strip() for h in row.split(";")])
 
         # Define the grid's columns
