@@ -549,6 +549,8 @@ class MainWindow(MainFrame):
         # We want to edit two of them.
         filename=os.path.join(path, "setup.bld")
         Log(f"Opening {filename}")
+        if not os.path.exists(filename):
+            return False
         with open(filename, "r") as fd:
             lines=fd.readlines()
         Log(f"Read {lines=}")
@@ -579,6 +581,8 @@ class MainWindow(MainFrame):
         # We want to edit two of them.
         filename=os.path.join(path, "setup.bld")
         Log(f"Opening {filename}")
+        if not os.path.exists(filename):
+            return None, None
         with open(filename, "r") as fd:
             lines=fd.readlines()
         Log(f"Read {lines=}")
@@ -596,8 +600,11 @@ class MainWindow(MainFrame):
 
 
     def UpdateSetupFtp(self, path) -> bool:
+
         filename=os.path.join(path, "setup.ftp")
         Log(f"Opening {filename}")
+        if not os.path.exists(filename):
+            return False
         with open(filename, "r") as fd:
             lines=fd.readlines()
         Log(f"Read {lines=}")
@@ -621,6 +628,8 @@ class MainWindow(MainFrame):
     def ReadSetupFtp(self, path) -> str:
         filename=os.path.join(path, "setup.ftp")
         Log(f"Opening {filename}")
+        if not os.path.exists(filename):
+            return ""
         with open(filename, "r") as fd:
             lines=fd.readlines()
         Log(f"Read {lines=}")
