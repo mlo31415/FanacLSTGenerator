@@ -946,6 +946,23 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource()
         self.RefreshWindow()
 
+    # A sort function which treates the input text (if it can) as NNNaaa where NNN is sorted as an integer and aaa is sorted alphabetically.  Decimal point ends NNN.
+    def PseudonumericSort(self, x: str) -> float:
+        if IsInt(x):
+            return float(int(x))
+        m=re.match("([0-9]+)\.?(.*)$", x)
+        if m is None:
+            return 0
+        # Turn the trailing junk into something like a number.  The trailing junk will be things like ".1" or "A"
+        junk=m.groups()[1]
+        dec=0
+        pos=1
+        for j in junk:
+            dec+=ord(j)/(256**pos)      # Convert the trailing junk into ascii numbers and divide by 256 to create a float which sorts in the same order
+            pos+=1
+        return int(m.groups()[0])+dec
+
+
     def OnPopupSortOnSelectedColumn(self, event):       # MainWindow(MainFrame)
         # We already know that only a single column is selected
         _, col, _, _=self._dataGrid.SelectionBoundingBox()
@@ -958,7 +975,12 @@ class MainWindow(MainFrame):
             if testIsMonth:
                 self.Datasource.Rows.sort(key=lambda x: ZeroIfNone(MonthNameToInt(x[col])))
             else:
-                self.Datasource.Rows.sort(key=lambda x:x[col])
+                testIsSortaNum=self.Datasource.ColDefs[col].Name == "WholeNum" or self.Datasource.ColDefs[col].Name == "Whole" or \
+                               self.Datasource.ColDefs[col].Name == "Vol" or self.Datasource.ColDefs[col].Name == "Num"
+                if testIsSortaNum:
+                    self.Datasource.Rows.sort(key=lambda x: self.PseudonumericSort(x[col]))
+                else:
+                    self.Datasource.Rows.sort(key=lambda x:x[col])
         self.RefreshWindow()
 
     def OnPopupInsertColLeft(self, event):       # MainWindow(MainFrame)
