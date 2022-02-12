@@ -415,7 +415,7 @@ class MainWindow(MainFrame):
         self.tFanzineType.SetSelection(0)
         self.tLocaleText.SetValue("")
 
-        self.Credits=Settings().Get("Credits", default="")
+        self.Credits=Settings().Get("Scanning credits default", default="")
         self.tCredits.SetValue(self.Credits)
 
         rootDirectory=Settings().Get("Root directory", default=".")
