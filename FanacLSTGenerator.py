@@ -9,7 +9,7 @@ import sys
 from GenGUIClass import MainFrame
 
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
-from WxHelpers import OnCloseHandling, ProgressMessage
+from WxHelpers import OnCloseHandling, ProgressMessage, ProgressMsg
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox
 from PDFHelpers import GetPdfPageCount
@@ -31,6 +31,10 @@ class MainWindow(MainFrame):
         self.NewDirectory=False # Are we creating a new directory? (Alternative is that we're editing an old one.)
         self.OldDirectory=False
         self.Credits=""         # Who is to be credited for this affair?
+
+        # New files to be added
+        self.files=[]
+        self.sourceDirectory=""
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
@@ -251,7 +255,7 @@ class MainWindow(MainFrame):
         self.Destroy()
 
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
-        files=[]
+        self.files=[]
         # Call the File Open dialog to select PDF files
         with wx.FileDialog(self,
                            message="Select PDF files to add",
@@ -262,36 +266,42 @@ class MainWindow(MainFrame):
             if dlg.ShowModal() != wx.ID_OK:
                 return
 
-            files=dlg.GetFilenames()
-            sourceDirectory=dlg.GetDirectory()
+            self.files=dlg.GetFilenames()
+            self.sourceDirectory=dlg.GetDirectory()
 
-        if not files:  # Empty selection
+            # We have a list of file names. Sort them and add them to the rows at the bottom
+            # Start by removing any empty trailing rows
+            while self.Datasource.Rows:
+                last=self.Datasource.Rows.pop()
+                if any([cell != "" for cell in last.Cells]):
+                    self.Datasource.Rows.append(last)
+                    break
+            self.files.sort()
+            nrows=self.Datasource.NumRows
+            self.Datasource.AppendEmptyRows(len(self.files))
+            for i, file in enumerate(self.files):
+                self.Datasource.Rows[nrows+i][0]=file
+
+            rows=slice(nrows, nrows+len(self.files))  # Slice of the new rows
+            self.UpdatePDFColumn(rows)
+
+            self._dataGrid.RefreshWxGridFromDatasource()
+            self.RefreshWindow()
+
+
+    def MoveSelectedFiles(self):
+        if not self.files:  # Empty selection
             return
+
 
         # Move the files from the source directory to the fanzine's directory.
         rootDirectory=Settings().Get("Root directory", default=".")
-        fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.lstFilename))[0]
-        for file in files:
-            shutil.move(os.path.join(sourceDirectory, file), fanzineDirectory)
+        fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.DirectoryLocal))[0]
+        for file in self.files:
+            shutil.move(os.path.join(self.sourceDirectory, file), fanzineDirectory)
 
-        # We have a list of file names. Sort them and add them to the rows at the bottom
-        # Start by removing any empty trailing rows
-        while self.Datasource.Rows:
-            last=self.Datasource.Rows.pop()
-            if any([cell != "" for cell in last.Cells]):
-                self.Datasource.Rows.append(last)
-                break
-        files.sort()
-        nrows=self.Datasource.NumRows
-        self.Datasource.AppendEmptyRows(len(files))
-        for i, file in enumerate(files):
-            self.Datasource.Rows[nrows+i][0]=file
-
-        rows=slice(nrows, nrows+len(files))     # Slice of the new rows
-        self.UpdatePDFColumn(rows)
-
-        self._dataGrid.RefreshWxGridFromDatasource()
-        self.RefreshWindow()
+        self.files=[]
+        self.sourceDirectory=""
 
 
     #--------------------------
@@ -356,42 +366,40 @@ class MainWindow(MainFrame):
         self.DirectoryLocal=dlg.GetDirectory()
         dlg.Destroy()
 
-        progMsg=ProgressMessage(self)
-        progMsg.Show(f"Loading {self.lstFilename}")
+        with ProgressMsg(self, f"Loading {self.lstFilename}") as pm:
 
-        # Try to load the LSTFile
-        if not self.LoadLSTFile(os.path.join(self.DirectoryLocal, self.lstFilename)):
-            progMsg.Close(delay=0.5)
-            return
+            # Try to load the LSTFile
+            if not self.LoadLSTFile(os.path.join(self.DirectoryLocal, self.lstFilename)):
+                #progMsg.Close(delay=0.5)
+                return
 
-        # We have the path to the file found.  Extract the directory it is contained in and make sure it is located at root.
-        path, dir=os.path.split(self.DirectoryLocal)
-        localroot=Settings().Get("Root directory", default="")
-        if not os.path.samefile(path, localroot):
-            Log(f"LSTFile not in root directory.")
-            Log(f"     root={localroot}")
-            Log(f"     LSTFile iin {path}")
-        self.tDirectoryLocal.SetValue(dir)
+            # We have the path to the file found.  Extract the directory it is contained in and make sure it is located at root.
+            path, dir=os.path.split(self.DirectoryLocal)
+            localroot=Settings().Get("Root directory", default="")
+            if not os.path.samefile(path, localroot):
+                Log(f"LSTFile not in root directory.")
+                Log(f"     root={localroot}")
+                Log(f"     LSTFile iin {path}")
+            self.tDirectoryLocal.SetValue(dir)
 
-        # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
-        complete, credits=self.ReadSetupBld(self.DirectoryLocal)
-        if complete is not None:
-            self.cbComplete.SetValue(complete)
-            self.Complete=complete
-        if credits is not None:
-            self.tCredits.SetValue(credits)
-            self.Credits=credits
+            # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
+            complete, credits=self.ReadSetupBld(self.DirectoryLocal)
+            if complete is not None:
+                self.cbComplete.SetValue(complete)
+                self.Complete=complete
+            if credits is not None:
+                self.tCredits.SetValue(credits)
+                self.Credits=credits
 
-        # And see if we can pick up the server directory from setup.ftp
-        dir=self.ReadSetupFtp(self.DirectoryLocal)
-        if dir != "":
-            self.tDirectoryServer.SetValue(dir)
-            self.DirectoryServer=dir
+            # And see if we can pick up the server directory from setup.ftp
+            dir=self.ReadSetupFtp(self.DirectoryLocal)
+            if dir != "":
+                self.tDirectoryServer.SetValue(dir)
+                self.DirectoryServer=dir
 
-        self.MarkAsSaved()
-        self.RefreshWindow()
+            self.MarkAsSaved()
+            self.RefreshWindow()
 
-        progMsg.Close(delay=0.5)
 
     # ------------------
     # Create a new, empty LST file
@@ -461,42 +469,42 @@ class MainWindow(MainFrame):
     # Save an existing LST file by simply overwriting what exists.
     def SaveExistingLSTFile(self):       # MainWindow(MainFrame)
 
-        progMsg=ProgressMessage(self)
-        progMsg.Show(f"Creating {self.tFanzineName.GetValue()}")
+        with ProgressMsg(self, f"Creating {self.tFanzineName.GetValue()}"):
 
-        # Create an instance of the LSTfile class from the datasource
-        lstfile=self.CreateLSTFileFromDatasourceEtc()
+            # Create an instance of the LSTfile class from the datasource
+            lstfile=self.CreateLSTFileFromDatasourceEtc()
 
-        newDirectory=os.path.join(Settings().Get("Root directory", default="."), self.DirectoryLocal)
-        templateDirectory=Settings().Get("Template directory", default=".")
-        # Edit the templated files based on what the user filled in in the main dialog
-        if self.DirectoryServer:
-            if not self.UpdateSetupFtp(self.DirectoryLocal):
-                Log(f"Creating setup.ftp")
-                if not self.CopyTemplateFile("setup.ftp template", "setup.ftp", newDirectory, templateDirectory):
-                    Log(f"Could not create setup.ftp")
-        if not self.UpdateSetupBld(self.DirectoryLocal):
-            Log(f"Creating setup.bld")
-            if not self.CopyTemplateFile("setup.bld template", "setup.bld", newDirectory, templateDirectory):
-                Log(f"Could not create setup.bld")
+            newDirectory=os.path.join(Settings().Get("Root directory", default="."), self.DirectoryLocal)
+            templateDirectory=Settings().Get("Template directory", default=".")
+            # Edit the templated files based on what the user filled in in the main dialog
+            if self.DirectoryServer:
+                if not self.UpdateSetupFtp(self.DirectoryLocal):
+                    Log(f"Creating setup.ftp")
+                    if not self.CopyTemplateFile("setup.ftp template", "setup.ftp", newDirectory, templateDirectory):
+                        Log(f"Could not create setup.ftp")
+            if not self.UpdateSetupBld(self.DirectoryLocal):
+                Log(f"Creating setup.bld")
+                if not self.CopyTemplateFile("setup.bld template", "setup.bld", newDirectory, templateDirectory):
+                    Log(f"Could not create setup.bld")
 
-        # Rename the old file
-        oldname=os.path.join(self.DirectoryLocal, self.lstFilename)
-        newname=os.path.join(self.DirectoryLocal, os.path.splitext(self.lstFilename)[0]+"-old.LST")
-        try:
-            i=0
-            while os.path.exists(newname):
-                i+=1
-                newname=os.path.join(self.DirectoryLocal, os.path.splitext(self.lstFilename)[0]+"-old-"+str(i)+".LST")
+            # Rename the old file
+            oldname=os.path.join(self.DirectoryLocal, self.lstFilename)
+            newname=os.path.join(self.DirectoryLocal, os.path.splitext(self.lstFilename)[0]+"-old.LST")
+            try:
+                i=0
+                while os.path.exists(newname):
+                    i+=1
+                    newname=os.path.join(self.DirectoryLocal, os.path.splitext(self.lstFilename)[0]+"-old-"+str(i)+".LST")
 
-            os.rename(oldname, newname)
-        except Exception as e:
-            Log(f"OnSave fails when trying to rename {oldname} to {newname}", isError=True)
-            Bailout(PermissionError, f"OnSave fails when trying to rename {oldname} to {newname}", "LSTError")
+                os.rename(oldname, newname)
+            except Exception as e:
+                Log(f"OnSave fails when trying to rename {oldname} to {newname}", isError=True)
+                Bailout(PermissionError, f"OnSave fails when trying to rename {oldname} to {newname}", "LSTError")
 
-        self.SaveFile(lstfile, oldname)
+            self.SaveFile(lstfile, oldname)
 
-        progMsg.Close(delay=1)
+            self.MoveSelectedFiles()
+
 
 
     #------------------
@@ -519,45 +527,42 @@ class MainWindow(MainFrame):
 
         newDirectory=os.path.join(rootDirectory, self.DirectoryLocal)
 
-        progMsg=ProgressMessage(self)
-        progMsg.Show(f"Creating {self.tFanzineName.GetValue()}")
+        with ProgressMsg(self, f"Creating {self.tFanzineName.GetValue()}"):
 
-        # The directory must not exist, otherwise
-        if os.path.exists(newDirectory):
-            MessageBox(f"Directory {newDirectory} already exists.")
-            #return         For now, just keep going
-        else:
-            # Create the new directory
-            os.mkdir(newDirectory)
+            # The directory must not exist, otherwise
+            if os.path.exists(newDirectory):
+                MessageBox(f"Directory {newDirectory} already exists.")
+                #return         For now, just keep going
+            else:
+                # Create the new directory
+                os.mkdir(newDirectory)
+                Log(f"CreateLSTDirectory: Created firectory {newDirectory}", Flush=True)
 
-        # Copy the files setup.ftp and setup.bld from the templates source to the new directory.
-        templateDirectory=Settings().Get("Template directory", default=".")
+            # Copy the files setup.ftp and setup.bld from the templates source to the new directory.
+            templateDirectory=Settings().Get("Template directory", default=".")
 
-        # Look in Settings to find the names of the template files.
-        # Copy them from the template directory to the LST file's directory
-        if not self.CopyTemplateFile("setup.ftp template", "setup.ftp", newDirectory, templateDirectory):
-            progMsg.Close(delay=1)
-            return
-        if not self.CopyTemplateFile("setup.bld template", "setup.bld", newDirectory, templateDirectory):
-            progMsg.Close(delay=1)
-            return
-        # Edit them based on what the user filled in in the main dialog
-        if not self.UpdateSetupFtp(newDirectory):
-            progMsg.Close(delay=1)
-            return
-        if not self.UpdateSetupBld(newDirectory):
-            progMsg.Close(delay=1)
-            return
+            # Look in Settings to find the names of the template files.
+            # Copy them from the template directory to the LST file's directory
+            if not self.CopyTemplateFile("setup.ftp template", "setup.ftp", newDirectory, templateDirectory):
+                return
+            if not self.CopyTemplateFile("setup.bld template", "setup.bld", newDirectory, templateDirectory):
+                return
+            # Edit them based on what the user filled in in the main dialog
+            if not self.UpdateSetupFtp(newDirectory):
+                return
+            if not self.UpdateSetupBld(newDirectory):
+                return
 
-        # Save the LSTFile in the new directory
-        name, ext=os.path.splitext(self.DirectoryLocal)
-        if ext.lower() != ".lst":
-            self.lstFilename=name+".LST"
+            # Save the LSTFile in the new directory
+            name, ext=os.path.splitext(self.DirectoryLocal)
+            if ext.lower() != ".lst":
+                self.lstFilename=name+".LST"
 
-        lstfile=self.CreateLSTFileFromDatasourceEtc()
-        self.SaveFile(lstfile, self.lstFilename)
+            lstfile=self.CreateLSTFileFromDatasourceEtc()
+            self.SaveFile(lstfile, os.path.join(Settings().Get("Root directory"), self.DirectoryLocal, self.lstFilename))
 
-        progMsg.Close(delay=1)
+            self.MoveSelectedFiles()
+
 
     def UpdateSetupBld(self, path) -> bool:
         # Read setup.bld, edit it, and save the result back
@@ -662,24 +667,26 @@ class MainWindow(MainFrame):
 
     def CopyTemplateFile(self, settingName: str, newName: str, newDirectory: str, templateDirectory: str) -> bool:
         setupTemplateName=Settings().Get(settingName, default="")
+        Log(f"CopyTemplateFile: from {setupTemplateName} in {templateDirectory} to {newName} in {newDirectory}")
         if not setupTemplateName:
             MessageBox(f"Settings files does not contain value for {settingName}. Save failed.")
             return False
 
         # Remove the template if it already exists in the target directory
-        filename=os.path.join(newDirectory, setupTemplateName)
+        filename=os.path.join(newDirectory, newName)
         if os.path.exists(filename):  # Delete any existing file
-            Log(f"CreateLSTDirectory: {filename} already exists")
+            Log(f"CopyTemplateFile: {filename} already exists, so removing it")
             os.remove(filename)
 
         # Copy the template over, renaming it setup.ftp
-        filename=os.path.join(newDirectory, newName)
+        Log(f"CopyTemplateFile: copy {os.path.join(templateDirectory, setupTemplateName)} to {filename}")
         shutil.copy(os.path.join(templateDirectory, setupTemplateName), filename)
         return True
 
 
     # Save an LST file
-    def SaveFile(self, lstfile, name):       # MainWindow(MainFrame)
+    def SaveFile(self, lstfile: LSTFile, name: str):       # MainWindow(MainFrame)
+        Log(f"LstFile.SaveFile: save {name}")
         try:
             if not lstfile.Save(name):
                 Log(f"OnSave failed (1) while trying to save {name}", isError=True)
