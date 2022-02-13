@@ -254,6 +254,11 @@ class MainWindow(MainFrame):
 
         self.Destroy()
 
+
+    def RemoveScaryCharacters(self, name: str) -> str:
+        return "".join(re.sub("[?*&%$#@'><:;{}\][=+)(^!]+", "_", name))
+
+
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
         self.files=[]
         # Call the File Open dialog to select PDF files
@@ -266,7 +271,9 @@ class MainWindow(MainFrame):
             if dlg.ShowModal() != wx.ID_OK:
                 return
 
-            self.files=dlg.GetFilenames()
+            files=dlg.GetFilenames()
+            for file in files:
+                self.files.append((file, self.RemoveScaryCharacters(file)))
             self.sourceDirectory=dlg.GetDirectory()
 
             # We have a list of file names. Sort them and add them to the rows at the bottom
@@ -276,11 +283,11 @@ class MainWindow(MainFrame):
                 if any([cell != "" for cell in last.Cells]):
                     self.Datasource.Rows.append(last)
                     break
-            self.files.sort()
+            self.files.sort(key=lambda x: x[1])
             nrows=self.Datasource.NumRows
             self.Datasource.AppendEmptyRows(len(self.files))
             for i, file in enumerate(self.files):
-                self.Datasource.Rows[nrows+i][0]=file
+                self.Datasource.Rows[nrows+i][0]=file[1]
 
             rows=slice(nrows, nrows+len(self.files))  # Slice of the new rows
             self.UpdatePDFColumn(rows)
@@ -298,7 +305,8 @@ class MainWindow(MainFrame):
         rootDirectory=Settings().Get("Root directory", default=".")
         fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.DirectoryLocal))[0]
         for file in self.files:
-            shutil.move(os.path.join(self.sourceDirectory, file), fanzineDirectory)
+            Log(f"MoveSelectedFiles: {os.path.join(self.sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
+            shutil.move(os.path.join(self.sourceDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
 
         self.files=[]
         self.sourceDirectory=""
