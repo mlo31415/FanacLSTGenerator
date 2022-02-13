@@ -335,6 +335,7 @@ class MainWindow(MainFrame):
 
         if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Replace anyway?"):
             return
+
         self.MarkAsSaved()  # The contents have been declared doomed
 
         self.tDirectoryLocal.SetValue("")
@@ -355,8 +356,12 @@ class MainWindow(MainFrame):
         self.DirectoryLocal=dlg.GetDirectory()
         dlg.Destroy()
 
+        progMsg=ProgressMessage(self)
+        progMsg.Show(f"Loading {self.lstFilename}")
+
         # Try to load the LSTFile
         if not self.LoadLSTFile(os.path.join(self.DirectoryLocal, self.lstFilename)):
+            progMsg.Close(delay=0.5)
             return
 
         # We have the path to the file found.  Extract the directory it is contained in and make sure it is located at root.
@@ -385,6 +390,8 @@ class MainWindow(MainFrame):
 
         self.MarkAsSaved()
         self.RefreshWindow()
+
+        progMsg.Close(delay=0.5)
 
     # ------------------
     # Create a new, empty LST file
