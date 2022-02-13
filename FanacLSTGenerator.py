@@ -141,13 +141,12 @@ class MainWindow(MainFrame):
     #------------------
     # Open a dialog to allow the user to select an LSTFile on disk.
     # Load it (and some other stuff) into self's 'LSFFile() object
-    def LoadLSTFile(self) -> bool:       # MainWindow(MainFrame)
+    def LoadLSTFile(self, pathname: str) -> bool:       # MainWindow(MainFrame)
 
         # Clear out any old information from form.
         lstfile=LSTFile()
 
         # Read the lst file
-        pathname=os.path.join(self.DirectoryLocal, self.lstFilename)
         try:
             lstfile.Load(pathname)
         except Exception as e:
@@ -356,8 +355,10 @@ class MainWindow(MainFrame):
         self.DirectoryLocal=dlg.GetDirectory()
         dlg.Destroy()
 
-        if not self.LoadLSTFile():
+
+        if not self.LoadLSTFile(os.path.join(self.DirectoryLocal, self.lstFilename)):
             return
+
 
         # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
         complete, credits=self.ReadSetupBld(self.DirectoryLocal)
