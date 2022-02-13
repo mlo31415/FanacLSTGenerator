@@ -587,7 +587,7 @@
                                 <property name="style"></property>
                                 <property name="subclass">; ; forward_declare</property>
                                 <property name="toolbar_pane">0</property>
-                                <property name="tooltip"></property>
+                                <property name="tooltip">The name of the fanzine serires.</property>
                                 <property name="validator_data_type"></property>
                                 <property name="validator_style">wxFILTER_NONE</property>
                                 <property name="validator_type">wxDefaultValidator</property>
@@ -714,7 +714,7 @@
                                 <property name="style"></property>
                                 <property name="subclass">; ; forward_declare</property>
                                 <property name="toolbar_pane">0</property>
-                                <property name="tooltip"></property>
+                                <property name="tooltip">A list of editors separated by commans.</property>
                                 <property name="validator_data_type"></property>
                                 <property name="validator_style">wxFILTER_NONE</property>
                                 <property name="validator_type">wxDefaultValidator</property>
@@ -840,7 +840,7 @@
                                 <property name="style"></property>
                                 <property name="subclass">; ; forward_declare</property>
                                 <property name="toolbar_pane">0</property>
-                                <property name="tooltip"></property>
+                                <property name="tooltip">The date range for this fanzine, years only. E.g., 1965-1974</property>
                                 <property name="validator_data_type"></property>
                                 <property name="validator_style">wxFILTER_NONE</property>
                                 <property name="validator_type">wxDefaultValidator</property>
@@ -1032,7 +1032,7 @@
                                 <property name="style"></property>
                                 <property name="subclass">; ; forward_declare</property>
                                 <property name="toolbar_pane">0</property>
-                                <property name="tooltip"></property>
+                                <property name="tooltip">Is this fanzine series complete on fanac.org?</property>
                                 <property name="validator_data_type"></property>
                                 <property name="validator_style">wxFILTER_NONE</property>
                                 <property name="validator_type">wxDefaultValidator</property>
@@ -1175,7 +1175,7 @@
                                 <property name="style"></property>
                                 <property name="subclass">; ; forward_declare</property>
                                 <property name="toolbar_pane">0</property>
-                                <property name="tooltip"></property>
+                                <property name="tooltip">The name of the local directory (relative to the root displayed to the left) for this fanzine series.</property>
                                 <property name="validator_data_type"></property>
                                 <property name="validator_style">wxFILTER_NONE</property>
                                 <property name="validator_type">wxDefaultValidator</property>
@@ -1301,7 +1301,7 @@
                                 <property name="style"></property>
                                 <property name="subclass">; ; forward_declare</property>
                                 <property name="toolbar_pane">0</property>
-                                <property name="tooltip"></property>
+                                <property name="tooltip">The name of the directory for this fanzine on the fanac.org server.</property>
                                 <property name="validator_data_type"></property>
                                 <property name="validator_style">wxFILTER_NONE</property>
                                 <property name="validator_type">wxDefaultValidator</property>
@@ -1445,7 +1445,7 @@
                                 <property name="style">wxTE_MULTILINE</property>
                                 <property name="subclass"></property>
                                 <property name="toolbar_pane">0</property>
-                                <property name="tooltip"></property>
+                                <property name="tooltip">Other top blather for the fanzine series page.</property>
                                 <property name="validator_data_type"></property>
                                 <property name="validator_style">wxFILTER_NONE</property>
                                 <property name="validator_type">wxDefaultValidator</property>
@@ -1571,7 +1571,7 @@
                                 <property name="style">wxTE_MULTILINE</property>
                                 <property name="subclass"></property>
                                 <property name="toolbar_pane">0</property>
-                                <property name="tooltip"></property>
+                                <property name="tooltip">The location for this fanzine: Country, Country: City, State: City</property>
                                 <property name="validator_data_type"></property>
                                 <property name="validator_style">wxFILTER_NONE</property>
                                 <property name="validator_type">wxDefaultValidator</property>
@@ -1697,7 +1697,7 @@
                                 <property name="style"></property>
                                 <property name="subclass">; ; forward_declare</property>
                                 <property name="toolbar_pane">0</property>
-                                <property name="tooltip"></property>
+                                <property name="tooltip">A free-form list of people who have contributed scans to this fanzine series.</property>
                                 <property name="validator_data_type"></property>
                                 <property name="validator_style">wxFILTER_NONE</property>
                                 <property name="validator_type">wxDefaultValidator</property>
