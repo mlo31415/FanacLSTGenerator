@@ -536,7 +536,7 @@ class MainWindow(MainFrame):
             else:
                 # Create the new directory
                 os.mkdir(newDirectory)
-                Log(f"CreateLSTDirectory: Created firectory {newDirectory}", Flush=True)
+                Log(f"CreateLSTDirectory: Created directory {newDirectory}", Flush=True)
 
             # Copy the files setup.ftp and setup.bld from the templates source to the new directory.
             templateDirectory=Settings().Get("Template directory", default=".")
