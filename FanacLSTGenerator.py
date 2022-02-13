@@ -355,10 +355,18 @@ class MainWindow(MainFrame):
         self.DirectoryLocal=dlg.GetDirectory()
         dlg.Destroy()
 
-
+        # Try to load the LSTFile
         if not self.LoadLSTFile(os.path.join(self.DirectoryLocal, self.lstFilename)):
             return
 
+        # We have the path to the file found.  Extract the directory it is contained in and make sure it is located at root.
+        path, dir=os.path.split(self.DirectoryLocal)
+        localroot=Settings().Get("Root directory", default="")
+        if not os.path.samefile(path, localroot):
+            Log(f"LSTFile not in root directory.")
+            Log(f"     root={localroot}")
+            Log(f"     LSTFile iin {path}")
+        self.tDirectoryLocal.SetValue(dir)
 
         # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
         complete, credits=self.ReadSetupBld(self.DirectoryLocal)
