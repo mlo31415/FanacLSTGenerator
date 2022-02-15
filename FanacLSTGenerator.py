@@ -25,7 +25,7 @@ class MainWindow(MainFrame):
 
         self._signature=0
         self.lstFilename=""
-        self.DirectoryLocal=""  # Local directory where the LST file, etc., reside
+        self.DirectoryLocalPath=""  # Local directory where the LST file, etc., reside
         self.DirectoryServer="" # Server directory to be created under /fanzines
         self.Complete=False     # Is this fanzine series complete?
         self.NewDirectory=False # Are we creating a new directory? (Alternative is that we're editing an old one.)
