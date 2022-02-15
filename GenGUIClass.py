@@ -49,7 +49,7 @@ class MainFrame ( wx.Frame ):
 
 		fgSizer4.Add( self.m_staticText4, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 5 )
 
-		self.tFanzineName = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 200,-1 ), 0 )
+		self.tFanzineName = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 200,-1 ), 0|wx.TAB_TRAVERSAL )
 		self.tFanzineName.SetToolTip( u"The name of the fanzine serires." )
 		self.tFanzineName.SetMinSize( wx.Size( 200,-1 ) )
 
@@ -63,7 +63,7 @@ class MainFrame ( wx.Frame ):
 
 		fgSizer4.Add( self.m_staticText5, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 5 )
 
-		self.tEditors = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.tEditors = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0|wx.TAB_TRAVERSAL )
 		self.tEditors.SetToolTip( u"A list of editors separated by commans." )
 		self.tEditors.SetMinSize( wx.Size( 200,-1 ) )
 
@@ -77,7 +77,7 @@ class MainFrame ( wx.Frame ):
 
 		fgSizer4.Add( self.m_staticText6, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 5 )
 
-		self.tDates = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.tDates = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0|wx.TAB_TRAVERSAL )
 		self.tDates.SetToolTip( u"The date range for this fanzine, years only. E.g., 1965-1974" )
 		self.tDates.SetMinSize( wx.Size( 200,-1 ) )
 
@@ -98,7 +98,7 @@ class MainFrame ( wx.Frame ):
 
 		fgSizer4.Add( self.tFanzineType, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.FIXED_MINSIZE, 0 )
 
-		self.cbComplete = wx.CheckBox( self, wx.ID_ANY, u"Complete", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.cbComplete = wx.CheckBox( self, wx.ID_ANY, u"Complete", wx.DefaultPosition, wx.DefaultSize, 0|wx.TAB_TRAVERSAL )
 		self.cbComplete.SetToolTip( u"Is this fanzine series complete on fanac.org?" )
 
 		fgSizer4.Add( self.cbComplete, 0, wx.ALL, 5 )
@@ -118,7 +118,7 @@ class MainFrame ( wx.Frame ):
 
 		fgSizer2.Add( self.lLocalDirectory, 0, wx.ALL, 5 )
 
-		self.tDirectoryLocal = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
+		self.tDirectoryLocal = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0|wx.TAB_TRAVERSAL )
 		self.tDirectoryLocal.SetToolTip( u"The name of the local directory (relative to the root displayed to the left) for this fanzine series." )
 		self.tDirectoryLocal.SetMinSize( wx.Size( 200,-1 ) )
 
@@ -131,7 +131,7 @@ class MainFrame ( wx.Frame ):
 
 		fgSizer2.Add( self.lServerDirectory, 0, wx.ALL, 5 )
 
-		self.tDirectoryServer = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
+		self.tDirectoryServer = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0|wx.TAB_TRAVERSAL )
 		self.tDirectoryServer.SetToolTip( u"The name of the directory for this fanzine on the fanac.org server." )
 		self.tDirectoryServer.SetMinSize( wx.Size( 200,-1 ) )
 
@@ -151,18 +151,18 @@ class MainFrame ( wx.Frame ):
 
 		fgSizerComments.Add( self.m_staticText2, 1, wx.ALIGN_RIGHT|wx.ALL, 5 )
 
-		self.tTopText = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
-		self.tTopText.SetToolTip( u"Other top blather for the fanzine series page." )
-		self.tTopText.SetMinSize( wx.Size( -1,100 ) )
+		self.tTopComments = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TAB_TRAVERSAL )
+		self.tTopComments.SetToolTip( u"Other top blather for the fanzine series page." )
+		self.tTopComments.SetMinSize( wx.Size( -1,100 ) )
 
-		fgSizerComments.Add( self.tTopText, 1, wx.ALL|wx.EXPAND, 5 )
+		fgSizerComments.Add( self.tTopComments, 1, wx.ALL|wx.EXPAND, 5 )
 
 		self.m_staticText21 = wx.StaticText( self, wx.ID_ANY, u"Locale Info:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText21.Wrap( -1 )
 
 		fgSizerComments.Add( self.m_staticText21, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
 
-		self.tLocaleText = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE )
+		self.tLocaleText = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TAB_TRAVERSAL )
 		self.tLocaleText.SetToolTip( u"The location for this fanzine: Country, Country: City, State: City" )
 		self.tLocaleText.SetMinSize( wx.Size( -1,30 ) )
 		self.tLocaleText.SetMaxSize( wx.Size( -1,30 ) )
@@ -174,7 +174,7 @@ class MainFrame ( wx.Frame ):
 
 		fgSizerComments.Add( self.m_staticText9, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
 
-		self.tCredits = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.tCredits = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0|wx.TAB_TRAVERSAL )
 		self.tCredits.SetToolTip( u"A free-form list of people who have contributed scans to this fanzine series." )
 		self.tCredits.SetMinSize( wx.Size( -1,30 ) )
 		self.tCredits.SetMaxSize( wx.Size( -1,30 ) )
@@ -274,7 +274,7 @@ class MainFrame ( wx.Frame ):
 		self.cbComplete.Bind( wx.EVT_CHECKBOX, self.OnCheckComplete )
 		self.tDirectoryLocal.Bind( wx.EVT_TEXT, self.OnDirectoryLocal )
 		self.tDirectoryServer.Bind( wx.EVT_TEXT, self.OnDirectoryServer )
-		self.tTopText.Bind( wx.EVT_TEXT, self.OnTextTopComments )
+		self.tTopComments.Bind( wx.EVT_TEXT, self.OnTopComments )
 		self.tLocaleText.Bind( wx.EVT_TEXT, self.OnTextLocale )
 		self.tCredits.Bind( wx.EVT_TEXT, self.OnCredits )
 		self.wxGrid.Bind( wx.grid.EVT_GRID_CELL_CHANGED, self.OnGridCellChanged )
@@ -344,7 +344,7 @@ class MainFrame ( wx.Frame ):
 	def OnDirectoryServer( self, event ):
 		event.Skip()
 
-	def OnTextTopComments( self, event ):
+	def OnTopComments( self, event ):
 		event.Skip()
 
 	def OnTextLocale( self, event ):

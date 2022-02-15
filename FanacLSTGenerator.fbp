@@ -595,7 +595,7 @@
                                 <property name="value"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style"></property>
+                                <property name="window_style">wxTAB_TRAVERSAL</property>
                                 <event name="OnChar">OnFanzineNameChar</event>
                                 <event name="OnText">OnFanzineName</event>
                             </object>
@@ -722,7 +722,7 @@
                                 <property name="value"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style"></property>
+                                <property name="window_style">wxTAB_TRAVERSAL</property>
                                 <event name="OnText">OnEditors</event>
                             </object>
                         </object>
@@ -848,7 +848,7 @@
                                 <property name="value"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style"></property>
+                                <property name="window_style">wxTAB_TRAVERSAL</property>
                                 <event name="OnText">OnDates</event>
                             </object>
                         </object>
@@ -1039,7 +1039,7 @@
                                 <property name="validator_variable"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style"></property>
+                                <property name="window_style">wxTAB_TRAVERSAL</property>
                                 <event name="OnCheckBox">OnCheckComplete</event>
                             </object>
                         </object>
@@ -1183,7 +1183,7 @@
                                 <property name="value"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style"></property>
+                                <property name="window_style">wxTAB_TRAVERSAL</property>
                                 <event name="OnText">OnDirectoryLocal</event>
                             </object>
                         </object>
@@ -1309,7 +1309,7 @@
                                 <property name="value"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style"></property>
+                                <property name="window_style">wxTAB_TRAVERSAL</property>
                                 <event name="OnText">OnDirectoryServer</event>
                             </object>
                         </object>
@@ -1432,7 +1432,7 @@
                                 <property name="minimize_button">0</property>
                                 <property name="minimum_size">-1,100</property>
                                 <property name="moveable">1</property>
-                                <property name="name">tTopText</property>
+                                <property name="name">tTopComments</property>
                                 <property name="pane_border">1</property>
                                 <property name="pane_position">-1,-1</property>
                                 <property name="pane_size"></property>
@@ -1453,8 +1453,8 @@
                                 <property name="value"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style"></property>
-                                <event name="OnText">OnTextTopComments</event>
+                                <property name="window_style">wxTAB_TRAVERSAL</property>
+                                <event name="OnText">OnTopComments</event>
                             </object>
                         </object>
                         <object class="sizeritem" expanded="1">
@@ -1579,7 +1579,7 @@
                                 <property name="value"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style"></property>
+                                <property name="window_style">wxTAB_TRAVERSAL</property>
                                 <event name="OnText">OnTextLocale</event>
                             </object>
                         </object>
@@ -1705,7 +1705,7 @@
                                 <property name="value"></property>
                                 <property name="window_extra_style"></property>
                                 <property name="window_name"></property>
-                                <property name="window_style"></property>
+                                <property name="window_style">wxTAB_TRAVERSAL</property>
                                 <event name="OnText">OnCredits</event>
                             </object>
                         </object>

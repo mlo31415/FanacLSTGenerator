@@ -106,7 +106,7 @@ class MainWindow(MainFrame):
         self.tEditors.SetEditable(False)
         self.tDates.SetEditable(False)
         self.tFanzineType.Enabled=False
-        self.tTopText.SetEditable(False)
+        self.tTopComments.SetEditable(False)
         self.tLocaleText.SetEditable(False)
         self.cbComplete.Enabled=False
         self.tDirectoryLocal.SetEditable(False)
@@ -120,7 +120,7 @@ class MainWindow(MainFrame):
             self.tEditors.SetEditable(True)
             self.tDates.SetEditable(True)
             self.tFanzineType.Enabled=True
-            self.tTopText.SetEditable(True)
+            self.tTopComments.SetEditable(True)
             self.tLocaleText.SetEditable(True)
             self.cbComplete.Enabled=True
             self.wxGrid.Enabled=True
@@ -192,7 +192,7 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource(IgnoreCurrentGrid=True)
 
         # Fill in the upper stuff
-        self.tTopText.SetValue("")
+        self.tTopComments.SetValue("")
         self.tLocaleText.SetValue("")
         self.wxGrid.ClearGrid()
         self.tFanzineName.SetValue(lstfile.FanzineName)
@@ -203,7 +203,7 @@ class MainWindow(MainFrame):
             num=0
         self.tFanzineType.SetSelection(num)
         if len(lstfile.TopComments) > 0:
-            self.tTopText.SetValue("\n".join(lstfile.TopComments))
+            self.tTopComments.SetValue("\n".join(lstfile.TopComments))
         if lstfile.Locale:
             self.tLocaleText.SetValue("\n".join(lstfile.Locale))
 
@@ -221,7 +221,7 @@ class MainWindow(MainFrame):
         lstfile.Dates=self.tDates.GetValue().strip()
         lstfile.FanzineType=self.tFanzineType.GetString(self.tFanzineType.GetSelection()).strip()
 
-        lstfile.TopComments=self.tTopText.GetValue().split("\n")
+        lstfile.TopComments=[self.tTopComments.GetValue().split("\n")]
         lstfile.Locale=[self.tLocaleText.GetValue().strip()]
 
         # Copy over the column headers
@@ -773,11 +773,11 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
     #------------------
-    def OnTextTopComments(self, event):       # MainWindow(MainFrame)
+    def OnTopComments(self, event):       # MainWindow(MainFrame)
         if self.Datasource.TopComments is not None and len(self.Datasource.TopComments) > 0:
-            self.Datasource.TopComments=self.tTopText.GetValue().split("\n")
+            self.Datasource.TopComments=self.tTopComments.GetValue().split("\n")
         else:
-            self.Datasource.TopComments=self.tTopText.GetValue().split("\n")
+            self.Datasource.TopComments=[self.tTopComments.GetValue().strip()]
 
         self.RefreshWindow()
 
