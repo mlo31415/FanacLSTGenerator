@@ -120,7 +120,7 @@ class LSTFile:
                     continue
                 inFanacType=False
             else:
-                self.TopComments.append(line)
+                self.TopComments.append(line.strip().removeprefix("<p>").removesuffix("</p>"))
 
         # Time to read the table header and rows
         while contents:
@@ -209,7 +209,7 @@ class LSTFile:
 
         if self.TopComments and "".join(self.TopComments):    # Only write these lines if there is at least one non-empty line
             for line in self.TopComments:
-                content.append(line)
+                content.append(f"<p>{line}</p>")
             content.append("")
 
         if self.Locale:
