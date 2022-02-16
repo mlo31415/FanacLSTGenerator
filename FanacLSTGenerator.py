@@ -221,7 +221,7 @@ class MainWindow(MainFrame):
         lstfile.Dates=self.tDates.GetValue().strip()
         lstfile.FanzineType=self.tFanzineType.GetString(self.tFanzineType.GetSelection()).strip()
 
-        lstfile.TopComments=[self.tTopComments.GetValue().split("\n")]
+        lstfile.TopComments=self.tTopComments.GetValue().split("\n")
         lstfile.Locale=[self.tLocaleText.GetValue().strip()]
 
         # Copy over the column headers
