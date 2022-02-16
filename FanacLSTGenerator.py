@@ -351,6 +351,10 @@ class MainWindow(MainFrame):
     # Load an LST file from disk into an LSTFile class
     def OnLoadExistingLSTFile(self, event):       # MainWindow(MainFrame)
 
+        # We begin with two button highlighted.  When one of them is selected, the highlight is permanently removed.
+        self.bLoadExistingLSTFile.SetBackgroundColour(self.ButtonBackgroundColor)
+        self.bCreateNewFanzineDir.SetBackgroundColour(self.ButtonBackgroundColor)
+
         if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Replace anyway?"):
             return
 
@@ -412,6 +416,10 @@ class MainWindow(MainFrame):
     # ------------------
     # Create a new, empty LST file
     def OnCreateNewFanzineDir(self, event):       # MainWindow(MainFrame)
+
+        # We begin with two button highlighted.  When one of them is selected, the highlight is permanently removed.
+        self.bLoadExistingLSTFile.SetBackgroundColour(self.ButtonBackgroundColor)
+        self.bCreateNewFanzineDir.SetBackgroundColour(self.ButtonBackgroundColor)
 
         if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
             return
