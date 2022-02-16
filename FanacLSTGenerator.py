@@ -429,8 +429,8 @@ class MainWindow(MainFrame):
 
         if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
             return
-        self.MarkAsSaved()  # Existing contents have been declared doomed
 
+        # Re-initialize the form
         self.lstFilename=""
         self.DirectoryLocalPath=""
 
@@ -464,17 +464,13 @@ class MainWindow(MainFrame):
         self.Credits=Settings().Get("Scanning credits default", default="")
         self.tCredits.SetValue(self.Credits)
 
-        rootDirectory=Settings().Get("Root directory", default=".")
-        templateDirectory=Settings().Get("Template directory", default=".")
-
         # Both directories are editable, for now at least.
         self.tDirectoryLocal.SetValue("")
         self.NewDirectory=True
         self.OldDirectory=False
 
-        self.MarkAsSaved()
+        self.MarkAsSaved()  # Existing contents have been declared doomed
         self.RefreshWindow()
-        self.Show(True)
 
 
     #------------------
