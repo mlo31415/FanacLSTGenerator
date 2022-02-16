@@ -290,7 +290,7 @@ class MainWindow(MainFrame):
                 self.Datasource.Rows[nrows+i][0]=file[1]
 
             rows=slice(nrows, nrows+len(self.files))  # Slice of the new rows
-            self.UpdatePDFColumn(rows, self.sourceDirectory)
+            self.UpdatePDFColumn(rows, files, self.sourceDirectory)
 
             self._dataGrid.RefreshWxGridFromDatasource()
             self.RefreshWindow()
@@ -315,7 +315,7 @@ class MainWindow(MainFrame):
     #--------------------------
     # Check a specific subset of rows (as defined by the slice) to see if one of the file is a pdf
     # If a pdf is found possibly add a PDF column and fill the PDF column in for those rows.
-    def UpdatePDFColumn(self, rows: slice, path: str):
+    def UpdatePDFColumn(self, rows: slice, files: list[str, str], path: str):
         assert rows.step == 1 or rows.step is None
 
         # Are any of these PDFs?
@@ -339,9 +339,14 @@ class MainWindow(MainFrame):
         for i, row in enumerate(self.Datasource.Rows[rows]):
             # Col 0 always contains the filename. If it's a PDF, get its pagecount and add it to the row
             irow=rows.start+i   # We know that the step is always 1 for a slice argument to this function
-            if row[0].lower().endswith(".pdf"):
+            # For pdfs with names that the REXX SW can't handle, row[0] is new name to which it will late be renamed.
+            # But for now we need the current name, which is in files (if it is supplied)
+            name=row[0]
+            if files:
+                name=files[i]
+            if name.lower().endswith(".pdf"):
                 self.Datasource.Rows[irow][iPdf]="PDF"
-                pages=GetPdfPageCount(os.path.join(path, row[0]))
+                pages=GetPdfPageCount(os.path.join(path, name))
                 if pages is not None:
                     pagesCol=self.Datasource.ColHeaderIndex("pages")
                     if pagesCol != -1:
@@ -833,7 +838,7 @@ class MainWindow(MainFrame):
         rootDirectory=Settings().Get("Root directory", default=".")
         fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.lstFilename))[0]
         if col == 0:    # If the Filename changes
-            self.UpdatePDFColumn(slice(row, row+1), fanzineDirectory)
+            self.UpdatePDFColumn(slice(row, row+1), None, fanzineDirectory)
         self.RefreshWindow()
 
     #------------------
