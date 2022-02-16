@@ -212,7 +212,7 @@ class MainFrame ( wx.Frame ):
 
 		# Cell Defaults
 		self.wxGrid.SetDefaultCellAlignment( wx.ALIGN_LEFT, wx.ALIGN_TOP )
-		theIssueGrid.Add( self.wxGrid, 0, wx.ALL|wx.EXPAND, 5 )
+		theIssueGrid.Add( self.wxGrid, 1, wx.ALL|wx.EXPAND, 5 )
 
 
 		bSizerMain.Add( theIssueGrid, 1, wx.EXPAND, 5 )
