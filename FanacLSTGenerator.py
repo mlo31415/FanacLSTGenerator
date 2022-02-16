@@ -371,7 +371,7 @@ class MainWindow(MainFrame):
             return False
 
         self.lstFilename=dlg.GetFilename()
-        self.DirectoryLocalPath=dlg.GetPath()
+        self.DirectoryLocalPath=os.path.split(dlg.GetPath())[0]
         dlg.Destroy()
 
         with ProgressMsg(self, f"Loading {self.lstFilename}") as pm:
