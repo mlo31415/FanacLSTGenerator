@@ -387,7 +387,7 @@ class MainWindow(MainFrame):
             if not os.path.samefile(path, localroot):
                 Log(f"LSTFile not in root directory.")
                 Log(f"     root={localroot}")
-                Log(f"     LSTFile iin {path}")
+                Log(f"     LSTFile in {path}")
             self.tDirectoryLocal.SetValue(dir)
 
             # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
