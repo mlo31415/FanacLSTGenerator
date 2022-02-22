@@ -1230,13 +1230,16 @@ class FanzineTablePage(GridDataSource):
 
 def main():
     # Start the GUI and run the event loop
-    LogOpen("Log -- FanacLSTGenerator.txt", "Log (Errors) -- FanacLSTGenerator.txt")
+
+    homedir=os.getcwd()
+    # MessageBox(f"{homedir=}", ignoredebugger=True)
+    LogOpen(os.path.join(homedir, "Log -- FanacLSTGenerator.txt"), os.path.join(homedir, "Log (Errors) -- FanacLSTGenerator.txt"))
 
     # Load the global settings dictionary
-    Settings().Load("FanacLSTGenerator settings.json")
+    Settings().Load(os.path.join(homedir, "FanacLSTGenerator settings.json"))
 
     app=wx.App(False)
-    frame=MainWindow(None)
+    MainWindow(None)
     app.MainLoop()
 
     LogClose()
