@@ -1236,7 +1236,7 @@ def main():
     LogOpen(os.path.join(homedir, "Log -- FanacLSTGenerator.txt"), os.path.join(homedir, "Log (Errors) -- FanacLSTGenerator.txt"))
 
     # Load the global settings dictionary
-    Settings().Load(os.path.join(homedir, "FanacLSTGenerator settings.json"))
+    Settings().Load(os.path.join(homedir, "FanacLSTGenerator settings.json"), MustExist=True)
 
     app=wx.App(False)
     MainWindow(None)
