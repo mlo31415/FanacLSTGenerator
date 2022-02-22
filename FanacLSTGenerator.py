@@ -687,7 +687,7 @@ class MainWindow(MainFrame):
         setupTemplateName=Settings().Get(settingName, default="")
         Log(f"CopyTemplateFile: from {setupTemplateName} in {templateDirectory} to {newName} in {newDirectory}")
         if not setupTemplateName:
-            MessageBox(f"Settings files does not contain value for {settingName}. Save failed.")
+            MessageBox(f"Settings file does not contain value for key '{settingName}'. Save failed.")
             return False
 
         # Remove the template if it already exists in the target directory
