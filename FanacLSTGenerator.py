@@ -1257,12 +1257,13 @@ def main():
 
     app=wx.App(False)
     MainWindow(None)
+
     global g_LogDialog
     g_LogDialog=LogDialog(None)
     g_LogDialog.Show()
     Log("Starting...")
-    app.MainLoop()
 
+    app.MainLoop()
 
     LogClose()
 
