@@ -6,16 +6,30 @@ import shutil
 import wx
 import wx.grid
 import sys
+
 from GenGUIClass import MainFrame
+from GenLogDialogClass import LogDialog
 
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from WxHelpers import OnCloseHandling, ProgressMsg
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox
 from PDFHelpers import GetPdfPageCount
-from Log import LogOpen, Log, LogClose
+from Log import LogOpen, LogClose
+from Log import Log as RealLog
 from Settings import Settings
 from FanzineIssueSpecPackage import MonthNameToInt
+
+
+g_LogDialog: Optional[LogDialog]=None
+def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False, Flush=False, timestamp=False) -> None:
+    RealLog(text, isError=isError, noNewLine=noNewLine, Print=Print, Clear=Clear, Flush=Flush, timestamp=timestamp)
+    if g_LogDialog is not None:
+        old=g_LogDialog.lLogText.GetLabelText()
+        old=old+"\n"+text
+        g_LogDialog.lLogText.SetLabelText(old)
+
+
 
 class MainWindow(MainFrame):
     def __init__(self, parent):
@@ -86,6 +100,7 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
         self.Show(True)
+
 
     @property
     def Datasource(self) -> FanzineTablePage:       # MainWindow(MainFrame)
@@ -1242,7 +1257,12 @@ def main():
 
     app=wx.App(False)
     MainWindow(None)
+    global g_LogDialog
+    g_LogDialog=LogDialog(None)
+    g_LogDialog.Show()
+    Log("Starting...")
     app.MainLoop()
+
 
     LogClose()
 
