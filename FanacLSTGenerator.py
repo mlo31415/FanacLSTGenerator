@@ -253,6 +253,8 @@ class MainWindow(MainFrame):
         Settings().Put("Top Level Windows Size", (size.width, size.height))
 
         self.Destroy()
+        LogClose()
+        sys.exit(1)
 
 
     def RemoveScaryCharacters(self, name: str) -> str:
