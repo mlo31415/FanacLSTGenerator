@@ -613,7 +613,7 @@ class MainWindow(MainFrame):
             return False
         with open(filename, "r") as fd:
             lines=fd.readlines()
-        Log(f"Read {lines=}")
+        RealLog(f"Read {lines=}")
         found=False
         for i, line in enumerate(lines):
             m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
@@ -632,7 +632,7 @@ class MainWindow(MainFrame):
             MessageBox("Can't edit setup.bld. Save failed.")
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
             return False
-        Log(f"Write {lines=}")
+        RealLog(f"Write {lines=}")
         with open(filename, "w") as fd:
             fd.writelines(lines)
         return True
