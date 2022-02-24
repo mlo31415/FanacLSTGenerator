@@ -316,7 +316,7 @@ class MainWindow(MainFrame):
             self.RefreshWindow()
 
 
-    def MoveSelectedFiles(self):
+    def CopySelectedFiles(self):
         if not self.files:  # Empty selection
             return
 
@@ -326,7 +326,7 @@ class MainWindow(MainFrame):
         fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.DirectoryLocalPath))[0]
         for file in self.files:
             Log(f"MoveSelectedFiles: {os.path.join(self.sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
-            shutil.move(os.path.join(self.sourceDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
+            shutil.copy(os.path.join(self.sourceDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
 
         self.files=[]
         self.sourceDirectory=""
@@ -541,7 +541,7 @@ class MainWindow(MainFrame):
 
             self.SaveFile(lstfile, oldname)
 
-            self.MoveSelectedFiles()
+            self.CopySelectedFiles()
 
 
 
@@ -602,7 +602,7 @@ class MainWindow(MainFrame):
             lstfile=self.CreateLSTFileFromDatasourceEtc()
             self.SaveFile(lstfile, os.path.join(Settings().Get("Root directory"), self.DirectoryLocalPath, self.lstFilename))
 
-            self.MoveSelectedFiles()
+            self.CopySelectedFiles()
 
 
     def UpdateSetupBld(self, path) -> bool:
