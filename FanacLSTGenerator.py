@@ -79,6 +79,8 @@ class MainWindow(MainFrame):
         if len(sys.argv) > 1:
             self.DirectoryLocalPath=os.getcwd()
 
+            Log(f"{self.DirectoryLocalPath=}")
+
         # Read the LST file
         self.MarkAsSaved()      # We don't need to save whatever it is that is present now.
 
@@ -95,6 +97,7 @@ class MainWindow(MainFrame):
         self.lLocalDirectory.SetWindowStyle(self.lLocalDirectory.GetWindowStyle() | wx.ST_ELLIPSIZE_MIDDLE)
         self.lLocalDirectory.SetLabel(label)
         self.lLocalDirectory.GetContainingSizer().Layout()
+        Log(f"{label=}")
 
         self.MarkAsSaved()
         self.RefreshWindow()
@@ -561,7 +564,9 @@ class MainWindow(MainFrame):
             dlg.Destroy()
 
         newDirectory=os.path.join(rootDirectory, self.DirectoryLocalPath)
+        Log(f"CreateLSTDirectory: {newDirectory=}")
 
+        Log(f"ProgressMsg('Creating {self.tFanzineName.GetValue()}')")
         with ProgressMsg(self, f"Creating {self.tFanzineName.GetValue()}"):
 
             # The directory must not exist, otherwise
@@ -575,6 +580,7 @@ class MainWindow(MainFrame):
 
             # Copy the files setup.ftp and setup.bld from the templates source to the new directory.
             templateDirectory=Settings().Get("Template directory", default=".")
+            Log(f"CreateLSTDirectory: {templateDirectory=}")
 
             # Look in Settings to find the names of the template files.
             # Copy them from the template directory to the LST file's directory
@@ -1246,23 +1252,30 @@ class FanzineTablePage(GridDataSource):
 
 
 def main():
-    # Start the GUI and run the event loop
 
-    homedir=os.getcwd()
-    # MessageBox(f"{homedir=}", ignoredebugger=True)
-    LogOpen(os.path.join(homedir, "Log -- FanacLSTGenerator.txt"), os.path.join(homedir, "Log (Errors) -- FanacLSTGenerator.txt"))
-
-    # Load the global settings dictionary
-    Settings().Load(os.path.join(homedir, "FanacLSTGenerator settings.json"), MustExist=True)
-
+    # Initialize wx
     app=wx.App(False)
-    MainWindow(None)
 
+    # Set up LogDialog
     global g_LogDialog
     g_LogDialog=LogDialog(None)
     g_LogDialog.Show()
     Log("Starting...")
 
+    homedir=os.getcwd()
+    Log(f"{homedir=}")
+    Log(f"Open Logfile {os.path.join(homedir, 'Log -- FanacLSTGenerator.txt')}")
+    LogOpen(os.path.join(homedir, "Log -- FanacLSTGenerator.txt"), os.path.join(homedir, "Log (Errors) -- FanacLSTGenerator.txt"))
+
+    # Load the global settings dictionary
+    Log(f"Setings(),Load({os.path.join(homedir, 'FanacLSTGenerator settings.json')})")
+    Settings().Load(os.path.join(homedir, "FanacLSTGenerator settings.json"), MustExist=True)
+    Log(Settings().Dump())
+
+    # Initialize the GUI
+    MainWindow(None)
+
+    # Run the event loop
     app.MainLoop()
 
     LogClose()
