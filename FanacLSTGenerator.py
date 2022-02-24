@@ -25,6 +25,8 @@ g_LogDialog: Optional[LogDialog]=None
 def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False, Flush=False, timestamp=False) -> None:
     RealLog(text, isError=isError, noNewLine=noNewLine, Print=Print, Clear=Clear, Flush=Flush, timestamp=timestamp)
     if g_LogDialog is not None:
+        if not text.endswith("\n"):
+            text=text+"\n"
         g_LogDialog.textLogWindow.AppendText(text)
 
 
@@ -706,19 +708,21 @@ class MainWindow(MainFrame):
 
     def CopyTemplateFile(self, settingName: str, newName: str, newDirectory: str, templateDirectory: str) -> bool:
         setupTemplateName=Settings().Get(settingName, default="")
-        Log(f"CopyTemplateFile: from {setupTemplateName} in {templateDirectory} to {newName} in {newDirectory}")
+        Log(f"CopyTemplateFile: from '{setupTemplateName}' in '{templateDirectory}' to '{newName}' in '{newDirectory}'")
         if not setupTemplateName:
             MessageBox(f"Settings file does not contain value for key '{settingName}'. Save failed.")
+            Log("Settings:")
+            Log(Settings().Dump())
             return False
 
         # Remove the template if it already exists in the target directory
         filename=os.path.join(newDirectory, newName)
         if os.path.exists(filename):  # Delete any existing file
-            Log(f"CopyTemplateFile: {filename} already exists, so removing it")
+            Log(f"CopyTemplateFile: '{filename}' already exists, so removing it")
             os.remove(filename)
 
         # Copy the template over, renaming it setup.ftp
-        Log(f"CopyTemplateFile: copy {os.path.join(templateDirectory, setupTemplateName)} to {filename}")
+        Log(f"CopyTemplateFile: copy '{os.path.join(templateDirectory, setupTemplateName)}'  to  {filename}")
         shutil.copy(os.path.join(templateDirectory, setupTemplateName), filename)
         return True
 
@@ -1266,7 +1270,7 @@ def main():
     LogOpen(os.path.join(homedir, "Log -- FanacLSTGenerator.txt"), os.path.join(homedir, "Log (Errors) -- FanacLSTGenerator.txt"))
 
     # Load the global settings dictionary
-    Log(f"Setings(),Load({os.path.join(homedir, 'FanacLSTGenerator settings.json')})")
+    Log(f"Settings().Load({os.path.join(homedir, 'FanacLSTGenerator settings.json')})")
     Settings().Load(os.path.join(homedir, "FanacLSTGenerator settings.json"), MustExist=True)
     Log(Settings().Dump())
 
