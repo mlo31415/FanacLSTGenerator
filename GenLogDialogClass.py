@@ -23,10 +23,8 @@ class LogDialog ( wx.Dialog ):
 
 		gSizer1 = wx.GridSizer( 1, 1, 0, 0 )
 
-		self.lLogText = wx.StaticText( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0|wx.VSCROLL )
-		self.lLogText.Wrap( -1 )
-
-		gSizer1.Add( self.lLogText, 0, wx.ALL|wx.EXPAND, 5 )
+		self.textLogWindow = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_READONLY|wx.VSCROLL )
+		gSizer1.Add( self.textLogWindow, 0, wx.ALL|wx.EXPAND, 5 )
 
 
 		self.SetSizer( gSizer1 )

@@ -25,9 +25,7 @@ g_LogDialog: Optional[LogDialog]=None
 def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear=False, Flush=False, timestamp=False) -> None:
     RealLog(text, isError=isError, noNewLine=noNewLine, Print=Print, Clear=Clear, Flush=Flush, timestamp=timestamp)
     if g_LogDialog is not None:
-        old=g_LogDialog.lLogText.GetLabelText()
-        old=old+"\n"+text
-        g_LogDialog.lLogText.SetLabelText(old)
+        g_LogDialog.textLogWindow.AppendText(text)
 
 
 
