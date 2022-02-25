@@ -325,7 +325,7 @@ class MainWindow(MainFrame):
         rootDirectory=Settings().Get("Root directory", default=".")
         fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.DirectoryLocalPath))[0]
         for file in self.files:
-            Log(f"MoveSelectedFiles: {os.path.join(self.sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
+            Log(f"CopySelectedFiles: {os.path.join(self.sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
             shutil.copy(os.path.join(self.sourceDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
 
         self.files=[]
