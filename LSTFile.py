@@ -245,10 +245,20 @@ class LSTFile:
         # Need to remove the "Filename" column which was added when the LST file was loaded.  It is the 1st col.
         content.append("; ".join(self.ColumnHeaders[1:]))
 
+        # Do not save trailing empty rows
+        lastrow=len(self.Rows)-1
+        while lastrow > 0:
+            if any([x.strip() != "" for x in self.Rows[lastrow]]):
+                break
+            lastrow-=1
+
         # And the rows
-        for row in self.Rows:
+        for i, row in enumerate(self.Rows):
             if len(row) < 3:    # Smallest possible LST file
-                continue
+                continue    #TODO: Should this be a break?
+
+            if i > lastrow:
+                break   # Stop saving when we reach the last non-empty row
 
             # We have to join the first two elements of row into a single element to deal with the LST's odd format. (See the reading code, above.)
             # We also have to be aware of the input Case (3) and handle that correctly
