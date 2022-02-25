@@ -52,7 +52,7 @@ class MainWindow(MainFrame):
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
-                                                              ColDefinition("Issue", Type="str"),
+                                                              ColDefinition("Issue", Type="required str"),
                                                               ColDefinition("Title", Type="str", preferred="Issue"),
                                                               ColDefinition("Whole", Type="int", Width=75),
                                                               ColDefinition("WholeNum", Type="int", Width=75, preferred="Whole"),
@@ -281,10 +281,14 @@ class MainWindow(MainFrame):
 
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
         self.files=[]
+
+        # Get the default PDF directory
+        pdfDirectory=Settings().Get("PDF Source Path", self.DirectoryLocalPath)
+
         # Call the File Open dialog to select PDF files
         with wx.FileDialog(self,
                            message="Select PDF files to add",
-                           defaultDir=self.DirectoryLocalPath,
+                           defaultDir=pdfDirectory,
                            wildcard="PDF files (*.pdf)|*.pdf",
                            style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_FILE_MUST_EXIST | wx.STAY_ON_TOP) as dlg:
 
@@ -295,6 +299,9 @@ class MainWindow(MainFrame):
             for file in files:
                 self.files.append((file, self.RemoveScaryCharacters(file)))
             self.sourceDirectory=dlg.GetDirectory()
+
+            if self.sourceDirectory != pdfDirectory:
+                Settings().Put("PDF Source Path", self.sourceDirectory)
 
             # We have a list of file names. Sort them and add them to the rows at the bottom
             # Start by removing any empty trailing rows
