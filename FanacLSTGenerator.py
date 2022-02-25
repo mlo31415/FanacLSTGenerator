@@ -1262,12 +1262,18 @@ def main():
     global g_LogDialog
     g_LogDialog=LogDialog(None)
     g_LogDialog.Show()
-    Log("Starting...")
 
-    homedir=os.getcwd()
-    Log(f"{homedir=}")
-    Log(f"Open Logfile {os.path.join(homedir, 'Log -- FanacLSTGenerator.txt')}")
+    if sys.gettrace() is None:
+        # We are not running under the debugger
+        homedir=os.path.split(sys.executable)[0]
+    else:
+        # We are debugging.
+        homedir=os.getcwd()
+
     LogOpen(os.path.join(homedir, "Log -- FanacLSTGenerator.txt"), os.path.join(homedir, "Log (Errors) -- FanacLSTGenerator.txt"))
+    Log(f"Open Logfile {os.path.join(homedir, 'Log -- FanacLSTGenerator.txt')}")
+    Log(f"{homedir=}")
+    Log(f"{sys.executable=}")
 
     # Load the global settings dictionary
     Log(f"Settings().Load({os.path.join(homedir, 'FanacLSTGenerator settings.json')})")
