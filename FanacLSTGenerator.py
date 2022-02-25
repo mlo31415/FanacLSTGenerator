@@ -78,8 +78,7 @@ class MainWindow(MainFrame):
         self.DirectoryLocalPath=''
         if len(sys.argv) > 1:
             self.DirectoryLocalPath=os.getcwd()
-
-            Log(f"{self.DirectoryLocalPath=}")
+            Log(f"#1 {self.DirectoryLocalPath=}")
 
         # Read the LST file
         self.MarkAsSaved()      # We don't need to save whatever it is that is present now.
@@ -409,6 +408,7 @@ class MainWindow(MainFrame):
 
         self.lstFilename=dlg.GetFilename()
         self.DirectoryLocalPath=os.path.split(dlg.GetPath())[0]
+        Log(f"#4 {self.DirectoryLocalPath=}")
         dlg.Destroy()
 
         with ProgressMsg(self, f"Loading {self.lstFilename}") as pm:
@@ -519,17 +519,16 @@ class MainWindow(MainFrame):
             # Create an instance of the LSTfile class from the datasource
             lstfile=self.CreateLSTFileFromDatasourceEtc()
 
-            newDirectory=os.path.join(Settings().Get("Root directory", default="."), self.DirectoryLocalPath)
             templateDirectory=Settings().Get("Template directory", default=".")
             # Edit the templated files based on what the user filled in in the main dialog
             if self.DirectoryServer:
                 if not self.UpdateSetupFtp(self.DirectoryLocalPath):
                     Log(f"Creating setup.ftp")
-                    if not self.CopyTemplateFile("setup.ftp template", "setup.ftp", newDirectory, templateDirectory):
+                    if not self.CopyTemplateFile("setup.ftp template", "setup.ftp", self.DirectoryLocalPath, templateDirectory):
                         Log(f"Could not create setup.ftp")
             if not self.UpdateSetupBld(self.DirectoryLocalPath):
                 Log(f"Creating setup.bld")
-                if not self.CopyTemplateFile("setup.bld template", "setup.bld", newDirectory, templateDirectory):
+                if not self.CopyTemplateFile("setup.bld template", "setup.bld", self.DirectoryLocalPath, templateDirectory):
                     Log(f"Could not create setup.bld")
 
             # Rename the old file
@@ -539,7 +538,7 @@ class MainWindow(MainFrame):
                 i=0
                 while os.path.exists(newname):
                     i+=1
-                    newname=os.path.join(self.DirectoryLocalPath, os.path.splitext(self.lstFilename)[0]+"-old-"+str(i)+".LST")
+                    newname=os.path.join(self.DirectoryLocalPath, f"{os.path.splitext(self.lstFilename)[0]}-old-{i}.LST")
 
                 os.rename(oldname, newname)
             except Exception as e:
@@ -568,6 +567,7 @@ class MainWindow(MainFrame):
                 return False
 
             self.DirectoryLocalPath=dlg.GetPath()
+            Log(f"#2 {self.DirectoryLocalPath=}")
             dlg.Destroy()
 
         newDirectory=os.path.join(rootDirectory, self.DirectoryLocalPath)
@@ -830,7 +830,8 @@ class MainWindow(MainFrame):
 
     # ------------------
     def OnDirectoryLocal(self, event):       # MainWindow(MainFrame)
-        self.DirectoryLocalPath=self.tDirectoryLocal.GetValue()
+        self.DirectoryLocalPath=os.path.join(Settings().Get("Root directory", default="."), self.tDirectoryLocal.GetValue())
+        Log(f"#3 {self.DirectoryLocalPath=}")
         self.RefreshWindow()
 
     # ------------------
