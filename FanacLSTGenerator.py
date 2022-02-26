@@ -603,11 +603,11 @@ class MainWindow(MainFrame):
 
             # Save the LSTFile in the new directory
             name, ext=os.path.splitext(self.DirectoryLocalPath)
-            if ext.lower() != ".lst":
-                self.lstFilename=name+".LST"
+            name=os.path.basename(name) # Remove the path info
+            self.lstFilename=name+".lst"
 
             lstfile=self.CreateLSTFileFromDatasourceEtc()
-            self.SaveFile(lstfile, os.path.join(Settings().Get("Root directory"), self.DirectoryLocalPath, self.lstFilename))
+            self.SaveFile(lstfile, os.path.join(newDirectory, self.lstFilename))
 
             self.CopySelectedFiles()
 
