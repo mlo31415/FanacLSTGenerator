@@ -275,7 +275,7 @@ class MainWindow(MainFrame):
 
 
     def RemoveScaryCharacters(self, name: str) -> str:
-        return "".join(re.sub("[?*&%$#@'><:;{}\][=+)(^!]+", "_", name))
+        return "".join(re.sub("[?*&%$#@'><:;{}\][=+)(^!\s]+", "_", name))
 
 
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
