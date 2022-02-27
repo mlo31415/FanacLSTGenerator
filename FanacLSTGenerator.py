@@ -647,7 +647,10 @@ class MainWindow(MainFrame):
             MessageBox("Can't edit setup.bld. Save failed.")
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
             return False
-        RealLog(f"Write {lines=}")
+
+        if not os.access(filename, os.W_OK):  # Can we write the file?
+            return False
+
         with open(filename, "w") as fd:
             fd.writelines(lines)
         return True
@@ -699,7 +702,9 @@ class MainWindow(MainFrame):
             Log(f"UpdateSetupFtp #2: return False")
             return False
 
-        Log(f"UpdateSetupFtp: Write {lines=}")
+        if not os.access(filename, os.W_OK):    # Can we write the file?
+            return False
+
         try:
             with open(filename, "w") as fd:
                 Log(f"UpdateSetupFtp: open {filename}")
