@@ -223,6 +223,9 @@ class MainWindow(MainFrame):
             self.tTopComments.SetValue("\n".join(lstfile.TopComments))
         if lstfile.Locale:
             self.tLocaleText.SetValue("\n".join(lstfile.Locale))
+        if lstfile.FanzineType:
+            if lstfile.FanzineType in self.tFanzineType.Items:
+                self.tFanzineType.SetSelection(self.tFanzineType.Items.index(lstfile.FanzineType))
 
         return True
 
