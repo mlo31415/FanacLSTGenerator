@@ -46,10 +46,6 @@ class MainWindow(MainFrame):
         self.OldDirectory=False
         self.Credits=""         # Who is to be credited for this affair?
 
-        # New files to be added
-        self.files=[]
-        self.sourceDirectory=""
-
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
                                                               ColDefinition("Issue", Type="required str"),
@@ -282,10 +278,10 @@ class MainWindow(MainFrame):
 
 
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
-        self.files=[]
 
         # Get the default PDF directory
         pdfDirectory=Settings().Get("PDF Source Path", self.DirectoryLocalPath)
+        newlyAddedFiles=[]
 
         # Call the File Open dialog to select PDF files
         with wx.FileDialog(self,
@@ -295,92 +291,98 @@ class MainWindow(MainFrame):
                            style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_FILE_MUST_EXIST | wx.STAY_ON_TOP) as dlg:
 
             if dlg.ShowModal() != wx.ID_OK:
-                return
+                return  # Quit unless OK was pressed.
 
             files=dlg.GetFilenames()
             for file in files:
-                self.files.append((file, self.RemoveScaryCharacters(file)))
-            self.sourceDirectory=dlg.GetDirectory()
+                newlyAddedFiles.append((file, self.RemoveScaryCharacters(file)))
+            sourceDirectory=dlg.GetDirectory()
 
-            if self.sourceDirectory != pdfDirectory:
-                Settings().Put("PDF Source Path", self.sourceDirectory)
+        if sourceDirectory != pdfDirectory:
+            Settings().Put("PDF Source Path", sourceDirectory)
 
-            # We have a list of file names. Sort them and add them to the rows at the bottom
-            # Start by removing any empty trailing rows
-            while self.Datasource.Rows:
-                last=self.Datasource.Rows.pop()
-                if any([cell != "" for cell in last.Cells]):
-                    self.Datasource.Rows.append(last)
-                    break
-            self.files.sort(key=lambda x: x[1])
-            nrows=self.Datasource.NumRows
-            self.Datasource.AppendEmptyRows(len(self.files))
-            for i, file in enumerate(self.files):
-                self.Datasource.Rows[nrows+i][0]=file[1]
-
-            rows=slice(nrows, nrows+len(self.files))  # Slice of the new rows
-            self.UpdatePDFColumn(rows, files, self.sourceDirectory)
-
-            self._dataGrid.RefreshWxGridFromDatasource()
-            self.RefreshWindow()
-
-
-    def CopySelectedFiles(self):
-        if not self.files:  # Empty selection
-            return
-
-
-        # Move the files from the source directory to the fanzine's directory.
+        # Copy the files from the source directory to the fanzine's directory.
         rootDirectory=Settings().Get("Root directory", default=".")
         fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.DirectoryLocalPath))[0]
-        for file in self.files:
-            Log(f"CopySelectedFiles: {os.path.join(self.sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
-            shutil.copy(os.path.join(self.sourceDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
+        for file in newlyAddedFiles:
+            Log(f"CopySelectedFiles: {os.path.join(sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
+            shutil.copy(os.path.join(sourceDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
 
-        self.files=[]
-        self.sourceDirectory=""
+        # OK, the files have been copied to the target directory.
+
+        # We have a list of file names that are in the LSTfile's directory
+        # Start by removing any already-existing empty trailing rows
+        while self.Datasource.Rows:
+            last=self.Datasource.Rows.pop()
+            if any([cell != "" for cell in last.Cells]):
+                self.Datasource.Rows.append(last)
+                break
+        # Sort them and add them to the rows at the bottom
+        newlyAddedFiles.sort(key=lambda x: x[1])
+        nrows=self.Datasource.NumRows
+        self.Datasource.AppendEmptyRows(len(newlyAddedFiles))
+        for i, file in enumerate(newlyAddedFiles):
+            self.Datasource.Rows[nrows+i][0]=file[1]
+
+        # If any of them are pdfs, add a PDF column (if needed) and return its index
+        ipdf=self.AddPDFColumnIfNeeded()
+        if ipdf != -1:
+            didsomething=False
+            # Now we go through them one by one and fill in and missing page counts
+            for i, row in enumerate(self.Datasource.Rows):
+                if row[ipdf] == "":
+                    self.FillInPDFColumn()
+                    didsomething=True
+
+            if didsomething:
+                self._dataGrid.RefreshWxGridFromDatasource()
+
+        self._dataGrid.RefreshWxGridFromDatasource()
+        self.RefreshWindow()
+
 
 
     #--------------------------
     # Check a specific subset of rows (as defined by the slice) to see if one of the file is a pdf
     # If a pdf is found possibly add a PDF column and fill the PDF column in for those rows.
-    def UpdatePDFColumn(self, rows: slice, files: list[str, str], path: str):
-        assert rows.step == 1 or rows.step is None
+    def FillInPDFColumn(self) -> None:
 
-        # Are any of these PDFs?
-        if not any([row[0].lower().endswith(".pdf") for row in self.Datasource.Rows[rows]]):
-            return
+        iPdf=self.AddPDFColumnIfNeeded()
+        iPages=self.Datasource.ColHeaderIndex("pages")
 
-        # Do we need to add a PDF column?
+        # The argument rows is a slice of indexes to self.Datasource.Rows representing the newly-added rows.
+        # Since we normally only add pdf files, we need to look at each of these new rows and add the page counts of the new files
+        #self.Datasource.AppendEmptyRows(rows.stop-rows.start)   # Append the requisite number of empty rows. (Note that we know the slice's step is always 1)
+        # Step through the new rows
+        for i, row in enumerate(self.Datasource.Rows):
+            if row[iPages].strip() == "":   # Don';'t bother with rows that already have page counts
+                # Col 0 always contains the filename. If it's a PDF, get its pagecount and fill in that cell
+                filename=row[0]
+                if filename.lower().endswith(".pdf"):
+                    row[iPdf]="PDF"
+                    pages=GetPdfPageCount(os.path.join(self.DirectoryLocalPath, filename))
+                    if pages is not None:
+                        self.Datasource.Rows[i][iPages]=str(pages)
+
+    # Return the index of the column containing the PDF flag
+    # If there is no such column and we do have pdfs among the files, add a PDF column
+    # Return -1 if there is no column and no need for oen
+    def AddPDFColumnIfNeeded(self) -> int:
+        # Are any of files PDFs?
+        if not any([row[0].lower().endswith(".pdf") for row in self.Datasource.Rows]):
+            # Nope.  So just return the PDF colun index if it exists
+            return self.Datasource.ColHeaderIndex("pdf")
+
+        # We have PDF files; Do we need to add a PDF column?
         iPdf=self.Datasource.ColHeaderIndex("pdf")
-        if iPdf == -1:
+        if iPdf == -1:  # Yes
             # We don't have an existing PDF column, but we now have at least one pdf file
             # Add the PDF column to the existing rows as the third column
             self.Datasource.InsertColumnHeader(2, ColDefinition("PDF"))
             for i, row in enumerate(self.Datasource.Rows):
                 self.Datasource.Rows[i].Cells=row.Cells[:2]+[""]+row.Cells[2:]
             iPdf=2
-
-        # The argument rows is a slice of indexes to self.Datasource.Rows representing the newly-added rows.
-        # Since we normally only add pdf files, we need to look at each of these new rows and add the page counts of the new files
-        self.Datasource.AppendEmptyRows(rows.stop-rows.start)   # Append the requisite number of empty rows. (Note that we know the slice's step is always 1)
-        # Step through the new rows
-        for i, row in enumerate(self.Datasource.Rows[rows]):
-            # Col 0 always contains the filename. If it's a PDF, get its pagecount and add it to the row
-            irow=rows.start+i   # We know that the step is always 1 for a slice argument to this function
-            # For pdfs with names that the REXX SW can't handle, row[0] is new name to which it will late be renamed.
-            # But for now we need the current name, which is in files (if it is supplied)
-            name=row[0]
-            if files:
-                name=files[i]
-            if name.lower().endswith(".pdf"):
-                self.Datasource.Rows[irow][iPdf]="PDF"
-                pages=GetPdfPageCount(os.path.join(path, name))
-                if pages is not None:
-                    pagesCol=self.Datasource.ColHeaderIndex("pages")
-                    if pagesCol != -1:
-                        self.Datasource.Rows[irow][pagesCol]=str(pages)
-
+        return iPdf
 
     #------------------
     # Load an LST file from disk into an LSTFile class
@@ -556,9 +558,6 @@ class MainWindow(MainFrame):
 
             self.SaveFile(lstfile, oldname)
 
-            self.CopySelectedFiles()
-
-
 
     #------------------
     # Create a new fanzine directory and LSTfile
@@ -617,8 +616,6 @@ class MainWindow(MainFrame):
 
             lstfile=self.CreateLSTFileFromDatasourceEtc()
             self.SaveFile(lstfile, os.path.join(newDirectory, self.lstFilename))
-
-            self.CopySelectedFiles()
 
 
     def UpdateSetupBld(self, path) -> bool:
@@ -879,12 +876,8 @@ class MainWindow(MainFrame):
     def OnGridCellChanged(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnGridCellChanged(event)  # Pass event handling to WxDataGrid
 
-        row=event.GetRow()
-        col=event.GetCol()
-        rootDirectory=Settings().Get("Root directory", default=".")
-        fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.lstFilename))[0]
-        if col == 0:    # If the Filename changes
-            self.UpdatePDFColumn(slice(row, row+1), None, fanzineDirectory)
+        if event.GetCol() == 0:    # If the Filename changes, we may need to fill in the PDF column
+            self.FillInPDFColumn()
         self.RefreshWindow()
 
     #------------------
