@@ -518,11 +518,13 @@ class MainWindow(MainFrame):
     def SaveExistingLSTFile(self):       # MainWindow(MainFrame)
 
         with ProgressMsg(self, f"Creating {self.tFanzineName.GetValue()}"):
+            Log(f"SaveExistingLSTFile: Creating {self.tFanzineName.GetValue()}")
 
             # Create an instance of the LSTfile class from the datasource
             lstfile=self.CreateLSTFileFromDatasourceEtc()
 
             templateDirectory=Settings().Get("Template directory", default=".")
+            Log(f"{templateDirectory=}")
             # Edit the templated files based on what the user filled in in the main dialog
             if self.DirectoryServer:
                 if not self.UpdateSetupFtp(self.DirectoryLocalPath):
@@ -533,16 +535,20 @@ class MainWindow(MainFrame):
                 Log(f"Creating setup.bld")
                 if not self.CopyTemplateFile("setup.bld template", "setup.bld", self.DirectoryLocalPath, templateDirectory):
                     Log(f"Could not create setup.bld")
+            Log(f"SaveExistingLSTFile: Done messing with template files")
 
             # Rename the old file
             oldname=os.path.join(self.DirectoryLocalPath, self.lstFilename)
             newname=os.path.join(self.DirectoryLocalPath, os.path.splitext(self.lstFilename)[0]+"-old.LST")
+            Log(f"SaveExistingLSTFile #1: Rename '{oldname}' to '{newname}'")
+
             try:
                 i=0
                 while os.path.exists(newname):
                     i+=1
                     newname=os.path.join(self.DirectoryLocalPath, f"{os.path.splitext(self.lstFilename)[0]}-old-{i}.LST")
 
+                Log(f"SaveExistingLSTFile #2: Rename '{oldname}' to '{newname}'")
                 os.rename(oldname, newname)
             except Exception as e:
                 Log(f"OnSave fails when trying to rename {oldname} to {newname}", isError=True)
@@ -677,12 +683,13 @@ class MainWindow(MainFrame):
     def UpdateSetupFtp(self, path) -> bool:
 
         filename=os.path.join(path, "setup.ftp")
-        Log(f"Opening {filename}")
+        Log(f"UpdateSetupFtp: Opening {filename}")
         if not os.path.exists(filename):
+            Log(f"UpdateSetupFtp #1: return False")
             return False
         with open(filename, "r") as fd:
             lines=fd.readlines()
-        Log(f"Read {lines=}")
+        Log(f"UpdateSetupFtp: Read {lines=}")
         found=False
         for i, line in enumerate(lines):
             m=re.match("(^.*/fanzines/)(.*)$", line)
@@ -692,10 +699,17 @@ class MainWindow(MainFrame):
         if not found:
             MessageBox("Can't edit setup.ftp. Save failed.")
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
+            Log(f"UpdateSetupFtp #2: return False")
             return False
-        Log(f"Write {lines=}")
-        with open(filename, "w") as fd:
-            fd.writelines(lines)
+
+        Log(f"UpdateSetupFtp: Write {lines=}")
+        try:
+            with open(filename, "w") as fd:
+                Log(f"UpdateSetupFtp: open {filename}")
+                fd.writelines(lines)
+        except Exception as e:
+            Log(f"UpdateSetupFtp exception {e}")
+        Log(f"UpdateSetupFtp #3: return True")
         return True
 
 
