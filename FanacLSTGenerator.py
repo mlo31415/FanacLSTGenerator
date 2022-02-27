@@ -11,7 +11,7 @@ from GenGUIClass import MainFrame
 from GenLogDialogClass import LogDialog
 
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
-from WxHelpers import OnCloseHandling, ProgressMsg
+from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox
 from PDFHelpers import GetPdfPageCount
@@ -304,9 +304,12 @@ class MainWindow(MainFrame):
         # Copy the files from the source directory to the fanzine's directory.
         rootDirectory=Settings().Get("Root directory", default=".")
         fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.DirectoryLocalPath))[0]
-        for file in newlyAddedFiles:
-            Log(f"CopySelectedFiles: {os.path.join(sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
-            shutil.copy(os.path.join(sourceDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
+        if len(newlyAddedFiles) > 0:
+            with ProgressMsg(self, f"Loading...") as pm:
+                for file in newlyAddedFiles:
+                    Log(f"CopySelectedFiles: {os.path.join(sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
+                    ProgressMessage(self).UpdateMessage(f"Loading {file[0]}")
+                    shutil.copy(os.path.join(sourceDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
 
         # OK, the files have been copied to the target directory.
 
@@ -685,11 +688,9 @@ class MainWindow(MainFrame):
         filename=os.path.join(path, "setup.ftp")
         Log(f"UpdateSetupFtp: Opening {filename}")
         if not os.path.exists(filename):
-            Log(f"UpdateSetupFtp #1: return False")
             return False
         with open(filename, "r") as fd:
             lines=fd.readlines()
-        Log(f"UpdateSetupFtp: Read {lines=}")
         found=False
         for i, line in enumerate(lines):
             m=re.match("(^.*/fanzines/)(.*)$", line)
@@ -699,7 +700,6 @@ class MainWindow(MainFrame):
         if not found:
             MessageBox("Can't edit setup.ftp. Save failed.")
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
-            Log(f"UpdateSetupFtp #2: return False")
             return False
 
         if not os.access(filename, os.W_OK):    # Can we write the file?
@@ -711,7 +711,6 @@ class MainWindow(MainFrame):
                 fd.writelines(lines)
         except Exception as e:
             Log(f"UpdateSetupFtp exception {e}")
-        Log(f"UpdateSetupFtp #3: return True")
         return True
 
 
