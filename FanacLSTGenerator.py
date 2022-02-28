@@ -640,7 +640,7 @@ class MainWindow(MainFrame):
                         lines[i]=""
                     found=True
         if not found:
-            MessageBox("Can't edit setup.bld. Save failed.")
+            MessageBox("Can't interopret exisiting setup.bld. Save failed.")
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
             return False
 
