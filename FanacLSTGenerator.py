@@ -537,12 +537,7 @@ class MainWindow(MainFrame):
 
             templateDirectory=Settings().Get("Template directory", default=".")
             Log(f"{templateDirectory=}")
-            # Edit the templated files based on what the user filled in in the main dialog
-            if self.DirectoryServer:
-                if not self.UpdateSetupFtp(self.DirectoryLocalPath):
-                    Log(f"Creating setup.ftp")
-                    if not self.CopyTemplateFile("setup.ftp template", "setup.ftp", self.DirectoryLocalPath, templateDirectory):
-                        Log(f"Could not create setup.ftp")
+            # Update the existing setup.bld file based on what the user filled in in the main dialog
             if not self.UpdateSetupBld(self.DirectoryLocalPath):
                 Log(f"Creating setup.bld")
                 if not self.CopyTemplateFile("setup.bld template", "setup.bld", self.DirectoryLocalPath, templateDirectory):
