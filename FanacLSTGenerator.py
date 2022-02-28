@@ -304,6 +304,13 @@ class MainWindow(MainFrame):
         # Copy the files from the source directory to the fanzine's directory.
         rootDirectory=Settings().Get("Root directory", default=".")
         fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.DirectoryLocalPath))[0]
+
+        # The directory must not exist, otherwise
+        if not os.path.exists(fanzineDirectory):
+            # Create the new directory
+            os.mkdir(fanzineDirectory)
+            Log(f"CreateLSTDirectory: Created directory {fanzineDirectory}", Flush=True)
+
         if len(newlyAddedFiles) > 0:
             with ProgressMsg(self, f"Loading...") as pm:
                 for file in newlyAddedFiles:
@@ -586,15 +593,6 @@ class MainWindow(MainFrame):
 
         Log(f"ProgressMsg('Creating {self.tFanzineName.GetValue()}')")
         with ProgressMsg(self, f"Creating {self.tFanzineName.GetValue()}"):
-
-            # The directory must not exist, otherwise
-            if os.path.exists(newDirectory):
-                MessageBox(f"Directory {newDirectory} already exists.")
-                #return         For now, just keep going
-            else:
-                # Create the new directory
-                os.mkdir(newDirectory)
-                Log(f"CreateLSTDirectory: Created directory {newDirectory}", Flush=True)
 
             # Copy the files setup.ftp and setup.bld from the templates source to the new directory.
             templateDirectory=Settings().Get("Template directory", default=".")
