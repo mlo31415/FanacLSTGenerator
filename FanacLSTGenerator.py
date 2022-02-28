@@ -7,6 +7,7 @@ import wx
 import wx.grid
 import sys
 
+import HelpersPackage
 from GenGUIClass import MainFrame
 from GenLogDialogClass import LogDialog
 
@@ -644,8 +645,7 @@ class MainWindow(MainFrame):
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
             return False
 
-        if not os.access(filename, os.W_OK):  # Can we write the file?
-            return False
+        HelpersPackage.SetReadOnlyFlag(False)
 
         with open(filename, "w") as fd:
             fd.writelines(lines)
