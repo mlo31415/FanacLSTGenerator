@@ -149,7 +149,7 @@ class MainFrame ( wx.Frame ):
 
 		fgSizerComments = wx.FlexGridSizer( 4, 2, 0, 0 )
 		fgSizerComments.AddGrowableCol( 1 )
-		fgSizerComments.AddGrowableRow( 0 )
+		fgSizerComments.AddGrowableRow( 1 )
 		fgSizerComments.SetFlexibleDirection( wx.BOTH )
 		fgSizerComments.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
