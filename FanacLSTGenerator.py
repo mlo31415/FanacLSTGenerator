@@ -645,7 +645,7 @@ class MainWindow(MainFrame):
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
             return False
 
-        HelpersPackage.SetReadOnlyFlag(False)
+        HelpersPackage.SetReadOnlyFlag(filename, False)
 
         with open(filename, "w") as fd:
             fd.writelines(lines)
@@ -735,6 +735,7 @@ class MainWindow(MainFrame):
 
         # Remove the template if it already exists in the target directory
         filename=os.path.join(newDirectory, newName)
+        #TODO: Can't move R/O files -- test for status and skip
         if os.path.exists(filename):  # Delete any existing file
             Log(f"CopyTemplateFile: '{filename}' already exists, so removing it")
             os.remove(filename)
