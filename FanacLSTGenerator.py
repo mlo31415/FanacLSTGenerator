@@ -632,27 +632,35 @@ class MainWindow(MainFrame):
         with open(filename, "r") as fd:
             lines=fd.readlines()
         RealLog(f"Read {lines=}")
-        found=False
-        for i, line in enumerate(lines):
+        # Turn the inout lines into a dictionary of key:value pairs
+        setupbld: dict[str, str]={}
+        for line in lines:
             m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
             if m:
-                if m.groups()[0].lower().strip() == "credit":
-                    if self.Credits:
-                        lines[i]=f"{m.groups()[0]}= '{self.Credits}'\n"
-                    found=True
-                if m.groups()[0].lower().strip() == "complete":
-                    if self.cbComplete.GetValue() != 0:
-                        lines[i]=f"{m.groups()[0]}= 'TRUE'\n"
-                    else:
-                        lines[i]=""
-                    found=True
-        if not found:
-            MessageBox("Can't interpret existing setup.bld. Save failed.")
-            Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
-            return False
+                setupbld[m.groups()[0].strip()]=m.groups()[1].strip()
+
+        # Update with changed values, if any
+        if self.Credits:
+            credits=self.Credits.strip()
+            if len(credits) > 0:
+                if credits[0] != "'" and credits[0] != '"':
+                    credits="'"+credits
+                if credits[:0] != "'" and credits[:0] != '"':
+                    credits=credits+"'"
+
+                setupbld["Credit"]=credits
+
+        if self.cbComplete.GetValue() == 0:
+            setupbld["Complete"]="FALSE"
+        else:
+            setupbld["complete"]="TRUE"
+
+        # Convert back to an array of lines
+        lines=[f"{key} = {val}\n" for key, val in setupbld.items()]
 
         HelpersPackage.SetReadOnlyFlag(filename, False)
 
+        # Write the lines out
         with open(filename, "w") as fd:
             fd.writelines(lines)
         return True
@@ -675,7 +683,7 @@ class MainWindow(MainFrame):
             m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
             if m:
                 if m.groups()[0].lower().strip() == "credit":
-                    credits=m.groups()[1].strip(" '")
+                    credits=m.groups()[1].strip(" \"'")
                 if m.groups()[0].lower().strip() == "complete":
                     complete='TRUE' == m.groups()[1].strip(" '")
 
