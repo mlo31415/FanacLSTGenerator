@@ -87,7 +87,7 @@ class LSTFile:
         if len(parsed) > 2:
             self.Dates=parsed[2]
         if len(parsed) > 3:
-            self.FanzineType=parsed[3]
+            self.FanzineType=parsed[3].strip()
 
         # Inline function to test if a line is a table row
         # Because we have already extracted the top line (which looks line a table line), we can use this function to detect the column headers
