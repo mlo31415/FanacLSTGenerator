@@ -695,8 +695,7 @@ class MainWindow(MainFrame):
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
             return False
 
-        if not os.access(filename, os.W_OK):    # Can we write the file?
-            return False
+        HelpersPackage.SetReadOnlyFlag(filename, False)
 
         try:
             with open(filename, "w") as fd:
