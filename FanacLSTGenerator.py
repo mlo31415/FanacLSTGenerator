@@ -35,6 +35,7 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
 class MainWindow(MainFrame):
     def __init__(self, parent):
         MainFrame.__init__(self, parent)
+
         self._dataGrid: DataGrid=DataGrid(self.wxGrid)
         self.Datasource=FanzineTablePage()
 
@@ -76,6 +77,11 @@ class MainWindow(MainFrame):
         if len(sys.argv) > 1:
             self.DirectoryLocalPath=os.getcwd()
             Log(f"#1 {self.DirectoryLocalPath=}")
+
+        # Initially, we want to draw attention to these two buttons
+        self.ButtonBackgroundColor=self.bLoadExistingLSTFile.GetBackgroundColour()
+        self.bLoadExistingLSTFile.SetBackgroundColour(Color.Pink)
+        self.bCreateNewFanzineDir.SetBackgroundColour(Color.Pink)
 
         # Read the LST file
         self.MarkAsSaved()      # We don't need to save whatever it is that is present now.

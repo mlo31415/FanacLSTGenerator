@@ -14,7 +14,6 @@ import wx.grid
 ###########################################################################
 ## Class MainFrame
 ###########################################################################
-import WxDataGrid
 
 
 class MainFrame ( wx.Frame ):
@@ -36,11 +35,6 @@ class MainFrame ( wx.Frame ):
 		self.bExit = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Exit", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bExit )
 		self.m_toolBarTop.Realize()
-
-		# Initially, we want to draw attention to these two buttons
-		self.ButtonBackgroundColor=self.bLoadExistingLSTFile.GetBackgroundColour()
-		self.bLoadExistingLSTFile.SetBackgroundColour(WxDataGrid.Color.Pink)
-		self.bCreateNewFanzineDir.SetBackgroundColour(WxDataGrid.Color.Pink)
 
 		bSizerMain = wx.BoxSizer( wx.VERTICAL )
 
