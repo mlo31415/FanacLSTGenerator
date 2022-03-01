@@ -209,9 +209,9 @@ class MainWindow(MainFrame):
         self.tTopComments.SetValue("")
         self.tLocaleText.SetValue("")
         self.wxGrid.ClearGrid()
-        self.tFanzineName.SetValue(lstfile.FanzineName)
-        self.tEditors.SetValue(lstfile.Editors)
-        self.tDates.SetValue(lstfile.Dates)
+        self.tFanzineName.SetValue(lstfile.FanzineName.strip())
+        self.tEditors.SetValue(lstfile.Editors.strip())
+        self.tDates.SetValue(lstfile.Dates.strip())
         num=self.tFanzineType.FindString(lstfile.FanzineType)
         if num == -1:
             num=0
@@ -449,7 +449,7 @@ class MainWindow(MainFrame):
                 self.cbComplete.SetValue(complete)
                 self.Complete=complete
             if credits is not None:
-                self.tCredits.SetValue(credits)
+                self.tCredits.SetValue(credits.strip())
                 self.Credits=credits
 
             # And see if we can pick up the server directory from setup.ftp
@@ -505,7 +505,7 @@ class MainWindow(MainFrame):
         self.tLocaleText.SetValue("")
 
         self.Credits=Settings().Get("Scanning credits default", default="")
-        self.tCredits.SetValue(self.Credits)
+        self.tCredits.SetValue(self.Credits.strip())
 
         # Both directories are editable, for now at least.
         self.tDirectoryLocal.SetValue("")
@@ -857,7 +857,7 @@ class MainWindow(MainFrame):
 
     #------------------
     def OnCredits(self, event):
-        self.Credits=self.tCredits.GetValue()
+        self.Credits=self.tCredits.GetValue().strip()
         self.RefreshWindow()
 
     #-------------------
