@@ -308,22 +308,31 @@ class MainWindow(MainFrame):
         if sourceDirectory != pdfDirectory:
             Settings().Put("PDF Source Path", sourceDirectory)
 
-        # Copy the files from the source directory to the fanzine's directory.
         rootDirectory=Settings().Get("Root directory", default=".")
         fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.DirectoryLocalPath))[0]
 
-        # The directory must not exist, otherwise
-        if not os.path.exists(fanzineDirectory):
-            # Create the new directory
-            os.mkdir(fanzineDirectory)
-            Log(f"CreateLSTDirectory: Created directory {fanzineDirectory}", Flush=True)
+        if rootDirectory != fanzineDirectory:
+            # Copy the files from the source directory to the fanzine's directory.
 
-        if len(newlyAddedFiles) > 0:
-            with ProgressMsg(self, f"Loading...") as pm:
-                for file in newlyAddedFiles:
-                    Log(f"CopySelectedFiles: {os.path.join(sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
-                    ProgressMessage(self).UpdateMessage(f"Loading {file[0]}")
-                    shutil.copy(os.path.join(sourceDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
+            # The directory must not exist, otherwise
+            if not os.path.exists(fanzineDirectory):
+                # Create the new directory
+                os.mkdir(fanzineDirectory)
+                Log(f"CreateLSTDirectory: Created directory {fanzineDirectory}", Flush=True)
+
+            if len(newlyAddedFiles) > 0:
+                with ProgressMsg(self, f"Loading...") as pm:
+                    for file in newlyAddedFiles:
+                        if file[0] != file[1]:  # We only act when the filename has actually been changed
+                            Log(f"CopySelectedFiles: {os.path.join(sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
+                            ProgressMessage(self).UpdateMessage(f"Loading {file[0]}")
+                            shutil.copy(os.path.join(sourceDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
+        else:
+            # Files are already in LST directory. We still may need to rename them to remove scary characters
+            for file in newlyAddedFiles:
+                if file[0] != file[1]:
+                    Log(f"shutil.move({os.path.join(fanzineDirectory, file[0])}, {os.path.join(fanzineDirectory, file[1])})")
+                    shutil.move(os.path.join(fanzineDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
 
         # OK, the files have been copied to the target directory.
 
