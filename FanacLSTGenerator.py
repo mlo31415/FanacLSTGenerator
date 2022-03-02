@@ -939,7 +939,7 @@ class MainWindow(MainFrame):
 
         if self._dataGrid.HasSelection():
             Enable("Copy")
-            Enable("Clear Selection")
+            Enable("Erase Selection")
             _, left, _, right=self._dataGrid.SelectionBoundingBox()
             if left == right:
                 Enable("Sort on Selected Column")
@@ -1043,8 +1043,8 @@ class MainWindow(MainFrame):
         self._dataGrid.OnPopupPaste(event) # Pass event to WxDataGrid to handle
         self.RefreshWindow()
 
-    def OnPopupClearSelection(self, event):       # MainWindow(MainFrame)
-        self._dataGrid.OnPopupClearSelection(event) # Pass event to WxDataGrid to handle
+    def OnPopupEraseSelection(self, event):       # MainWindow(MainFrame)
+        self._dataGrid.OnPopupEraseSelection(event) # Pass event to WxDataGrid to handle
         self.RefreshWindow()
 
     def OnPopupDelCol(self, event):       # MainWindow(MainFrame)
