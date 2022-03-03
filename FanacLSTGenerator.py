@@ -14,7 +14,7 @@ from GenLogDialogClass import LogDialog
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage
 from LSTFile import *
-from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox
+from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveAccents
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, LogClose
 from Log import Log as RealLog
@@ -281,7 +281,7 @@ class MainWindow(MainFrame):
 
 
     def RemoveScaryCharacters(self, name: str) -> str:
-        return "".join(re.sub("[?*&%$#@'><:;{}\][=+)(^!\s]+", "_", name))
+        return RemoveAccents("".join(re.sub("[?*&%$#@'><:;{}\][=+)(^!\s]+", "_", name)))
 
 
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
