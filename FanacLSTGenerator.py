@@ -641,12 +641,12 @@ class MainWindow(MainFrame):
         with open(filename, "r") as fd:
             lines=fd.readlines()
         RealLog(f"Read {lines=}")
-        # Turn the inout lines into a dictionary of key:value pairs
-        setupbld: dict[str, str]={}
+        # Turn the inout lines into a dictionary of key:value pairs.  The value is a tuple of the key in its actual case and the value
+        setupbld: dict[str, tuple[str, str]]={}
         for line in lines:
             m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
             if m:
-                setupbld[m.groups()[0].strip()]=m.groups()[1].strip()
+                setupbld[m.groups()[0].strip().lower()]=(m.groups()[0].strip(), m.groups()[1].strip())
 
         # Update with changed values, if any
         if self.Credits:
@@ -657,15 +657,15 @@ class MainWindow(MainFrame):
                 if credits[:0] != "'" and credits[:0] != '"':
                     credits=credits+"'"
 
-                setupbld["Credit"]=credits
+                setupbld["credit"]=("Credit", credits)
 
         if self.cbComplete.GetValue() == 0:
-            setupbld["Complete"]="FALSE"
+            setupbld["complete"]=("Complete", "FALSE")
         else:
-            setupbld["complete"]="TRUE"
+            setupbld["complete"]=("Complete", "TRUE")
 
         # Convert back to an array of lines
-        lines=[f"{key} = {val}\n" for key, val in setupbld.items()]
+        lines=[f"{val[0]} = {val[1]}\n" for val in setupbld.values()]
 
         HelpersPackage.SetReadOnlyFlag(filename, False)
 
@@ -694,7 +694,7 @@ class MainWindow(MainFrame):
                 if m.groups()[0].lower().strip() == "credit":
                     credits=m.groups()[1].strip(" \"'")
                 if m.groups()[0].lower().strip() == "complete":
-                    complete='TRUE' == m.groups()[1].strip(" '")
+                    complete='true' == m.groups()[1].strip(" '").lower()
 
         return complete, credits
 
