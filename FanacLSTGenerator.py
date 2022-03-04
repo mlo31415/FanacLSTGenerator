@@ -514,6 +514,7 @@ class MainWindow(MainFrame):
 
         # Fill in the dialog's upper stuff
         self.tFanzineName.SetValue("")
+        self.tTopComments.SetValue("")
         self.tEditors.SetValue("")
         self.tDates.SetValue("")
         self.tFanzineType.SetSelection(0)
