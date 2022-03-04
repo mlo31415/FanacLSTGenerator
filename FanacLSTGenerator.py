@@ -281,7 +281,7 @@ class MainWindow(MainFrame):
 
 
     def RemoveScaryCharacters(self, name: str) -> str:
-        return RemoveAccents("".join(re.sub("[?*&%$#@'><:;{}\][=+)(^!\s]+", "_", name)))
+        return RemoveAccents("".join(re.sub("[?*&%$#@'><:;,{}\][=+)(^!\s]+", "_", name)))
 
 
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
