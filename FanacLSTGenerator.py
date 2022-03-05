@@ -488,6 +488,7 @@ class MainWindow(MainFrame):
         # Re-initialize the form
         self.lstFilename=""
         self.DirectoryLocalPath=""
+        self.DirectoryServer=""
 
         # Create default column headers
         self._Datasource.ColDefs=ColDefinitionsList([
