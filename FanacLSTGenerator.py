@@ -429,18 +429,15 @@ class MainWindow(MainFrame):
         self.OldDirectory=True
 
         # Call the File Open dialog to get an LST file
-        dlg=wx.FileDialog(self, "Select LST file to load", self.DirectoryLocalPath, "", "*.LST", wx.FD_OPEN)
-        dlg.SetWindowStyle(wx.STAY_ON_TOP)
+        with wx.FileDialog(self, "Select LST file to load", self.DirectoryLocalPath, "", "*.LST", wx.FD_OPEN) as dlg:
+            dlg.SetWindowStyle(wx.STAY_ON_TOP)
 
-        if dlg.ShowModal() != wx.ID_OK:
-            dlg.Raise()
-            dlg.Destroy()
-            return False
+            if dlg.ShowModal() != wx.ID_OK:
+                return False
 
-        self.lstFilename=dlg.GetFilename()
-        self.DirectoryLocalPath=os.path.split(dlg.GetPath())[0]
-        Log(f"#4 {self.DirectoryLocalPath=}")
-        dlg.Destroy()
+            self.lstFilename=dlg.GetFilename()
+            self.DirectoryLocalPath=os.path.split(dlg.GetPath())[0]
+            Log(f"#4 {self.DirectoryLocalPath=}")
 
         with ProgressMsg(self, f"Loading {self.lstFilename}") as pm:
 
