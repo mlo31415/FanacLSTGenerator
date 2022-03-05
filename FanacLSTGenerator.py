@@ -1227,6 +1227,9 @@ class FanzineTableRow(GridDataRowClass):
             return
         raise KeyError
 
+    def IsEmptyRow(self) -> bool:      # FanzineTableRow(GridDataRowClass)
+        return all([cell == "" for cell in self._cells])
+
 
 #####################################################################################################
 #####################################################################################################
@@ -1259,7 +1262,6 @@ class FanzineTablePage(GridDataSource):
     @property
     def Rows(self) -> list[FanzineTableRow]:        # FanzineTablePage(GridDataSource)
         return self._fanzineList
-
     @Rows.setter
     def Rows(self, rows: list) -> None:        # FanzineTablePage(GridDataSource)
         self._fanzineList=rows
@@ -1289,7 +1291,6 @@ class FanzineTablePage(GridDataSource):
         for i in range(num):
             ftr=FanzineTableRow([""]*self.NumCols)
             self._fanzineList.insert(insertat+i, ftr)
-
 
 
 def main():
