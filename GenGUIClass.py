@@ -254,6 +254,9 @@ class MainFrame ( wx.Frame ):
 		self.m_menuItemPopupCheckForApaMailing = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract APA Mailings", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupCheckForApaMailing )
 
+		self.m_menuItemMerge = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Merge", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemMerge )
+
 		self.Bind( wx.EVT_RIGHT_DOWN, self.MainFrameOnContextMenu )
 
 
@@ -296,6 +299,7 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.OnPopupInsertColRight, id = self.m_menuItemPopupInsertColRight.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupExtractScanner, id = self.m_menuItemPopupExtractScanner.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupExtractApaMailings, id = self.m_menuItemPopupCheckForApaMailing.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupMerge, id = self.m_menuItemMerge.GetId() )
 
 	def __del__( self ):
 		pass
@@ -408,6 +412,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnPopupExtractApaMailings( self, event ):
+		event.Skip()
+
+	def OnPopupMerge( self, event ):
 		event.Skip()
 
 	def MainFrameOnContextMenu( self, event ):

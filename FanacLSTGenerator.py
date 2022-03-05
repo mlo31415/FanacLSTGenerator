@@ -939,9 +939,14 @@ class MainWindow(MainFrame):
         if self._dataGrid.HasSelection():
             Enable("Copy")
             Enable("Erase Selection")
-            _, left, _, right=self._dataGrid.SelectionBoundingBox()
+            top, left, bottom, right=self._dataGrid.SelectionBoundingBox()
             if left == right:
                 Enable("Sort on Selected Column")
+            if bottom-top == 1:
+                if self.Datasource.Rows[top][0].lower().endswith(".pdf") and not self.Datasource.Rows[bottom][0].lower().endswith(".pdf") or \
+                    not self.Datasource.Rows[top][0].lower().endswith(".pdf") and self.Datasource.Rows[bottom][0].lower().endswith(".pdf"):
+                    # Enable Merge if exactly two rows are highlighted and if exactly one of them is a PDF
+                    Enable("Merge")
 
         if self._dataGrid.clipboard is not None:
             Enable("Paste")
@@ -1067,7 +1072,28 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource()
         self.RefreshWindow()
 
-    # A sort function which treates the input text (if it can) as NNNaaa where NNN is sorted as an integer and aaa is sorted alphabetically.  Decimal point ends NNN.
+    # Merge a PDF into a previously non-PDF line
+    def OnPopupMerge(self, event):
+        top, _, bottom, _=self._dataGrid.SelectionBoundingBox()
+        # Merge is only active when we have two rows selected and exactly one of this is a pdf.
+        # We merge the filename fromt he PDF row into the data of the non-PDF row.  If there is a PDF column, we merge that, too.
+        # Then we delete the (former) PDF column
+        pdfline=top
+        oldline=bottom
+        if self.Datasource.Rows[bottom][0].lower().endswith(".pdf"):
+            pdfline=bottom
+            oldline=top
+        self.Datasource.Rows[oldline][0]=self.Datasource.Rows[pdfline][0]
+        pdfcol=self.Datasource.ColHeaderIndex("PDF")
+        if pdfcol != -1:
+            self.Datasource.Rows[oldline][pdfcol]="PDF"
+        self._dataGrid.DeleteRows(pdfline)
+        self._dataGrid.Grid.ClearSelection()
+        self._dataGrid.RefreshWxGridFromDatasource()
+        self.RefreshWindow()
+
+
+        # A sort function which treates the input text (if it can) as NNNaaa where NNN is sorted as an integer and aaa is sorted alphabetically.  Decimal point ends NNN.
     def PseudonumericSort(self, x: str) -> float:
         if IsInt(x):
             return float(int(x))
