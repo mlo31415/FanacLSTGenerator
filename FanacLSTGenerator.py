@@ -287,13 +287,13 @@ class MainWindow(MainFrame):
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
 
         # Get the default PDF directory
-        pdfDirectory=Settings().Get("PDF Source Path", self.DirectoryLocalPath)
+        self.pdfSourcePath=Settings().Get("PDF Source Path", self.DirectoryLocalPath)
         newlyAddedFiles=[]
 
         # Call the File Open dialog to select PDF files
         with wx.FileDialog(self,
                            message="Select PDF files to add",
-                           defaultDir=pdfDirectory,
+                           defaultDir=self.pdfSourcePath,
                            wildcard="PDF files (*.pdf)|*.pdf",
                            style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_FILE_MUST_EXIST | wx.STAY_ON_TOP) as dlg:
 
@@ -308,8 +308,8 @@ class MainWindow(MainFrame):
                 newlyAddedFiles.append((file, f+e))
             sourceDirectory=dlg.GetDirectory()
 
-        if sourceDirectory != pdfDirectory:
-            Settings().Put("PDF Source Path", sourceDirectory)
+        # if sourceDirectory != self.pdfSourcePath:
+        #     Settings().Put("PDF Source Path", sourceDirectory)
 
         rootDirectory=Settings().Get("Root directory", default=".")
         fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.DirectoryLocalPath))[0]
