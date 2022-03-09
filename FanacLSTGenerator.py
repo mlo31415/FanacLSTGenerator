@@ -281,7 +281,7 @@ class MainWindow(MainFrame):
 
 
     def RemoveScaryCharacters(self, name: str) -> str:
-        return RemoveAccents("".join(re.sub("[?*&%$#@'><:;,{}\][=+)(^!\s]+", "_", name)))
+        return RemoveAccents("".join(re.sub("[?*&%$#@'><:;,.{}\][=+)(^!\s]+", "_", name)))
 
 
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
@@ -302,7 +302,10 @@ class MainWindow(MainFrame):
 
             files=dlg.GetFilenames()
             for file in files:
-                newlyAddedFiles.append((file, self.RemoveScaryCharacters(file)))
+                # Because we need to remove periods from the filename, we need to split the extension off so we don;t remove that very important period.
+                f, e=os.path.splitext(file)
+                f=self.RemoveScaryCharacters(f)
+                newlyAddedFiles.append((file, f+e))
             sourceDirectory=dlg.GetDirectory()
 
         if sourceDirectory != pdfDirectory:
