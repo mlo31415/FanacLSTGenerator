@@ -1347,6 +1347,11 @@ def main():
     Settings().Load(os.path.join(homedir, "FanacLSTGenerator settings.json"), MustExist=True)
     Log(Settings().Dump())
 
+    showLogWindow=Settings().Get("Show log window", False)
+    if not showLogWindow:
+        g_LogDialog.Destroy()
+        g_LogDialog=None
+
     # Initialize the GUI
     MainWindow(None)
 
