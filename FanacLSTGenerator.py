@@ -520,6 +520,7 @@ class MainWindow(MainFrame):
         self.tDates.SetValue("")
         self.tFanzineType.SetSelection(0)
         self.tLocaleText.SetValue("")
+        self.tDirectoryServer.SetValue("")
 
         self.Credits=Settings().Get("Scanning credits default", default="")
         self.tCredits.SetValue(self.Credits.strip())
