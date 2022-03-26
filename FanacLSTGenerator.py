@@ -1078,6 +1078,7 @@ class MainWindow(MainFrame):
 
     # Merge a PDF into a previously non-PDF line
     def OnPopupMerge(self, event):
+        self.wxGrid.SaveEditControlValue()
         top, _, bottom, _=self._dataGrid.SelectionBoundingBox()
         # Merge is only active when we have two rows selected and exactly one of this is a pdf.
         # We merge the filename fromt he PDF row into the data of the non-PDF row.  If there is a PDF column, we merge that, too.
@@ -1115,7 +1116,8 @@ class MainWindow(MainFrame):
 
 
     def OnPopupSortOnSelectedColumn(self, event):       # MainWindow(MainFrame)
-        # We already know that only a single column is selected
+        self.wxGrid.SaveEditControlValue()
+        # We already know that only a single column is selected because that's the only time this menu item is enabled and can be called
         _, col, _, _=self._dataGrid.SelectionBoundingBox()
         # If the column consists on thong but empty cells and numbers, we do a special numerical sort.
         testIsInt=all([(x[col] == "" or IsInt(x[col])) for x in self.Datasource.Rows])
@@ -1144,10 +1146,12 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
     def OnPopupExtractScanner(self, event):       # MainWindow(MainFrame)
+        self.wxGrid.SaveEditControlValue()
         self.ExtractScanner(self.Datasource.ColDefs.index("Notes"))
         self.RefreshWindow()
 
     def OnPopupExtractApaMailings(self, event):       # MainWindow(MainFrame)
+        self.wxGrid.SaveEditControlValue()
         self.ExtractApaMailings()
         self.RefreshWindow()
 
