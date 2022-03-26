@@ -581,6 +581,7 @@ class MainWindow(MainFrame):
                 Bailout(PermissionError, f"OnSave fails when trying to rename {oldname} to {newname}", "LSTError")
 
             self.SaveFile(lstfile, oldname)
+            self.MarkAsSaved()
 
 
     #------------------
@@ -631,6 +632,7 @@ class MainWindow(MainFrame):
 
             lstfile=self.CreateLSTFileFromDatasourceEtc()
             self.SaveFile(lstfile, os.path.join(newDirectory, self.lstFilename))
+            self.MarkAsSaved()
 
 
     def UpdateSetupBld(self, path) -> bool:
