@@ -73,7 +73,7 @@ class MainWindow(MainFrame):
                                                               ColDefinition("Repro", Type="str", Width=75)
                                                               ])
 
-        self.DirectoryLocalPath=''
+        # If we start with supplied arguments, use the current directory as the local path
         if len(sys.argv) > 1:
             self.DirectoryLocalPath=os.getcwd()
             Log(f"#1 {self.DirectoryLocalPath=}")
@@ -457,6 +457,7 @@ class MainWindow(MainFrame):
                 Log(f"     root={localroot}")
                 Log(f"     LSTFile in {path}")
             self.tDirectoryLocal.SetValue(dir)
+            self.lLocalDirectory.SetLabel(path)
 
             # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
             complete, credits=self.ReadSetupBld(self.DirectoryLocalPath)
@@ -472,6 +473,7 @@ class MainWindow(MainFrame):
             if dir != "":
                 self.tDirectoryServer.SetValue(dir)
                 self.DirectoryServer=dir
+
 
             self.MarkAsSaved()
             self.RefreshWindow()
@@ -491,6 +493,7 @@ class MainWindow(MainFrame):
         # Re-initialize the form
         self.lstFilename=""
         self.DirectoryLocalPath=""
+        Log(f"#5 {self.DirectoryLocalPath=}")
         self.DirectoryServer=""
 
         # Create default column headers
@@ -869,7 +872,7 @@ class MainWindow(MainFrame):
 
     # ------------------
     def OnDirectoryLocal(self, event):       # MainWindow(MainFrame)
-        self.DirectoryLocalPath=os.path.join(Settings().Get("Root directory", default="."), self.tDirectoryLocal.GetValue())
+        self.DirectoryLocalPath=self.tDirectoryLocal.GetValue()
         Log(f"#3 {self.DirectoryLocalPath=}")
         self.RefreshWindow()
 
