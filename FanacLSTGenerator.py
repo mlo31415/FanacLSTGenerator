@@ -636,6 +636,7 @@ class MainWindow(MainFrame):
             lstfile=self.CreateLSTFileFromDatasourceEtc()
             self.SaveFile(lstfile, os.path.join(newDirectory, self.lstFilename))
             self.MarkAsSaved()
+            self.RefreshWindow()
 
 
     def UpdateSetupBld(self, path) -> bool:
