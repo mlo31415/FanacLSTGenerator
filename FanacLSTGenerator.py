@@ -320,7 +320,7 @@ class MainWindow(MainFrame):
                 Log(f"CreateLSTDirectory: Created directory {fanzineDirectory}", Flush=True)
 
             if len(newlyAddedFiles) > 0:
-                with ProgressMsg(self, f"Loading...") as pm:
+                with ProgressMsg(self, f"Loading..."):
                     for file in newlyAddedFiles:
                         if file[0] != file[1]:  # We only act when the filename has actually been changed
                             Log(f"CopySelectedFiles: {os.path.join(sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
@@ -438,7 +438,7 @@ class MainWindow(MainFrame):
             self.DirectoryLocalPath=os.path.split(dlg.GetPath())[0]
             Log(f"#4 {self.DirectoryLocalPath=}")
 
-        with ProgressMsg(self, f"Loading {self.lstFilename}") as pm:
+        with ProgressMsg(self, f"Loading {self.lstFilename}"):
 
             # Try to load the LSTFile
             if not self.LoadLSTFile(os.path.join(self.DirectoryLocalPath, self.lstFilename)):
