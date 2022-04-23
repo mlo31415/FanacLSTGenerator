@@ -642,6 +642,7 @@ class MainWindow(MainFrame):
         filename=os.path.join(path, "setup.bld")
         Log(f"Opening {filename}")
         if not os.path.exists(filename):
+            Log(f"{filename} does not exist", isError=True)
             return False
         with open(filename, "r") as fd:
             lines=fd.readlines()
