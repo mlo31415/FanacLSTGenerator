@@ -538,7 +538,7 @@ class MainWindow(MainFrame):
     def OnSave(self, event):       # MainWindow(MainFrame)
 
         if self.NewDirectory:
-            self.CreateLSTDirectory()
+            self.CreateNewLSTDirectory()
         else:
             self.SaveExistingLSTFile()
 
@@ -585,7 +585,7 @@ class MainWindow(MainFrame):
 
     #------------------
     # Create a new fanzine directory and LSTfile
-    def CreateLSTDirectory(self):       # MainWindow(MainFrame)
+    def CreateNewLSTDirectory(self):       # MainWindow(MainFrame)
         rootDirectory=Settings().Get("Root directory", default=".")
 
         # If a directory was not specified in the main dialog, use the Save dialog to decide where to save it.
