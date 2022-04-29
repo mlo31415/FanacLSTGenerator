@@ -44,8 +44,7 @@ class MainWindow(MainFrame):
         self.DirectoryLocalPath=""  # Local directory where the LST file, etc., reside
         self.DirectoryServer="" # Server directory to be created under /fanzines
         self.Complete=False     # Is this fanzine series complete?
-        self.NewDirectory=False # Are we creating a new directory? (Alternative is that we're editing an old one.)
-        self.OldDirectory=False
+        self.IsNewDirectory=False # Are we creating a new directory? (Alternative is that we're editing an old one.)
         self.Credits=""         # Who is to be credited for this affair?
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
@@ -146,7 +145,7 @@ class MainWindow(MainFrame):
             self.wxGrid.Enabled=True
 
         # The basic split is whether we are editing an existing LST or creating a new directory
-        if self.NewDirectory:
+        if self.IsNewDirectory:
             self.tDirectoryLocal.SetEditable(True)
             self.tDirectoryServer.SetEditable(True)
             if len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tDirectoryServer.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0 and len(self.Datasource.Rows) > 0:
@@ -154,7 +153,7 @@ class MainWindow(MainFrame):
             # Can't add new issues until we have a target directory defined
             self.bAddNewIssues.Enabled=len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0
 
-        elif self.OldDirectory:
+        else:
             if self.tFanzineName.GetValue() and len(self.Datasource.Rows) > 0:
                 self.bSave.Enabled=True
                 # Can't add new issues until we have a target directory defined
@@ -424,8 +423,7 @@ class MainWindow(MainFrame):
 
         self.tDirectoryLocal.SetValue("")
         self.tDirectoryServer.SetValue("")
-        self.NewDirectory=False
-        self.OldDirectory=True
+        self.IsNewDirectory=False
 
         # Call the File Open dialog to get an LST file
         with wx.FileDialog(self, "Select LST file to load", self.DirectoryLocalPath, "", "*.LST", wx.FD_OPEN) as dlg:
@@ -526,8 +524,7 @@ class MainWindow(MainFrame):
 
         # Both directories are editable, for now at least.
         self.tDirectoryLocal.SetValue("")
-        self.NewDirectory=True
-        self.OldDirectory=False
+        self.IsNewDirectory=True
 
         self.MarkAsSaved()  # Existing contents have been declared doomed
         self.RefreshWindow()
@@ -537,7 +534,7 @@ class MainWindow(MainFrame):
     # Save an LSTFile object to disk and maybe create a whole new directory
     def OnSave(self, event):       # MainWindow(MainFrame)
 
-        if self.NewDirectory:
+        if self.IsNewDirectory:
             self.CreateNewLSTDirectory()
         else:
             self.SaveExistingLSTFile()
