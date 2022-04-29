@@ -114,6 +114,10 @@ class MainWindow(MainFrame):
         self._Datasource=val
         self._dataGrid.Datasource=val
 
+    # @property
+    # def DirectoryLocal(self) -> str:
+    #     return os.path.split(self.Path)[1]
+
 
     # Look at information availabe and color buttons and fields accordingly.
     def ColorFields(self):
