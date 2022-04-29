@@ -137,16 +137,15 @@ class MainWindow(MainFrame):
         self.wxGrid.Enabled=False
 
         # Some things are turned on for both Load and Create
-        if self.NewDirectory or self.OldDirectory:
-            self.bAddNewIssues.Enabled=True
-            self.tFanzineName.SetEditable(True)
-            self.tEditors.SetEditable(True)
-            self.tDates.SetEditable(True)
-            self.tFanzineType.Enabled=True
-            self.tTopComments.SetEditable(True)
-            self.tLocaleText.SetEditable(True)
-            self.cbComplete.Enabled=True
-            self.wxGrid.Enabled=True
+        self.bAddNewIssues.Enabled=True
+        self.tFanzineName.SetEditable(True)
+        self.tEditors.SetEditable(True)
+        self.tDates.SetEditable(True)
+        self.tFanzineType.Enabled=True
+        self.tTopComments.SetEditable(True)
+        self.tLocaleText.SetEditable(True)
+        self.cbComplete.Enabled=True
+        self.wxGrid.Enabled=True
 
         # The basic split is whether we are editing an existing LST or creating a new directory
         if self.IsNewDirectory:
