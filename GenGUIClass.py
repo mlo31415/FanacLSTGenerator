@@ -116,7 +116,7 @@ class MainFrame ( wx.Frame ):
 
 		self.lLocalDirectory.SetMinSize( wx.Size( 500,-1 ) )
 
-		fgSizer2.Add( self.lLocalDirectory, 0, wx.ALL, 5 )
+		fgSizer2.Add( self.lLocalDirectory, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
 		self.tDirectoryLocal = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
 		self.tDirectoryLocal.SetToolTip( u"The name of the local directory (relative to the root displayed to the left) for this fanzine series." )
@@ -129,7 +129,7 @@ class MainFrame ( wx.Frame ):
 
 		self.lServerDirectory.SetMinSize( wx.Size( 500,-1 ) )
 
-		fgSizer2.Add( self.lServerDirectory, 0, wx.ALL, 5 )
+		fgSizer2.Add( self.lServerDirectory, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
 		self.tDirectoryServer = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
 		self.tDirectoryServer.SetToolTip( u"The name of the directory for this fanzine on the fanac.org server." )
