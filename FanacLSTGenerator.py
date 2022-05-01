@@ -14,7 +14,7 @@ from GenLogDialogClass import LogDialog
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage
 from LSTFile import *
-from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag
+from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, LogClose
 from Log import Log as RealLog
@@ -41,10 +41,18 @@ class MainWindow(MainFrame):
 
         self._signature=0
         self.lstFilename=""
-        self.DirectoryLocalPath=""  # Local directory where the LST file, etc., reside
-        self.DirectoryServer="" # Server directory to be created under /fanzines
+
+        self.ServerDirectory=""     # Server directory to be created under /fanzines
+        self.IsNewDirectory=False   # Are we creating a new directory? (Alternative is that we're editing an old one.)
+        # self.RootDirectoryPath is the location in which to create new LSTfile directories and the place to look for one to open.
+        # The default is the CWD. We turn all the separators to '/' for prettiness
+        self.RootDirectoryPath=Settings().Get("Root directory", default=os.getcwd()).replace("\\", "/")
+        self.TargetDirectory=""
+
+        # Get the default PDF directory
+        self.PDFSourcePath=Settings().Get("PDF Source Path", os.getcwd())
+
         self.Complete=False     # Is this fanzine series complete?
-        self.IsNewDirectory=False # Are we creating a new directory? (Alternative is that we're editing an old one.)
         self.Credits=""         # Who is to be credited for this affair?
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
@@ -72,10 +80,6 @@ class MainWindow(MainFrame):
                                                               ColDefinition("Repro", Type="str", Width=75)
                                                               ])
 
-        # If we start with supplied arguments, use the current directory as the local path
-        if len(sys.argv) > 1:
-            self.DirectoryLocalPath=os.getcwd()
-            Log(f"#1 {self.DirectoryLocalPath=}")
 
         # Initially, we want to draw attention to these two buttons
         self.ButtonBackgroundColor=self.bLoadExistingLSTFile.GetBackgroundColour()
@@ -93,8 +97,7 @@ class MainWindow(MainFrame):
         if tlws:
             self.SetSize(tlws)
 
-        label=Settings().Get("Root directory", default=".").replace("\\", "/")
-        label="Local Directory: "+label+"/"
+        label=f"Local Directory: {self.RootDirectoryPath}/"
         self.lLocalDirectory.SetWindowStyle(self.lLocalDirectory.GetWindowStyle() | wx.ST_ELLIPSIZE_MIDDLE)
         self.lLocalDirectory.SetLabel(label)
         self.lLocalDirectory.GetContainingSizer().Layout()
@@ -114,9 +117,9 @@ class MainWindow(MainFrame):
         self._Datasource=val
         self._dataGrid.Datasource=val
 
-    # @property
-    # def DirectoryLocal(self) -> str:
-    #     return os.path.split(self.Path)[1]
+    @property
+    def TargetDirectoryPathname(self) -> str:
+        return os.path.join(self.RootDirectoryPath, self.TargetDirectory)
 
 
     # Look at information availabe and color buttons and fields accordingly.
@@ -167,7 +170,7 @@ class MainWindow(MainFrame):
     #------------------
     # Open a dialog to allow the user to select an LSTFile on disk.
     # Load it (and some other stuff) into self's 'LSFFile() object
-    def LoadLSTFile(self, pathname: str) -> bool:       # MainWindow(MainFrame)
+    def LoadLSTFile(self, pathname: str):       # MainWindow(MainFrame)
 
         # Clear out any old information from form.
         lstfile=LSTFile()
@@ -232,8 +235,6 @@ class MainWindow(MainFrame):
             if lstfile.FanzineType in self.tFanzineType.Items:
                 self.tFanzineType.SetSelection(self.tFanzineType.Items.index(lstfile.FanzineType))
 
-        return True
-
 
     # Create a new LSTFile from the datasource
     def CreateLSTFileFromDatasourceEtc(self) -> LSTFile:       # MainWindow(MainFrame)
@@ -284,14 +285,12 @@ class MainWindow(MainFrame):
 
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
 
-        # Get the default PDF directory
-        self.pdfSourcePath=Settings().Get("PDF Source Path", self.DirectoryLocalPath)
         newlyAddedFiles=[]
 
         # Call the File Open dialog to select PDF files
         with wx.FileDialog(self,
                            message="Select PDF files to add",
-                           defaultDir=self.pdfSourcePath,
+                           defaultDir=self.PDFSourcePath,
                            wildcard="PDF files (*.pdf)|*.pdf",
                            style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_FILE_MUST_EXIST | wx.STAY_ON_TOP) as dlg:
 
@@ -304,36 +303,38 @@ class MainWindow(MainFrame):
                 f, e=os.path.splitext(file)
                 f=RemoveScaryCharacters(f)
                 newlyAddedFiles.append((file, f+e))
-            sourceDirectory=dlg.GetDirectory()
+            sourcePath=dlg.GetPaths()[0]
 
-        # if sourceDirectory != self.pdfSourcePath:
-        #     Settings().Put("PDF Source Path", sourceDirectory)
+        fanzineSourceDirectoryPathmame=os.path.split(sourcePath)[0]
 
-        rootDirectory=Settings().Get("Root directory", default=".")
-        fanzineDirectory=os.path.splitext(os.path.join(rootDirectory, self.DirectoryLocalPath))[0]
+        # If this is a new LST file, it's also likely to be in a new directory, so we will need to create that directory before we copy the fanzine files over
 
-        if rootDirectory != fanzineDirectory:
+        # We want to handle the case -- probably some sort of test -- where the files to be added are already in the
+        if self.TargetDirectoryPathname != fanzineSourceDirectoryPathmame:
             # Copy the files from the source directory to the fanzine's directory.
 
-            # The directory must not exist, otherwise
-            if not os.path.exists(fanzineDirectory):
+            # Do we need to create the target directory?
+            if not os.path.exists(self.TargetDirectoryPathname):
                 # Create the new directory
-                os.mkdir(fanzineDirectory)
-                Log(f"CreateLSTDirectory: Created directory {fanzineDirectory}", Flush=True)
+                os.mkdir(self.TargetDirectoryPathname)
+                Log(f"CreateLSTDirectory: Created directory {self.TargetDirectoryPathname}", Flush=True)
 
             if len(newlyAddedFiles) > 0:
                 with ProgressMsg(self, f"Loading..."):
                     for file in newlyAddedFiles:
-                        if file[0] != file[1]:  # We only act when the filename has actually been changed
-                            Log(f"CopySelectedFiles: {os.path.join(sourceDirectory, file[0])}  to  {os.path.join(fanzineDirectory, file[1])}")
-                            ProgressMessage(self).UpdateMessage(f"Loading {file[0]}")
-                            shutil.copy(os.path.join(sourceDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
+                        newfilepathname=os.path.join(self.TargetDirectoryPathname, file[1])
+                        oldfilepathname=os.path.join(fanzineSourceDirectoryPathmame, file[0])
+                        Log(f"CopySelectedFiles: Loading {oldfilepathname}  to  {newfilepathname}")
+                        ProgressMessage(self).UpdateMessage(f"Loading {file[0]}")
+                        shutil.copy(oldfilepathname, newfilepathname)
         else:
-            # Files are already in LST directory. We still may need to rename them to remove scary characters
+            # Files are already in the target LST directory. We still may need to rename some them to remove scary characters
             for file in newlyAddedFiles:
                 if file[0] != file[1]:
-                    Log(f"shutil.move({os.path.join(fanzineDirectory, file[0])}, {os.path.join(fanzineDirectory, file[1])})")
-                    shutil.move(os.path.join(fanzineDirectory, file[0]), os.path.join(fanzineDirectory, file[1]))
+                    newpathname=os.path.join(self.TargetDirectoryPathname, file[1])
+                    oldpathname=os.path.join(fanzineSourceDirectoryPathmame, file[0])
+                    Log(f"shutil.move({oldpathname}, {newpathname}")
+                    shutil.move(oldpathname, newpathname)
 
         # OK, the files have been copied to the target directory.
 
@@ -368,7 +369,6 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
 
-
     #--------------------------
     # Check a specific subset of rows (as defined by the slice) to see if one of the file is a pdf
     # If a pdf is found possibly add a PDF column and fill the PDF column in for those rows.
@@ -382,12 +382,12 @@ class MainWindow(MainFrame):
         #self.Datasource.AppendEmptyRows(rows.stop-rows.start)   # Append the requisite number of empty rows. (Note that we know the slice's step is always 1)
         # Step through the new rows
         for i, row in enumerate(self.Datasource.Rows):
-            if row[iPages].strip() == "":   # Don';'t bother with rows that already have page counts
+            if row[iPages].strip() == "":   # Don't bother with rows that already have page counts
                 # Col 0 always contains the filename. If it's a PDF, get its pagecount and fill in that cell
                 filename=row[0]
                 if filename.lower().endswith(".pdf"):
                     row[iPdf]="PDF"
-                    pages=GetPdfPageCount(os.path.join(self.DirectoryLocalPath, filename))
+                    pages=GetPdfPageCount(os.path.join(self.TargetDirectoryPathname, filename))
                     if pages is not None:
                         self.Datasource.Rows[i][iPages]=str(pages)
 
@@ -429,35 +429,28 @@ class MainWindow(MainFrame):
         self.IsNewDirectory=False
 
         # Call the File Open dialog to get an LST file
-        with wx.FileDialog(self, "Select LST file to load", self.DirectoryLocalPath, "", "*.LST", wx.FD_OPEN) as dlg:
+        with wx.FileDialog(self, "Select LST file to load", self.RootDirectoryPath, "", "*.LST", wx.FD_OPEN) as dlg:
             dlg.SetWindowStyle(wx.STAY_ON_TOP)
 
             if dlg.ShowModal() != wx.ID_OK:
                 return False
 
             self.lstFilename=dlg.GetFilename()
-            self.DirectoryLocalPath=os.path.split(dlg.GetPath())[0]
-            Log(f"#4 {self.DirectoryLocalPath=}")
+            path=os.path.split(dlg.GetPath())[0]
+            # Get the newly selected target directory's path relative to rootpath
+            self.TargetDirectory=os.path.relpath(path, start=self.RootDirectoryPath)
+            Log(f"Set self.TargetDirectory #4 {self.TargetDirectory=}")
 
         with ProgressMsg(self, f"Loading {self.lstFilename}"):
 
             # Try to load the LSTFile
-            if not self.LoadLSTFile(os.path.join(self.DirectoryLocalPath, self.lstFilename)):
-                #progMsg.Close(delay=0.5)
-                return
+            self.LoadLSTFile(os.path.join(self.TargetDirectoryPathname, self.lstFilename))
 
-            # We have the path to the file found.  Extract the directory it is contained in and make sure it is located at root.
-            path, dir=os.path.split(self.DirectoryLocalPath)
-            localroot=Settings().Get("Root directory", default="")
-            if not os.path.samefile(path, localroot):
-                Log(f"LSTFile not in root directory.")
-                Log(f"     root={localroot}")
-                Log(f"     LSTFile in {path}")
-            self.tDirectoryLocal.SetValue(dir)
-            self.lLocalDirectory.SetLabel(path)
+            self.tDirectoryLocal.SetValue(self.TargetDirectory)
+            self.lLocalDirectory.SetLabel(self.RootDirectoryPath)
 
             # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
-            complete, credits=self.ReadSetupBld(self.DirectoryLocalPath)
+            complete, credits=self.ReadSetupBld(self.TargetDirectoryPathname)
             if complete is not None:
                 self.cbComplete.SetValue(complete)
                 self.Complete=complete
@@ -466,10 +459,10 @@ class MainWindow(MainFrame):
                 self.Credits=credits
 
             # And see if we can pick up the server directory from setup.ftp
-            dir=self.ReadSetupFtp(self.DirectoryLocalPath)
-            if dir != "":
-                self.tDirectoryServer.SetValue(dir)
-                self.DirectoryServer=dir
+            directory=self.ReadSetupFtp(path)
+            if directory != "":
+                self.tDirectoryServer.SetValue(directory)
+                self.ServerDirectory=directory
 
 
             self.MarkAsSaved()
@@ -489,9 +482,9 @@ class MainWindow(MainFrame):
 
         # Re-initialize the form
         self.lstFilename=""
-        self.DirectoryLocalPath=""
-        Log(f"#5 {self.DirectoryLocalPath=}")
-        self.DirectoryServer=""
+        self.TargetDirectory=""
+        Log(f"Set self.TargetDirectory #5 {self.TargetDirectory=}")
+        self.ServerDirectory=""
 
         # Create default column headers
         self._Datasource.ColDefs=ColDefinitionsList([
@@ -556,22 +549,22 @@ class MainWindow(MainFrame):
             templateDirectory=Settings().Get("Template directory", default=".")
             Log(f"{templateDirectory=}")
             # Update the existing setup.bld file based on what the user filled in in the main dialog
-            if not self.UpdateSetupBld(self.DirectoryLocalPath):
+            if not self.UpdateSetupBld(self.TargetDirectoryPathname):
                 Log(f"Creating setup.bld")
-                if not self.CopyTemplateFile("setup.bld template", "setup.bld", self.DirectoryLocalPath, templateDirectory):
+                if not self.CopyTemplateFile("setup.bld template", "setup.bld", self.TargetDirectoryPathname, templateDirectory):
                     Log(f"Could not create setup.bld")
             Log(f"SaveExistingLSTFile: Done messing with template files")
 
             # Rename the old file
-            oldname=os.path.join(self.DirectoryLocalPath, self.lstFilename)
-            newname=os.path.join(self.DirectoryLocalPath, os.path.splitext(self.lstFilename)[0]+"-old.LST")
+            oldname=os.path.join(self.TargetDirectoryPathname, self.lstFilename)
+            newname=os.path.join(self.TargetDirectoryPathname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
             Log(f"SaveExistingLSTFile #1: Rename '{oldname}' to '{newname}'")
 
             try:
                 i=0
                 while os.path.exists(newname):
                     i+=1
-                    newname=os.path.join(self.DirectoryLocalPath, f"{os.path.splitext(self.lstFilename)[0]}-old-{i}.LST")
+                    newname=os.path.join(self.TargetDirectoryPathname, f"{os.path.splitext(self.lstFilename)[0]}-old-{i}.LST")
 
                 Log(f"SaveExistingLSTFile #2: Rename '{oldname}' to '{newname}'")
                 os.rename(oldname, newname)
@@ -586,10 +579,9 @@ class MainWindow(MainFrame):
     #------------------
     # Create a new fanzine directory and LSTfile
     def CreateNewLSTDirectory(self):       # MainWindow(MainFrame)
-        rootDirectory=Settings().Get("Root directory", default=".")
 
         # If a directory was not specified in the main dialog, use the Save dialog to decide where to save it.
-        if not self.DirectoryLocalPath:
+        if not self.TargetDirectory:
             dlg=wx.DirDialog(self, "Create new directory", "", wx.DD_DEFAULT_STYLE)
             dlg.SetWindowStyle(wx.STAY_ON_TOP)
 
@@ -598,11 +590,11 @@ class MainWindow(MainFrame):
                 dlg.Destroy()
                 return False
 
-            self.DirectoryLocalPath=dlg.GetPath()
-            Log(f"#2 {self.DirectoryLocalPath=}")
+            self.TargetDirectory=dlg.GetPath()
+            Log(f"Set self.TargetDirectory #2 {self.TargetDirectory=}")
             dlg.Destroy()
 
-        newDirectory=os.path.join(rootDirectory, self.DirectoryLocalPath)
+        newDirectory=self.TargetDirectoryPathname
         Log(f"CreateLSTDirectory: {newDirectory=}")
 
         Log(f"ProgressMsg('Creating {self.tFanzineName.GetValue()}')")
@@ -625,12 +617,10 @@ class MainWindow(MainFrame):
                 return
 
             # Save the LSTFile in the new directory
-            name, ext=os.path.splitext(self.DirectoryLocalPath)
-            name=os.path.basename(name) # Remove the path info
-            self.lstFilename=name+".lst"
+            self.lstFilename=self.TargetDirectory+".lst"
 
             lstfile=self.CreateLSTFileFromDatasourceEtc()
-            self.SaveFile(lstfile, os.path.join(newDirectory, self.lstFilename))
+            self.SaveFile(lstfile, os.path.join(self.TargetDirectoryPathname, self.lstFilename))
             self.MarkAsSaved()
             self.RefreshWindow()
 
@@ -648,11 +638,8 @@ class MainWindow(MainFrame):
             lines=fd.readlines()
         RealLog(f"Read {lines=}")
         # Turn the inout lines into a dictionary of key:value pairs.  The value is a tuple of the key in its actual case and the value
-        setupbld: dict[str, tuple[str, str]]={}
-        for line in lines:
-            m=re.match("^([a-zA-Z0-9_ ]+)=(.*)$", line)
-            if m:
-                setupbld[m.groups()[0].strip().lower()]=(m.groups()[0].strip(), m.groups()[1].strip())
+        setupbld: ParmDict=ParmDict(CaseInsensntiveCompare=True)
+        setupbld.AppendLines(lines)
 
         # Update with changed values, if any
         if self.Credits:
@@ -663,21 +650,19 @@ class MainWindow(MainFrame):
                 if credits[:0] != "'" and credits[:0] != '"':
                     credits=credits+"'"
 
-                setupbld["credit"]=("Credit", credits)
+                setupbld["Credit"]=credits
 
         if self.cbComplete.GetValue() == 0:
-            setupbld["complete"]=("Complete", "FALSE")
+            setupbld["Complete"]="FALSE"
         else:
-            setupbld["complete"]=("Complete", "TRUE")
-
-        # Convert back to an array of lines
-        lines=[f"{val[0]} = {val[1]}\n" for val in setupbld.values()]
+            setupbld["Complete"]="TRUE"
 
         HelpersPackage.SetReadOnlyFlag(filename, False)
-
-        # Write the lines out
+        # Convert back to an array of lines and write
+        lines=setupbld.Lines()
         with open(filename, "w") as fd:
             fd.writelines(lines)
+
         return True
 
 
@@ -718,7 +703,7 @@ class MainWindow(MainFrame):
             m=re.match("(^.*/fanzines/)(.*)$", line)
             if m is not None:
                 found=True
-                lines[i]=m.groups()[0]+self.DirectoryServer
+                lines[i]=m.groups()[0]+self.ServerDirectory
         if not found:
             MessageBox("Can't edit setup.ftp. Save failed.")
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
@@ -761,16 +746,16 @@ class MainWindow(MainFrame):
             Log(Settings().Dump())
             return False
 
+        newpathname=os.path.join(newDirectory, newName)
         # Remove the template if it already exists in the target directory
-        filename=os.path.join(newDirectory, newName)
-        #TODO: Can't move R/O files -- test for status and skip
-        if os.path.exists(filename):  # Delete any existing file
-            Log(f"CopyTemplateFile: '{filename}' already exists, so removing it")
-            os.remove(filename)
+        if os.path.exists(newpathname):  # Delete any existing file
+            Log(f"CopyTemplateFile: '{newpathname}' already exists, so removing it")
+            SetReadOnlyFlag(newName, False)
+            os.remove(newpathname)
 
         # Copy the template over, renaming it setup.ftp
-        Log(f"CopyTemplateFile: copy '{os.path.join(templateDirectory, setupTemplateName)}'  to  {filename}")
-        shutil.copy(os.path.join(templateDirectory, setupTemplateName), filename)
+        Log(f"CopyTemplateFile: copy '{os.path.join(templateDirectory, setupTemplateName)}'  to  {newpathname}")
+        shutil.copy(os.path.join(templateDirectory, setupTemplateName), newpathname)
         return True
 
 
@@ -870,13 +855,14 @@ class MainWindow(MainFrame):
 
     # ------------------
     def OnDirectoryLocal(self, event):       # MainWindow(MainFrame)
-        self.DirectoryLocalPath=self.tDirectoryLocal.GetValue()
-        Log(f"#3 {self.DirectoryLocalPath=}")
+        dirname=self.tDirectoryLocal.GetValue()
+        self.TargetDirectory=os.path.join(os.path.split(self.TargetDirectory)[0], dirname)
+        Log(f"Set self.TargetDirectory #3 {self.TargetDirectory=}")
         self.RefreshWindow()
 
     # ------------------
     def OnDirectoryServer(self, event):       # MainWindow(MainFrame)
-        self.DirectoryServer=self.tDirectoryServer.GetValue()
+        self.ServerDirectory=self.tDirectoryServer.GetValue()
         self.RefreshWindow()
 
     #------------------
