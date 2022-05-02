@@ -1212,7 +1212,9 @@ class MainWindow(MainFrame):
                 # And move the mailing info
                 mailcol=self._Datasource.ColHeaders.index("Mailing")
                 for i, row in enumerate(self._Datasource.Rows):
-                    row[mailcol]=mailings[i]
+                    if row[mailcol]:
+                        row[mailcol]+=" & "
+                    row[mailcol]+=mailings[i]
 
 
 #=============================================================
