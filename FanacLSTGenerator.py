@@ -117,22 +117,8 @@ class MainWindow(MainFrame):
         return os.path.join(self.RootDirectoryPath, self.Datasource.TargetDirectory)
 
 
-    # Look at information availabe and color buttons and fields accordingly.
+    # Look at information available and color buttons and fields accordingly.
     def ColorFields(self):
-
-        # To start with, everything is disabled except the buttons to Load an old LST file or to create a new one
-        self.bSave.Enabled=False
-        self.bAddNewIssues.Enabled=False
-        self.tFanzineName.SetEditable(False)
-        self.tEditors.SetEditable(False)
-        self.tDates.SetEditable(False)
-        self.tFanzineType.Enabled=False
-        self.tTopComments.SetEditable(False)
-        self.tLocaleText.SetEditable(False)
-        self.cbComplete.Enabled=False
-        self.tDirectoryLocal.SetEditable(False)
-        self.tDirectoryServer.SetEditable(False)
-        self.wxGrid.Enabled=False
 
         # Some things are turned on for both Load and Create
         self.bAddNewIssues.Enabled=True
@@ -143,14 +129,15 @@ class MainWindow(MainFrame):
         self.tTopComments.SetEditable(True)
         self.tLocaleText.SetEditable(True)
         self.cbComplete.Enabled=True
-        self.tDirectoryLocal.SetEditable(True)
-        self.tDirectoryServer.SetEditable(True)
         self.wxGrid.Enabled=True
 
         # The basic split is whether we are editing an existing LST or creating a new directory
+        self.tDirectoryLocal.SetEditable(self.IsNewDirectory)
+        self.tDirectoryServer.SetEditable(self.IsNewDirectory)
+
+        self.bSave.Enabled=False
+        self.bAddNewIssues.Enabled=False
         if self.IsNewDirectory:
-            self.tDirectoryLocal.SetEditable(True)
-            self.tDirectoryServer.SetEditable(True)
             if len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tDirectoryServer.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0 and len(self.Datasource.Rows) > 0:
                 self.bSave.Enabled=True
             # Can't add new issues until we have a target directory defined
