@@ -146,8 +146,8 @@ class MainWindow(MainFrame):
         else:
             if self.tFanzineName.GetValue() and len(self.Datasource.Rows) > 0:
                 self.bSave.Enabled=True
-                # Can't add new issues until we have a target directory defined
-                self.bAddNewIssues.Enabled=True
+            # On an old directory, we have a target defined, so we can always add new issues
+            self.bAddNewIssues.Enabled=True
 
 
 
