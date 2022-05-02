@@ -595,7 +595,7 @@ class MainWindow(MainFrame):
 
             self.SaveFile(lstfile, oldname)
             self.MarkAsSaved()
-
+            self.RefreshWindow()
 
     #------------------
     # Create a new fanzine directory and LSTfile
