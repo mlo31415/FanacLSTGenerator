@@ -6,6 +6,7 @@ import shutil
 import wx
 import wx.grid
 import sys
+from enum import Enum
 
 import HelpersPackage
 from GenGUIClass import MainFrame
@@ -30,6 +31,10 @@ def Log(text: str, isError: bool=False, noNewLine: bool=False, Print=True, Clear
             text=text+"\n"
         g_LogDialog.textLogWindow.AppendText(text)
 
+class EditMode(Enum):
+    NoneSelected=0
+    CreatingNew=1
+    EditingOld=2
 
 
 class MainWindow(MainFrame):
@@ -98,6 +103,9 @@ class MainWindow(MainFrame):
         self.lLocalDirectory.GetContainingSizer().Layout()
         Log(f"{label=}")
 
+        # The edit mode we are presently in.
+        self.Editmode: EditMode=EditMode.NoneSelected
+
         self.MarkAsSaved()
         self.RefreshWindow()
 
@@ -120,7 +128,24 @@ class MainWindow(MainFrame):
     # Look at information available and color buttons and fields accordingly.
     def ColorFields(self):
 
-        # Some things are turned on for both Load and Create
+        # If neither button has been pressed, we are in EditMode NoneSelected and everything else is suppressed.
+        if self.Editmode == EditMode.NoneSelected:
+            self.bAddNewIssues.Enabled=False
+            self.tFanzineName.SetEditable(False)
+            self.tEditors.SetEditable(False)
+            self.tDates.SetEditable(False)
+            self.tFanzineType.Enabled=False
+            self.tTopComments.SetEditable(False)
+            self.tLocaleText.SetEditable(False)
+            self.cbComplete.Enabled=False
+            self.wxGrid.Enabled=False
+            self.tDirectoryLocal.SetEditable(False)
+            self.tDirectoryServer.SetEditable(False)
+            return
+
+        # OK, one or the other edit button has been pressed.  Adjust editing and coloring accordingly
+
+        # Some things are turned on for both EditingOld and CreatingNew
         self.bAddNewIssues.Enabled=True
         self.tFanzineName.SetEditable(True)
         self.tEditors.SetEditable(True)
@@ -132,22 +157,29 @@ class MainWindow(MainFrame):
         self.wxGrid.Enabled=True
 
         # The basic split is whether we are editing an existing LST or creating a new directory
-        self.tDirectoryLocal.SetEditable(self.IsNewDirectory)
-        self.tDirectoryServer.SetEditable(self.IsNewDirectory)
+        if self.Editmode == EditMode.EditingOld:
+            self.tDirectoryLocal.SetEditable(False)
+            self.tDirectoryServer.SetEditable(False)
+            # On an old directory, we always have a target defined, so we can always add new issues
+            self.bAddNewIssues.Enabled=True
 
-        self.bSave.Enabled=False
-        self.bAddNewIssues.Enabled=False
-        if self.IsNewDirectory:
-            if len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tDirectoryServer.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0 and len(self.Datasource.Rows) > 0:
-                self.bSave.Enabled=True
+        if self.Editmode == EditMode.CreatingNew:
+            self.tDirectoryLocal.SetEditable(True)
+            self.tDirectoryServer.SetEditable(True)
             # Can't add new issues until we have a target directory defined
             self.bAddNewIssues.Enabled=len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0
 
-        else:
+        # Whether or not the save button is enabled depends on what more we are in and what has been filled in.
+        self.bSave.Enabled=False
+        self.bAddNewIssues.Enabled=False
+        if self.Editmode == EditMode.CreatingNew:
+            if len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tDirectoryServer.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0 and len(self.Datasource.Rows) > 0:
+                self.bSave.Enabled=True
+
+        if self.Editmode == EditMode.EditingOld:
             if self.tFanzineName.GetValue() and len(self.Datasource.Rows) > 0:
                 self.bSave.Enabled=True
-            # On an old directory, we have a target defined, so we can always add new issues
-            self.bAddNewIssues.Enabled=True
+
 
 
 
@@ -401,18 +433,18 @@ class MainWindow(MainFrame):
     # Load an LST file from disk into an LSTFile class
     def OnLoadExistingLSTFile(self, event):       # MainWindow(MainFrame)
 
-        # We begin with two button highlighted.  When one of them is selected, the highlight is permanently removed.
+        # We begin with two buttons highlighted.  When one of them is selected, the highlighting on both is permanently removed.
         self.bLoadExistingLSTFile.SetBackgroundColour(self.ButtonBackgroundColor)
         self.bCreateNewFanzineDir.SetBackgroundColour(self.ButtonBackgroundColor)
 
         if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Replace anyway?"):
             return
+        self.MarkAsSaved()  # OK, the existing contents have been declared doomed.
 
-        self.MarkAsSaved()  # The contents have been declared doomed
+        self.Editmode=EditMode.EditingOld
 
         self.tDirectoryLocal.SetValue("")
         self.tDirectoryServer.SetValue("")
-        self.IsNewDirectory=False
 
         # Call the File Open dialog to get an LST file
         with wx.FileDialog(self, "Select LST file to load", self.RootDirectoryPath, "", "*.LST", wx.FD_OPEN) as dlg:
@@ -458,12 +490,15 @@ class MainWindow(MainFrame):
     # Create a new, empty LST file
     def OnCreateNewFanzineDir(self, event):       # MainWindow(MainFrame)
 
-        # We begin with two button highlighted.  When one of them is selected, the highlight is permanently removed.
+        # We begin with two buttons highlighted.  When one of them is selected, the highlighting on both is permanently removed.
         self.bLoadExistingLSTFile.SetBackgroundColour(self.ButtonBackgroundColor)
         self.bCreateNewFanzineDir.SetBackgroundColour(self.ButtonBackgroundColor)
 
         if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
             return
+        self.MarkAsSaved()  # OK, the existing contents have been declared doomed.
+
+        self.Editmode=EditMode.CreatingNew
 
         # Re-initialize the form
         self.lstFilename=""
@@ -505,7 +540,6 @@ class MainWindow(MainFrame):
 
         # Both directories are editable, for now at least.
         self.tDirectoryLocal.SetValue("")
-        self.IsNewDirectory=True
 
         self.MarkAsSaved()  # Existing contents have been declared doomed
         self.RefreshWindow()
@@ -515,9 +549,11 @@ class MainWindow(MainFrame):
     # Save an LSTFile object to disk and maybe create a whole new directory
     def OnSave(self, event):       # MainWindow(MainFrame)
 
-        if self.IsNewDirectory:
+        if self.Editmode == EditMode.CreatingNew:
             self.CreateNewLSTDirectory()
-        else:
+            return
+
+        if self.Editmode == EditMode.EditingOld:
             self.SaveExistingLSTFile()
 
 
@@ -793,16 +829,17 @@ class MainWindow(MainFrame):
             return text
         return text+chr(code)
 
-
+    # This method updates the local directory name by computing it from the fanzine name.  It only applies when creating a new LST file
     def OnFanzineNameChar(self, event):       # MainWindow(MainFrame)
         MainFrame.OnFanzineNameChar(self, event)
-        # The only time we update the local directory
-        fname=self.AddChar(self.tFanzineName.GetValue(), event.GetKeyCode())
-        #Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
-        converted=self.FanzineNameToDirName(fname).upper()
-        dname=self.tDirectoryLocal.GetValue()
-        if converted.startswith(dname) or dname.startswith(converted) or converted == dname:
-            self.tDirectoryLocal.SetValue(converted)
+        if self.Editmode == EditMode.CreatingNew:
+            # The only time we update the local directory
+            fname=self.AddChar(self.tFanzineName.GetValue(), event.GetKeyCode())
+            #Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
+            converted=self.FanzineNameToDirName(fname).upper()
+            dname=self.tDirectoryLocal.GetValue()
+            if converted.startswith(dname) or dname.startswith(converted) or converted == dname:
+                self.tDirectoryLocal.SetValue(converted)
 
     def OnFanzineName(self, event):       # MainWindow(MainFrame)
         self.Datasource.FanzineName=self.tFanzineName.GetValue()
