@@ -228,10 +228,12 @@ class MainWindow(MainFrame):
             self.tTopComments.SetValue("\n".join(lstfile.TopComments))
         if lstfile.Locale:
             self.tLocaleText.SetValue("\n".join(lstfile.Locale))
-        if lstfile.FanzineType:
-            if lstfile.FanzineType in self.tFanzineType.Items:
-                self.tFanzineType.SetSelection(self.tFanzineType.Items.index(lstfile.FanzineType))
 
+        if lstfile.FanzineType and lstfile.FanzineType in self.tFanzineType.Items:
+            self.tFanzineType.SetSelection(self.tFanzineType.Items.index(lstfile.FanzineType))
+        else:
+            self.tFanzineType.SetSelection(0)
+        self.OnFanzineType(None)        # I don't know why, but SetSelection does not trigger this event
 
     # Create a new LSTFile from the datasource
     def CreateLSTFileFromDatasourceEtc(self) -> LSTFile:       # MainWindow(MainFrame)
@@ -450,7 +452,7 @@ class MainWindow(MainFrame):
             complete, credits=self.ReadSetupBld(self.TargetDirectoryPathname)
             if complete is not None:
                 self.cbComplete.SetValue(complete)
-                self.Complete=complete
+                self.OnCheckComplete(None)      # Need to manually trigger action
             if credits is not None:
                 self.tCredits.SetValue(credits.strip())
                 self.Datasource.Credits=credits
@@ -828,7 +830,8 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
     def OnFanzineType(self, event):       # MainWindow(MainFrame)
-        self.Datasource.FanzineType=self.tFanzineType.GetSelection()
+        self.Datasource.FanzineType=self.tFanzineType.GetString(self.tFanzineType.GetSelection()).strip()
+        Log(f"OnFanzineType: {self.Datasource.FanzineType=}")
         self.RefreshWindow()
 
     #------------------
