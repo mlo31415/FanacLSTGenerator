@@ -143,6 +143,8 @@ class MainWindow(MainFrame):
         self.tTopComments.SetEditable(True)
         self.tLocaleText.SetEditable(True)
         self.cbComplete.Enabled=True
+        self.tDirectoryLocal.SetEditable(True)
+        self.tDirectoryServer.SetEditable(True)
         self.wxGrid.Enabled=True
 
         # The basic split is whether we are editing an existing LST or creating a new directory
