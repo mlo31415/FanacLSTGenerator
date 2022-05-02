@@ -1174,23 +1174,30 @@ class MainWindow(MainFrame):
             # Look through the rows and extract mailing info, if any
             # We're looking for things like [for/in] <apa> nnn
             mailings=[""]*len(self._Datasource.Rows)     # Collect the mailing into in this until later when we have a chance to put it in its own column
-            apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP"]
+            apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP", "FWD", "FIDO", "TAPS", "APA-F", "APA-L", "APA:NESFA", "WOOF"]
             for i, row in enumerate(self._Datasource.Rows):
                 for apa in apas:
                     # Sometimes the apa reference is part of a hyperlink.  Look for that, first
                     pat=f"(<a HREF=.+>)(?:for|in|[^a-zA-Z]*){apa}\s+([0-9]+[AB]?)(</a>)[,;]?"
                     m=re.search(pat, row[notescol])
+                    mailinginfo=""
                     if m is not None:
                         # We found a mailing inside a hyperlink.  Add it to the temporary list of mailings and remove it from the mailings column
-                        mailings[i]=m.groups()[0]+apa+" "+m.groups()[1]+m.groups()[2]
+                        mailinginfo=m.groups()[0]+apa+" "+m.groups()[1]+m.groups()[2]
                         row[notescol]=re.sub(pat, "", row[notescol]).strip()
 
                     pat=f"(?:for|in|)[^a-zA-Z]+{apa}\s+([0-9]+)[,;]?"
                     m=re.search(pat, row[notescol])
                     if m is not None:
-                        # We found a mailing.  Add it to the tenmorary list of mailings and remove it from the mailings column
-                        mailings[i]=apa+" "+m.groups()[0]
+                        # We found a mailing.  Add it to the temporary list of mailings and remove it from the mailings column
+                        mailinginfo=apa+" "+m.groups()[0]
                         row[notescol]=re.sub(pat, "", row[notescol]).strip()
+                    # Add this mailing to the mailings column
+                    if mailinginfo:
+                        if mailings[i]:
+                            mailings[i]+=" & "
+                        mailings[i]+=mailinginfo
+
 
             # If any mailings were found, we need to put them into their new column (and maybe create the new column as well.)
             if any([m for m in mailings]):
