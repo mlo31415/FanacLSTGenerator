@@ -42,18 +42,13 @@ class MainWindow(MainFrame):
         self._signature=0
         self.lstFilename=""
 
-        self.ServerDirectory=""     # Server directory to be created under /fanzines
         self.IsNewDirectory=False   # Are we creating a new directory? (Alternative is that we're editing an old one.)
         # self.RootDirectoryPath is the location in which to create new LSTfile directories and the place to look for one to open.
         # The default is the CWD. We turn all the separators to '/' for prettiness
         self.RootDirectoryPath=Settings().Get("Root directory", default=os.getcwd()).replace("\\", "/")
-        self.TargetDirectory=""
 
         # Get the default PDF directory
         self.PDFSourcePath=Settings().Get("PDF Source Path", os.getcwd())
-
-        self.Complete=False     # Is this fanzine series complete?
-        self.Credits=""         # Who is to be credited for this affair?
 
         self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
                                                               ColDefinition("Filename", Type="str"),
@@ -119,7 +114,7 @@ class MainWindow(MainFrame):
 
     @property
     def TargetDirectoryPathname(self) -> str:
-        return os.path.join(self.RootDirectoryPath, self.TargetDirectory)
+        return os.path.join(self.RootDirectoryPath, self.Datasource.TargetDirectory)
 
 
     # Look at information availabe and color buttons and fields accordingly.
@@ -242,13 +237,13 @@ class MainWindow(MainFrame):
         lstfile=LSTFile()
 
         # Fill in the upper stuff
-        lstfile.FanzineName=self.tFanzineName.GetValue().strip()
-        lstfile.Editors=self.tEditors.GetValue().strip()
-        lstfile.Dates=self.tDates.GetValue().strip()
-        lstfile.FanzineType=self.tFanzineType.GetString(self.tFanzineType.GetSelection()).strip()
+        lstfile.FanzineName=self.Datasource.FanzineName
+        lstfile.Editors=self.Datasource.Editors
+        lstfile.Dates=self.Datasource.Dates
+        lstfile.FanzineType=self.Datasource.FanzineType
 
-        lstfile.TopComments=self.tTopComments.GetValue().split("\n")
-        lstfile.Locale=[self.tLocaleText.GetValue().strip()]
+        lstfile.TopComments=self.Datasource.TopComments
+        lstfile.Locale=self.Datasource.Locale
 
         # Copy over the column headers
         lstfile.ColumnHeaders=self.Datasource.ColHeaders
@@ -438,15 +433,15 @@ class MainWindow(MainFrame):
             self.lstFilename=dlg.GetFilename()
             path=os.path.split(dlg.GetPath())[0]
             # Get the newly selected target directory's path relative to rootpath
-            self.TargetDirectory=os.path.relpath(path, start=self.RootDirectoryPath)
-            Log(f"Set self.TargetDirectory #4 {self.TargetDirectory=}")
+            self.Datasource.TargetDirectory=os.path.relpath(path, start=self.RootDirectoryPath)
+            Log(f"Set self.Datasource.TargetDirectory #4 {self.Datasource.TargetDirectory=}")
 
         with ProgressMsg(self, f"Loading {self.lstFilename}"):
 
             # Try to load the LSTFile
             self.LoadLSTFile(os.path.join(self.TargetDirectoryPathname, self.lstFilename))
 
-            self.tDirectoryLocal.SetValue(self.TargetDirectory)
+            self.tDirectoryLocal.SetValue(self.Datasource.TargetDirectory)
             self.lLocalDirectory.SetLabel(self.RootDirectoryPath)
 
             # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
@@ -456,14 +451,13 @@ class MainWindow(MainFrame):
                 self.Complete=complete
             if credits is not None:
                 self.tCredits.SetValue(credits.strip())
-                self.Credits=credits
+                self.Datasource.Credits=credits
 
             # And see if we can pick up the server directory from setup.ftp
             directory=self.ReadSetupFtp(path)
             if directory != "":
                 self.tDirectoryServer.SetValue(directory)
-                self.ServerDirectory=directory
-
+                self.Datasource.ServerDirectory=directory
 
             self.MarkAsSaved()
             self.RefreshWindow()
@@ -482,9 +476,9 @@ class MainWindow(MainFrame):
 
         # Re-initialize the form
         self.lstFilename=""
-        self.TargetDirectory=""
-        Log(f"Set self.TargetDirectory #5 {self.TargetDirectory=}")
-        self.ServerDirectory=""
+        self.Datasource.TargetDirectory=""
+        Log(f"Set self.Datasource.TargetDirectory #5 {self.Datasource.TargetDirectory=}")
+        self.Datasource.ServerDirectory=""
 
         # Create default column headers
         self._Datasource.ColDefs=ColDefinitionsList([
@@ -515,8 +509,8 @@ class MainWindow(MainFrame):
         self.tLocaleText.SetValue("")
         self.tDirectoryServer.SetValue("")
 
-        self.Credits=Settings().Get("Scanning credits default", default="")
-        self.tCredits.SetValue(self.Credits.strip())
+        self.Datasource.Credits=Settings().Get("Scanning credits default", default="")
+        self.tCredits.SetValue(self.Datasource.Credits.strip())
 
         # Both directories are editable, for now at least.
         self.tDirectoryLocal.SetValue("")
@@ -581,7 +575,7 @@ class MainWindow(MainFrame):
     def CreateNewLSTDirectory(self):       # MainWindow(MainFrame)
 
         # If a directory was not specified in the main dialog, use the Save dialog to decide where to save it.
-        if not self.TargetDirectory:
+        if not self.Datasource.TargetDirectory:
             dlg=wx.DirDialog(self, "Create new directory", "", wx.DD_DEFAULT_STYLE)
             dlg.SetWindowStyle(wx.STAY_ON_TOP)
 
@@ -590,8 +584,8 @@ class MainWindow(MainFrame):
                 dlg.Destroy()
                 return False
 
-            self.TargetDirectory=dlg.GetPath()
-            Log(f"Set self.TargetDirectory #2 {self.TargetDirectory=}")
+            self.Datasource.TargetDirectory=dlg.GetPath()
+            Log(f"Set self.Datasource.TargetDirectory #2 {self.Datasource.TargetDirectory=}")
             dlg.Destroy()
 
         newDirectory=self.TargetDirectoryPathname
@@ -617,7 +611,7 @@ class MainWindow(MainFrame):
                 return
 
             # Save the LSTFile in the new directory
-            self.lstFilename=self.TargetDirectory+".lst"
+            self.lstFilename=self.Datasource.TargetDirectory+".lst"
 
             lstfile=self.CreateLSTFileFromDatasourceEtc()
             self.SaveFile(lstfile, os.path.join(self.TargetDirectoryPathname, self.lstFilename))
@@ -642,8 +636,8 @@ class MainWindow(MainFrame):
         setupbld.AppendLines(lines)
 
         # Update with changed values, if any
-        if self.Credits:
-            credits=self.Credits.strip()
+        if self.Datasource.Credits:
+            credits=self.Datasource.Credits.strip()
             if len(credits) > 0:
                 if credits[0] != "'" and credits[0] != '"':
                     credits="'"+credits
@@ -703,7 +697,7 @@ class MainWindow(MainFrame):
             m=re.match("(^.*/fanzines/)(.*)$", line)
             if m is not None:
                 found=True
-                lines[i]=m.groups()[0]+self.ServerDirectory
+                lines[i]=m.groups()[0]+self.Datasource.ServerDirectory
         if not found:
             MessageBox("Can't edit setup.ftp. Save failed.")
             Log("CreateLSTDirectory: Can't edit setup.ftp. Save failed.")
@@ -789,11 +783,7 @@ class MainWindow(MainFrame):
     # ----------------------------------------------
     # Used to determine if anything has been updated
     def Signature(self) -> int:       # MainWindow(MainFrame)
-        h=hash("".join(self.Datasource.TopComments))
-        h+=hash(f"{self.Datasource.FanzineName};{self.Datasource.Editors};{self.Datasource.Dates};{self.Datasource.FanzineType}")
-        h+=hash("".join(self.Datasource.Locale))
-        h+=self.Datasource.Signature()
-        return h
+        return self.Datasource.Signature()
 
     def MarkAsSaved(self):       # MainWindow(MainFrame)
         self._signature=self.Signature()
@@ -850,19 +840,19 @@ class MainWindow(MainFrame):
 
     # ------------------
     def OnCheckComplete(self, event):       # MainWindow(MainFrame)
-        self.Complete=self.cbComplete.GetValue()
+        self.Datasource.Complete=self.cbComplete.GetValue()
         self.RefreshWindow()
 
     # ------------------
     def OnDirectoryLocal(self, event):       # MainWindow(MainFrame)
         dirname=self.tDirectoryLocal.GetValue()
-        self.TargetDirectory=os.path.join(os.path.split(self.TargetDirectory)[0], dirname)
-        Log(f"Set self.TargetDirectory #3 {self.TargetDirectory=}")
+        self.Datasource.TargetDirectory=os.path.join(os.path.split(self.Datasource.TargetDirectory)[0], dirname)
+        Log(f"Set self.Datasource.TargetDirectory #3 {self.Datasource.TargetDirectory=}")
         self.RefreshWindow()
 
     # ------------------
     def OnDirectoryServer(self, event):       # MainWindow(MainFrame)
-        self.ServerDirectory=self.tDirectoryServer.GetValue()
+        self.Datasource.ServerDirectory=self.tDirectoryServer.GetValue()
         self.RefreshWindow()
 
     #------------------
@@ -872,7 +862,7 @@ class MainWindow(MainFrame):
 
     #------------------
     def OnCredits(self, event):
-        self.Credits=self.tCredits.GetValue().strip()
+        self.Datasource.Credits=self.tCredits.GetValue().strip()
         self.RefreshWindow()
 
     #-------------------
@@ -1269,13 +1259,18 @@ class FanzineTablePage(GridDataSource):
         self.Editors: str=""
         self.Dates: str=""
         self.FanzineType: str=""
-
+        self.Complete=False     # Is this fanzine series complete?
+        self.Credits=""         # Who is to be credited for this affair?
+        self.ServerDirectory=""  # Server directory to be created under /fanzines
+        self.TargetDirectory=""
 
 
     def Signature(self) -> int:        # FanzineTablePage(GridDataSource)
         s=self._colDefs.Signature()
-        s+=hash(self._name.strip()+"".join(self.TopComments).strip()+"".join(self.Locale).strip())
-        s+=hash(f"{self.FanzineName};{self.Editors};{self.Dates};{self.FanzineType}")
+        s+=hash(f"{self._name.strip()};{' '.join(self.TopComments).strip()};{' '.join(self.Locale).strip()}")
+        s+=hash(f"{' '.join(self.TopComments).strip()};{' '.join(self.Locale).strip()}")
+        s+=hash(f"{self.FanzineName};{self.Editors};{self.Dates};{self.FanzineType};{self.Credits};{self.Complete}")
+        s+=hash(f"{self.ServerDirectory.strip()};{self.TargetDirectory.strip()}")
         s+=sum([x.Signature()*(i+1) for i, x in enumerate(self._fanzineList)])
         return s+hash(self._specialTextColor)+self._colDefs.Signature()
 
