@@ -81,10 +81,7 @@ class MainWindow(MainFrame):
                                                               ])
 
 
-        # Initially, we want to draw attention to these two buttons
         self.ButtonBackgroundColor=self.bLoadExistingLSTFile.GetBackgroundColour()
-        self.bLoadExistingLSTFile.SetBackgroundColour(Color.Pink)
-        self.bCreateNewFanzineDir.SetBackgroundColour(Color.Pink)
 
         # Read the LST file
         self.MarkAsSaved()      # We don't need to save whatever it is that is present now.
@@ -130,7 +127,7 @@ class MainWindow(MainFrame):
 
         # If neither button has been pressed, we are in EditMode NoneSelected and everything else is suppressed.
         if self.Editmode == EditMode.NoneSelected:
-            self.bAddNewIssues.Enabled=False
+            self.bAddNewIssues.Enable(False)
             self.tFanzineName.SetEditable(False)
             self.tEditors.SetEditable(False)
             self.tDates.SetEditable(False)
@@ -141,12 +138,15 @@ class MainWindow(MainFrame):
             self.wxGrid.Enabled=False
             self.tDirectoryLocal.SetEditable(False)
             self.tDirectoryServer.SetEditable(False)
+
+            # We begin with just these two buttons highlighted as pink.  When one of them is selected, the highlighting on both is permanently removed.
+            self.bLoadExistingLSTFile.SetBackgroundColour(Color.Pink)
+            self.bCreateNewFanzineDir.SetBackgroundColour(Color.Pink)
             return
 
         # OK, one or the other edit button has been pressed.  Adjust editing and coloring accordingly
 
         # Some things are turned on for both EditingOld and CreatingNew
-        self.bAddNewIssues.Enabled=True
         self.tFanzineName.SetEditable(True)
         self.tEditors.SetEditable(True)
         self.tDates.SetEditable(True)
@@ -156,29 +156,34 @@ class MainWindow(MainFrame):
         self.cbComplete.Enabled=True
         self.wxGrid.Enabled=True
 
+        self.bLoadExistingLSTFile.SetBackgroundColour(self.ButtonBackgroundColor)
+        self.bCreateNewFanzineDir.SetBackgroundColour(self.ButtonBackgroundColor)
+
         # The basic split is whether we are editing an existing LST or creating a new directory
         if self.Editmode == EditMode.EditingOld:
             self.tDirectoryLocal.SetEditable(False)
             self.tDirectoryServer.SetEditable(False)
             # On an old directory, we always have a target defined, so we can always add new issues
-            self.bAddNewIssues.Enabled=True
+            self.bAddNewIssues.Enable(True)
 
         if self.Editmode == EditMode.CreatingNew:
             self.tDirectoryLocal.SetEditable(True)
             self.tDirectoryServer.SetEditable(True)
             # Can't add new issues until we have a target directory defined
-            self.bAddNewIssues.Enabled=len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0
+            if len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0:
+                self.bAddNewIssues.Enable(True)
+            else:
+                self.bAddNewIssues.Enable(False)
 
         # Whether or not the save button is enabled depends on what more we are in and what has been filled in.
-        self.bSave.Enabled=False
-        self.bAddNewIssues.Enabled=False
+        self.bSave.Enable(False)
         if self.Editmode == EditMode.CreatingNew:
             if len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tDirectoryServer.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0 and len(self.Datasource.Rows) > 0:
-                self.bSave.Enabled=True
+                self.bSave.Enable()
 
         if self.Editmode == EditMode.EditingOld:
             if self.tFanzineName.GetValue() and len(self.Datasource.Rows) > 0:
-                self.bSave.Enabled=True
+                self.bSave.Enable()
 
 
 
@@ -432,10 +437,6 @@ class MainWindow(MainFrame):
     #------------------
     # Load an LST file from disk into an LSTFile class
     def OnLoadExistingLSTFile(self, event):       # MainWindow(MainFrame)
-
-        # We begin with two buttons highlighted.  When one of them is selected, the highlighting on both is permanently removed.
-        self.bLoadExistingLSTFile.SetBackgroundColour(self.ButtonBackgroundColor)
-        self.bCreateNewFanzineDir.SetBackgroundColour(self.ButtonBackgroundColor)
 
         if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Replace anyway?"):
             return
