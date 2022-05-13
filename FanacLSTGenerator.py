@@ -15,7 +15,7 @@ from GenLogDialogClass import LogDialog
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage
 from LSTFile import *
-from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
+from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict, ComparePathsCanonical
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, LogClose
 from Log import Log as RealLog
@@ -155,6 +155,7 @@ class MainWindow(MainFrame):
         self.tLocaleText.SetEditable(True)
         self.cbComplete.Enabled=True
         self.wxGrid.Enabled=True
+
 
         self.bLoadExistingLSTFile.SetBackgroundColour(self.ButtonBackgroundColor)
         self.bCreateNewFanzineDir.SetBackgroundColour(self.ButtonBackgroundColor)
@@ -333,7 +334,7 @@ class MainWindow(MainFrame):
         # If this is a new LST file, it's also likely to be in a new directory, so we will need to create that directory before we copy the fanzine files over
 
         # We want to handle the case -- probably some sort of test -- where the files to be added are already in the
-        if self.TargetDirectoryPathname != fanzineSourceDirectoryPathmame:
+        if not ComparePathsCanonical(self.TargetDirectoryPathname, fanzineSourceDirectoryPathmame):
             # Copy the files from the source directory to the fanzine's directory.
 
             # Do we need to create the target directory?
