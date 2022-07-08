@@ -105,15 +105,17 @@ class LSTFile:
         colHeaderLine=""
         inFanacType=False
         while contents:
-            line=contents.pop(0).strip()    # Grab the top line
-            if not line:
+            line=contents.pop(0).strip()    # Pop the first line from the list of likes
+            if len(line) == 0:
                 continue    # Skip blank lines
-            if IsTableLine(line):   # If we come to a table line, we have found the colum headers (which must start the table). Save it and then drop down to table row processing.
+            if IsTableLine(line):   # If we come to a table line, we have found the column headers (which must start the table). Save it and then drop down to table row processing.
                 colHeaderLine=line
                 break
-            # Once we find a line that starts with <fanac-type>, we send the lines to local until we find a line that ends with </fanac-type>
-            if inFanacType or line.startswith("<fanac-type>"):
-                line=StripSpecificTag(StripSpecificTag(line, "fanac-type"), "h2")   # But we don't want to show the tags
+            # Once we find a line that starts with <fanac-type>, we append the lines to locale until we find a line that ends with </fanac-type>
+            # We remove leading and trailing <fanac-type> and <h2>
+            if inFanacType or line.lower().startswith("<fanac-type>"):
+                while line.lower().startswith("<fanac-type>"):  # Must deal with duplicated HTML tags in some broken pages
+                    line=StripSpecificTag(StripSpecificTag(line, "fanac-type"), "h2")   # Steip off the tags until there are none left
                 self.Locale.append(line)
                 if not line.endswith("</fanac-type>"):
                     inFanacType=True
