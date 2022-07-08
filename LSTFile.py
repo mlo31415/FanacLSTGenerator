@@ -117,7 +117,7 @@ class LSTFile:
                 while line.lower().startswith("<fanac-type>"):  # Must deal with duplicated HTML tags in some broken pages
                     line=StripSpecificTag(StripSpecificTag(line, "fanac-type"), "h2")   # Steip off the tags until there are none left
                 self.Locale.append(line)
-                if not line.endswith("</fanac-type>"):
+                if not line.lower().endswith("</fanac-type>"):
                     inFanacType=True
                     continue
                 inFanacType=False
