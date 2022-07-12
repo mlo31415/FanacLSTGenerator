@@ -661,7 +661,7 @@ class MainWindow(MainFrame):
             lines=fd.readlines()
         RealLog(f"Read {lines=}")
         # Turn the inout lines into a dictionary of key:value pairs.  The value is a tuple of the key in its actual case and the value
-        setupbld: ParmDict=ParmDict(CaseInsensntiveCompare=True)
+        setupbld: ParmDict=ParmDict(CaseInsensitiveCompare=True)
         setupbld.AppendLines(lines)
 
         # Update with changed values, if any
