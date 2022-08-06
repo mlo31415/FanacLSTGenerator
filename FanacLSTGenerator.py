@@ -1176,7 +1176,7 @@ class MainWindow(MainFrame):
             # Look through the rows and extract mailing info, if any
             # We're looking for things like [for/in] <apa> nnn
             mailings=[""]*len(self._Datasource.Rows)     # Collect the mailing into in this until later when we have a chance to put it in its own column
-            apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP", "FWD", "FIDO", "TAPS", "APA-F", "APA-L", "APA:NESFA", "WOOF"]
+            apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP", "FWD", "FIDO", "TAPS", "APA-F", "APA-L", "APA:NESFA", "WOOF", "SFPA"]
             for i, row in enumerate(self._Datasource.Rows):
                 for apa in apas:
                     # Sometimes the apa reference is part of a hyperlink.  Look for that, first
