@@ -268,7 +268,7 @@ class LSTFile:
                 out=row[1]    # If the first column is empty, then we have a case (2) row with no link and need to fudge it a bit.
             elif len(row[0]) > 0:
                 # Case (3) is marked by the first column beginning and ending with pointy brackets
-                if row[0][0] == "<" and row[0][-1:] == ">":
+                if row[0][0] == "<" and row[0][-1] == ">":
                     out='<a href="https://fanac.org/fanzines/'+row[0][1:-1]+'">'+row[1]
                 else:
                     out=row[0] + ">" + row[1]   # Case (1)
