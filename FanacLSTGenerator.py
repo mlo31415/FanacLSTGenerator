@@ -473,10 +473,15 @@ class MainWindow(MainFrame):
             complete, credits=self.ReadSetupBld(self.TargetDirectoryPathname)
             if complete is not None:
                 self.cbComplete.SetValue(complete)
-                self.OnCheckComplete(None)      # Need to manually trigger action
+            else:
+                self.cbComplete.SetValue(False)
+            self.OnCheckComplete(None)      # Need to manually trigger action
             if credits is not None:
                 self.tCredits.SetValue(credits.strip())
                 self.Datasource.Credits=credits
+            else:
+                self.tCredits.SetValue("")
+                self.Datasource.Credits=""
 
             # And see if we can pick up the server directory from setup.ftp
             directory=self.ReadSetupFtp(path)
