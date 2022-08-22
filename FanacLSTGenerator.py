@@ -241,6 +241,7 @@ class MainWindow(MainFrame):
         # Fill in the upper stuff
         self.tTopComments.SetValue("")
         self.tLocaleText.SetValue("")
+        self.tCredits.SetValue("")
         self.wxGrid.ClearGrid()
         self.tFanzineName.SetValue(lstfile.FanzineName.strip())
         self.tEditors.SetValue(lstfile.Editors.strip())
@@ -540,6 +541,7 @@ class MainWindow(MainFrame):
         self.tDates.SetValue("")
         self.tFanzineType.SetSelection(0)
         self.tLocaleText.SetValue("")
+        self.tCredits.SetValue("")
         self.tDirectoryServer.SetValue("")
 
         self.Datasource.Credits=Settings().Get("Scanning credits default", default="")
