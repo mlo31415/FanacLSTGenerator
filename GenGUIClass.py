@@ -254,8 +254,17 @@ class MainFrame ( wx.Frame ):
 		self.m_menuItemPopupCheckForApaMailing = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract APA Mailings", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupCheckForApaMailing )
 
+		self.m_menuItemPopupExtractEditor = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract Editor", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupExtractEditor )
+
 		self.m_menuItemMerge = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Merge", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemMerge )
+
+		self.m_menuItemClearLinks = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Clear All Links", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemClearLinks )
+
+		self.m_menuItemAddLink = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Add a Link", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemAddLink )
 
 		self.Bind( wx.EVT_RIGHT_DOWN, self.MainFrameOnContextMenu )
 
@@ -299,7 +308,10 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.OnPopupInsertColRight, id = self.m_menuItemPopupInsertColRight.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupExtractScanner, id = self.m_menuItemPopupExtractScanner.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupExtractApaMailings, id = self.m_menuItemPopupCheckForApaMailing.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupExtractEditor, id = self.m_menuItemPopupExtractEditor.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupMerge, id = self.m_menuItemMerge.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupClearAllLinks, id = self.m_menuItemClearLinks.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupAddLink, id = self.m_menuItemAddLink.GetId() )
 
 	def __del__( self ):
 		pass
@@ -414,7 +426,16 @@ class MainFrame ( wx.Frame ):
 	def OnPopupExtractApaMailings( self, event ):
 		event.Skip()
 
+	def OnPopupExtractEditor( self, event ):
+		event.Skip()
+
 	def OnPopupMerge( self, event ):
+		event.Skip()
+
+	def OnPopupClearAllLinks( self, event ):
+		event.Skip()
+
+	def OnPopupAddLink( self, event ):
 		event.Skip()
 
 	def MainFrameOnContextMenu( self, event ):

@@ -15,7 +15,8 @@ from GenLogDialogClass import LogDialog
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage
 from LSTFile import *
-from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict, ComparePathsCanonical
+from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, MessageBoxInput2, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
+from HelpersPackage import  ComparePathsCanonical, FindLinkInString
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, LogClose
 from Log import Log as RealLog
@@ -988,6 +989,18 @@ class MainWindow(MainFrame):
         if self._dataGrid.clickedRow == -1: #Indicates we're on a column header
             Enable("Rename Column")
 
+        if self._dataGrid.clickedRow >= 0 and self._dataGrid.clickedColumn >= 0:
+            Enable("Add a Link")
+
+        # Check to see if there is a hyperlink in this row
+        if self._dataGrid.clickedRow >= 0:
+            row=self.Datasource.Rows[self._dataGrid.clickedRow]
+            for col in row:
+                _, link, _, _=FindLinkInString(col)
+                if link != "":
+                    Enable("Clear All Links")
+                    break
+
         # We only enable Extract Scanner when we're in the Notes column and there's something to extract.
         if self.Datasource.ColDefs[self._dataGrid.clickedColumn].Preferred == "Notes":
             # We only want to enable the "Extract Scanner" item if the Notes column contains scanned by information
@@ -1001,11 +1014,22 @@ class MainWindow(MainFrame):
                     Enable("Extract Scanner")
                     break
 
+        # We only enable Extract Editor when we're in the Notes column and there's something to extract.
+        if self.Datasource.ColDefs[self._dataGrid.clickedColumn].Preferred == "Notes":
+            # We only want to enable the "Extract Editor" item if the Notes column contains edited by information
+            for row in self.Datasource.Rows:
+                note=row[self._dataGrid.clickedColumn].lower()
+                if "edited by" in note or \
+                        "editor " in note:
+                    Enable("Extract Editor")
+                    break
+
         if self.Datasource.ColHeaders[self._dataGrid.clickedColumn] == "Notes":
             Enable("Extract APA Mailings")
 
         # Pop the menu up.
         self.PopupMenu(self.m_GridPopup)
+
 
     # ------------------
     # Extract 'scanned by' information from the Notes column, if any
@@ -1111,6 +1135,44 @@ class MainWindow(MainFrame):
             self.Datasource.Rows[oldline][pdfcol]="PDF"
         self._dataGrid.DeleteRows(pdfline)
         self._dataGrid.Grid.ClearSelection()
+        self._dataGrid.RefreshWxGridFromDatasource()
+        self.RefreshWindow()
+
+    # Clear links in the selected row
+    def OnPopupClearAllLinks(self, event):
+        row=self.Datasource.Rows[self._dataGrid.clickedRow]
+        for i, col in enumerate(row):
+            before, link, target, aft=FindLinkInString(col)
+            if link != "":
+                row[i]=before+target+aft
+
+        self._dataGrid.RefreshWxGridFromDatasource()
+        self.RefreshWindow()
+
+
+    # Add a link to the selected cell
+    def OnPopupAddLink(self, event):
+        if self._dataGrid.clickedRow == -1 or self._dataGrid.clickedColumn == -1:
+            event.Skip()
+            return
+
+        row=self.Datasource.Rows[self._dataGrid.clickedRow]
+        val=row[self._dataGrid.clickedColumn]
+        # Create text input
+        dlg=wx.TextEntryDialog(self, 'Turn cell text into a hyperlink', 'URL to be used: ')
+        #dlg.SetValue("Turn a cell into a link")
+        if dlg.ShowModal() != wx.ID_OK:
+            event.Skip()
+            return
+        ret=dlg.GetValue()
+        dlg.Destroy()
+
+        if ret == "":
+            event.Skip()
+            return
+
+        val=f'<a href="https:{ret}">{val}</a>'
+        row[self._dataGrid.clickedColumn]=val
         self._dataGrid.RefreshWxGridFromDatasource()
         self.RefreshWindow()
 
@@ -1224,6 +1286,54 @@ class MainWindow(MainFrame):
                     if row[mailcol]:
                         row[mailcol]+=" & "
                     row[mailcol]+=mailings[i]
+
+
+    def OnPopupExtractEditor(self, event):  # MainWindow(MainFrame)
+        self.wxGrid.SaveEditControlValue()
+        self.ExtractEditor()
+        self.RefreshWindow()
+
+
+    # Run through the rows and columns and look at the Notes column  If an APA mailing note is present,
+    # move it to a "Mailing" column (which may need to be created).  Remove the text from the Notes column.
+    # Find the Notes column. If there is none, we're done.
+    def ExtractEditor(self):  # MainWindow(MainFrame)
+        if "Notes" in self._Datasource.ColHeaders:
+            notescol=self._Datasource.ColHeaders.index("Notes")
+
+            # Look through the rows and extract mailing info, if any
+            # We're looking for things like [for/in] <apa> nnn
+            editors=[""]*len(self._Datasource.Rows)  # Collect the mailing into in this until later when we have a chance to put it in its own column
+            for i, row in enumerate(self._Datasource.Rows):
+                # Look for 'edited by xxx' or 'edited: xxx'
+                # xxx can be one of three patterns:
+                #       Aaaa Bbbb
+                #       Aaaa B Cccc
+                #       Aaaa B. Cccc
+                pat="[eE](ditor|dited by):?\s*([A-Z][a-zA-Z]+\s+[A-Z]?[.]?\s*[A-Z][a-zA-Z]+)\s*"
+                m=re.search(pat, row[notescol])
+                if m is not None:
+                    # We found a mailing.  Add it to the temporary list of mailings and remove it from the mailings column
+                    editors[i]=m.groups()[1]
+                    row[notescol]=re.sub(pat, "", row[notescol]).strip()
+
+            # If any mailings were found, we need to put them into their new column (and maybe create the new column as well.)
+            if any([m for m in editors]):
+                # Append an editor column if needed
+                if "Editor" not in self._Datasource.ColHeaders:
+                    self._Datasource.InsertColumnHeader(-1, self.stdColHeaders["Editor"])
+                # And in each row append an empty cell
+                for i, row in enumerate(self._Datasource.Rows):
+                    if len(row) < len(self._Datasource.ColHeaders):
+                        self._Datasource.Rows[i].Extend([""])
+
+                # And move the mailing info
+                mailcol=self._Datasource.ColHeaders.index("Editor")
+                for i, row in enumerate(self._Datasource.Rows):
+                    if row[mailcol]:
+                        row[mailcol]+=" & "
+                    row[mailcol]+=editors[i]
+
 
 
 #=============================================================
