@@ -1287,17 +1287,12 @@ class MainWindow(MainFrame):
                         row[mailcol]+=" & "
                     row[mailcol]+=mailings[i]
 
-
-    def OnPopupExtractEditor(self, event):  # MainWindow(MainFrame)
-        self.wxGrid.SaveEditControlValue()
-        self.ExtractEditor()
-        self.RefreshWindow()
-
-
     # Run through the rows and columns and look at the Notes column  If an APA mailing note is present,
     # move it to a "Mailing" column (which may need to be created).  Remove the text from the Notes column.
     # Find the Notes column. If there is none, we're done.
-    def ExtractEditor(self):  # MainWindow(MainFrame)
+    def OnPopupExtractEditor(self, event):  # MainWindow(MainFrame)
+        self.wxGrid.SaveEditControlValue()
+
         if "Notes" in self._Datasource.ColHeaders:
             notescol=self._Datasource.ColHeaders.index("Notes")
 
@@ -1334,6 +1329,7 @@ class MainWindow(MainFrame):
                         row[mailcol]+=" & "
                     row[mailcol]+=editors[i]
 
+        self.RefreshWindow()
 
 
 #=============================================================
