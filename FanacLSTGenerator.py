@@ -15,8 +15,8 @@ from GenLogDialogClass import LogDialog
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
 from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage
 from LSTFile import *
-from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, MessageBoxInput2, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
-from HelpersPackage import  ComparePathsCanonical, FindLinkInString
+from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
+from HelpersPackage import  ComparePathsCanonical, FindLinkInString, FindIndexOfStringInList
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, LogClose
 from Log import Log as RealLog
@@ -1027,6 +1027,9 @@ class MainWindow(MainFrame):
         if self.Datasource.ColHeaders[self._dataGrid.clickedColumn] == "Notes":
             Enable("Extract APA Mailings")
 
+        if self.Datasource.ColHeaders[self._dataGrid.clickedColumn] == "Editor" and self.tEditors.GetValue() is not None and len(self.tEditors.GetValue()) > 0:
+            Enable("Propagate Editor")
+
         # Pop the menu up.
         self.PopupMenu(self.m_GridPopup)
 
@@ -1287,6 +1290,7 @@ class MainWindow(MainFrame):
                         row[mailcol]+=" & "
                     row[mailcol]+=mailings[i]
 
+
     # Run through the rows and columns and look at the Notes column  If an APA mailing note is present,
     # move it to a "Mailing" column (which may need to be created).  Remove the text from the Notes column.
     # Find the Notes column. If there is none, we're done.
@@ -1328,6 +1332,27 @@ class MainWindow(MainFrame):
                     if row[mailcol]:
                         row[mailcol]+=" & "
                     row[mailcol]+=editors[i]
+
+        self.RefreshWindow()
+
+
+    # Run through the rows and columns and look at the Notes column  If an APA mailing note is present,
+    # move it to a "Mailing" column (which may need to be created).  Remove the text from the Notes column.
+    # Find the Notes column. If there is none, we're done.
+    def OnPopupPropagateEditor(self, event):  # MainWindow(MainFrame)
+        self.wxGrid.SaveEditControlValue()
+
+        if self.tEditors.GetValue() is None or len(self.tEditors.GetValue()) == 0:
+            return
+
+        editorscol=FindIndexOfStringInList(self._Datasource.ColHeaders, ["Editor", "Editors"])
+        if editorscol is None:
+            return
+
+        # Go through the cells in the Editors column and fill in any which are empty with the contents of tEditors
+        for row in self._Datasource.Rows:
+            if row[editorscol] is None or len(row[editorscol].strip()) == 0:
+                row[editorscol]=self.tEditors.GetValue()
 
         self.RefreshWindow()
 

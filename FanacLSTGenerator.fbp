@@ -1998,6 +1998,20 @@
                     <property name="help"></property>
                     <property name="id">wxID_ANY</property>
                     <property name="kind">wxITEM_NORMAL</property>
+                    <property name="label">Propagate Editor</property>
+                    <property name="name">m_menuItemPopupPropagateEditor</property>
+                    <property name="permission">none</property>
+                    <property name="shortcut"></property>
+                    <property name="unchecked_bitmap"></property>
+                    <event name="OnMenuSelection">OnPopupPropagateEditor</event>
+                </object>
+                <object class="wxMenuItem" expanded="1">
+                    <property name="bitmap"></property>
+                    <property name="checked">0</property>
+                    <property name="enabled">1</property>
+                    <property name="help"></property>
+                    <property name="id">wxID_ANY</property>
+                    <property name="kind">wxITEM_NORMAL</property>
                     <property name="label">Merge</property>
                     <property name="name">m_menuItemMerge</property>
                     <property name="permission">none</property>
