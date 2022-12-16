@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 import re
 
-from HelpersPackage import CanonicizeColumnHeaders, Bailout, StripSpecificTag
+from HelpersPackage import CanonicizeColumnHeaders, Bailout, StripSpecificTag, FindAnyBracketedText
 
 
 @dataclass(order=False)
@@ -138,18 +138,30 @@ class LSTFile:
 
         # And likewise the rows
         # We need to do some special processing on the first column
-        # There are three formats that I've found so far.
+        # There are four formats that I've found so far.
         # (1) The most common format has (filename>displayname) in the first column. We treat the ">" as a ";" for the purposes of the spreadsheet. (We'll undo this on save.)
         #   This format is to a specific issue of a fanzine.
         # (2) An especially annoying one is where fanzine data has been entered, but there's no actual scan.
         #   We deal with this by adding a ">" at the start of the line and then handling it like case (1)
         # (3) A less common format is has "<a HREF="http://fanac.org/fanzines/abc/">xyz" where abc is the directory name of the target index.html, and xyz is the display name.
-        #   Normally, abc seems to be the same as xyz, but we'll make allowance for the possibility it me be different.
-        #   In this second case, the whole HREF is too big, so we'll hide it and just show "<abc>" in col 1
-        #   (There's actually two versions of case (3), with and without 'www.' preceding the URL
+        #   Normally, abc seems to be the same as xyz, but we'll make allowance for the possibility it may be different.
+        #   Due to the added http://fanac.org/fanzines/, the whole HREF is too big to show, so we'll hide it and just show "<abc>" in col 1
+        #   (There's actually two versions of case (3), with and without 'www.' preceding the URL)
+        # (4) is the case where there is no link at all in col 1, but there is text that is used for things like separation of different kinds of fanzines.
+        #   This text may be decorated with html (e.g., <b>xx</b>) and the html must be preserved.
         self.Rows=[]
         for row in rowLines:
             col1, colrest=row.split(";", 1)
+            # First look for case (4):
+            lead, brackets, bracketed, trail=FindAnyBracketedText(col1)
+            if len(brackets) > 0:
+                # But remember that case (3) allows for links to be put in col 1, so we ignore the case where we have an <a ...>...</a> and treat it normally.
+                if brackets.lower() != "a":
+                    # Since this is of this special form, we save it as it is and don't process it further.
+                    # Split the row on ";" and append it
+                    self.Rows.append([h.strip() for h in row.split(";")])
+                    continue
+
             # Look for case (2), and add the ">" to make it case 1
             if col1.find(">") == -1:    # If there's no ">" in col1, put it there.
                 row=">"+row.strip() # Because there are some cases where there is no filename, the ">" is missing and we need to supply one
