@@ -236,23 +236,26 @@ class MainFrame ( wx.Frame ):
 		self.m_menuItemPopupDelRow = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Delete Row(s)", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupDelRow )
 
+		self.m_menuItemPopupInsertRow = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Insert a Row", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupInsertRow )
+
 		self.m_menuItemPopupRenameCol = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Rename Column", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupRenameCol )
 
 		self.m_menuItemPopupInsertColLeft = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Insert Column to Left", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupInsertColLeft )
 
-		self.m_menuItemPopupSortOnCol = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Sort on Selected Column", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_GridPopup.Append( self.m_menuItemPopupSortOnCol )
-
 		self.m_menuItemPopupInsertColRight = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Insert Column to Right", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupInsertColRight )
+
+		self.m_menuItemPopupSortOnCol = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Sort on Selected Column", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupSortOnCol )
 
 		self.m_menuItemPopupExtractScanner = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract Scanner", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupExtractScanner )
 
-		self.m_menuItemPopupCheckForApaMailing = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract APA Mailings", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_GridPopup.Append( self.m_menuItemPopupCheckForApaMailing )
+		self.m_menuItemPopupExtractApaMailings = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract APA Mailings", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupExtractApaMailings )
 
 		self.m_menuItemPopupExtractEditor = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract Editor", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupExtractEditor )
@@ -305,12 +308,13 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.OnPopupEraseSelection, id = self.m_menuItemPopupEraseSelection.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupDelCol, id = self.m_menuItemPopupDelCol.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupDelRow, id = self.m_menuItemPopupDelRow.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupInsertRow, id = self.m_menuItemPopupInsertRow.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupRenameCol, id = self.m_menuItemPopupRenameCol.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupInsertColLeft, id = self.m_menuItemPopupInsertColLeft.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnPopupSortOnSelectedColumn, id = self.m_menuItemPopupSortOnCol.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupInsertColRight, id = self.m_menuItemPopupInsertColRight.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupSortOnSelectedColumn, id = self.m_menuItemPopupSortOnCol.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupExtractScanner, id = self.m_menuItemPopupExtractScanner.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnPopupExtractApaMailings, id = self.m_menuItemPopupCheckForApaMailing.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupExtractApaMailings, id = self.m_menuItemPopupExtractApaMailings.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupExtractEditor, id = self.m_menuItemPopupExtractEditor.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupPropagateEditor, id = self.m_menuItemPopupPropagateEditor.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupMerge, id = self.m_menuItemMerge.GetId() )
@@ -412,16 +416,19 @@ class MainFrame ( wx.Frame ):
 	def OnPopupDelRow( self, event ):
 		event.Skip()
 
+	def OnPopupInsertRow( self, event ):
+		event.Skip()
+
 	def OnPopupRenameCol( self, event ):
 		event.Skip()
 
 	def OnPopupInsertColLeft( self, event ):
 		event.Skip()
 
-	def OnPopupSortOnSelectedColumn( self, event ):
+	def OnPopupInsertColRight( self, event ):
 		event.Skip()
 
-	def OnPopupInsertColRight( self, event ):
+	def OnPopupSortOnSelectedColumn( self, event ):
 		event.Skip()
 
 	def OnPopupExtractScanner( self, event ):
@@ -447,5 +454,3 @@ class MainFrame ( wx.Frame ):
 
 	def MainFrameOnContextMenu( self, event ):
 		self.PopupMenu( self.m_GridPopup, event.GetPosition() )
-
-

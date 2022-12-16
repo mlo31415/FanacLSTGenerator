@@ -1900,6 +1900,20 @@
                     <property name="help"></property>
                     <property name="id">wxID_ANY</property>
                     <property name="kind">wxITEM_NORMAL</property>
+                    <property name="label">Insert a Row</property>
+                    <property name="name">m_menuItemPopupInsertRow</property>
+                    <property name="permission">none</property>
+                    <property name="shortcut"></property>
+                    <property name="unchecked_bitmap"></property>
+                    <event name="OnMenuSelection">OnPopupInsertRow</event>
+                </object>
+                <object class="wxMenuItem" expanded="1">
+                    <property name="bitmap"></property>
+                    <property name="checked">0</property>
+                    <property name="enabled">1</property>
+                    <property name="help"></property>
+                    <property name="id">wxID_ANY</property>
+                    <property name="kind">wxITEM_NORMAL</property>
                     <property name="label">Rename Column</property>
                     <property name="name">m_menuItemPopupRenameCol</property>
                     <property name="permission">none</property>
@@ -1928,12 +1942,12 @@
                     <property name="help"></property>
                     <property name="id">wxID_ANY</property>
                     <property name="kind">wxITEM_NORMAL</property>
-                    <property name="label">Sort on Selected Column</property>
-                    <property name="name">m_menuItemPopupSortOnCol</property>
+                    <property name="label">Insert Column to Right</property>
+                    <property name="name">m_menuItemPopupInsertColRight</property>
                     <property name="permission">none</property>
                     <property name="shortcut"></property>
                     <property name="unchecked_bitmap"></property>
-                    <event name="OnMenuSelection">OnPopupSortOnSelectedColumn</event>
+                    <event name="OnMenuSelection">OnPopupInsertColRight</event>
                 </object>
                 <object class="wxMenuItem" expanded="1">
                     <property name="bitmap"></property>
@@ -1942,12 +1956,12 @@
                     <property name="help"></property>
                     <property name="id">wxID_ANY</property>
                     <property name="kind">wxITEM_NORMAL</property>
-                    <property name="label">Insert Column to Right</property>
-                    <property name="name">m_menuItemPopupInsertColRight</property>
+                    <property name="label">Sort on Selected Column</property>
+                    <property name="name">m_menuItemPopupSortOnCol</property>
                     <property name="permission">none</property>
                     <property name="shortcut"></property>
                     <property name="unchecked_bitmap"></property>
-                    <event name="OnMenuSelection">OnPopupInsertColRight</event>
+                    <event name="OnMenuSelection">OnPopupSortOnSelectedColumn</event>
                 </object>
                 <object class="wxMenuItem" expanded="0">
                     <property name="bitmap"></property>
@@ -1971,7 +1985,7 @@
                     <property name="id">wxID_ANY</property>
                     <property name="kind">wxITEM_NORMAL</property>
                     <property name="label">Extract APA Mailings</property>
-                    <property name="name">m_menuItemPopupCheckForApaMailing</property>
+                    <property name="name">m_menuItemPopupExtractApaMailings</property>
                     <property name="permission">none</property>
                     <property name="shortcut"></property>
                     <property name="unchecked_bitmap"></property>

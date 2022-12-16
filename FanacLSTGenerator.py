@@ -974,6 +974,7 @@ class MainWindow(MainFrame):
 
         if self._dataGrid.clickedRow != -1:
             Enable("Delete Row(s)")
+            Enable("Insert a Row")
 
         # We enable the Add Column to Left item if we're on a column to the left of the first -- it can be off the right and a column will be added to the right
         if self._dataGrid.clickedColumn > 1:
@@ -1105,6 +1106,17 @@ class MainWindow(MainFrame):
 
     def OnPopupDelRow(self, event):       # MainWindow(MainFrame)
         self._dataGrid.DeleteSelectedRows() # Pass event to WxDataGrid to handle
+        self.RefreshWindow()
+
+    def OnPopupInsertRow(self, event):
+        irow=self._dataGrid.clickedRow
+        # Insert an empty row just before the clicked row
+        rows :[FanzineTableRow]=[]
+        if irow > 0:
+            rows=self.Datasource.Rows[:irow]
+        rows.append(FanzineTableRow([""]*self.Datasource.NumCols))
+        rows.extend(self.Datasource.Rows[irow:])
+        self.Datasource.Rows=rows
         self.RefreshWindow()
 
     def OnPopupRenameCol(self, event):       # MainWindow(MainFrame)
