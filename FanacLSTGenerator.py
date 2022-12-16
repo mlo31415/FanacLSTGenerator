@@ -950,8 +950,6 @@ class MainWindow(MainFrame):
             return
         if self._dataGrid.clickedRow > self.Datasource.NumRows:      # Click is outside the populated rows
             return
-        if isCellClick and self._dataGrid.clickedColumn == 0:   # What's this for?
-            return
 
         def Enable(name: str) -> None:
             mi=self.m_GridPopup.FindItemById(self.m_GridPopup.FindItem(name))
