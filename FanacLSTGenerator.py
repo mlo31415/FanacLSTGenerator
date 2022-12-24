@@ -276,6 +276,9 @@ class MainWindow(MainFrame):
         lstfile.TopComments=self.Datasource.TopComments
         lstfile.Locale=self.Datasource.Locale
 
+        lstfile.Complete=self.Datasource.Complete
+        lstfile.AlphabetizeIndividually=self.Datasource.AlphabetizeIndividually
+
         # Copy over the column headers
         lstfile.ColumnHeaders=self.Datasource.ColHeaders
 
@@ -883,6 +886,11 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
     # ------------------
+    def OnCheckAlphabetizeIndividually(self, event):       # MainWindow(MainFrame)
+        self.Datasource.AlphabetizeIndividually=self.cbAlphabetizeIndividually.GetValue()
+        # Don't need to refresh because nothing changed
+
+    # ------------------
     def OnDirectoryLocal(self, event):       # MainWindow(MainFrame)
         dirname=self.tDirectoryLocal.GetValue()
         self.Datasource.TargetDirectory=os.path.join(os.path.split(self.Datasource.TargetDirectory)[0], dirname)
@@ -1468,6 +1476,7 @@ class FanzineTablePage(GridDataSource):
         self.Dates: str=""
         self.FanzineType: str=""
         self.Complete=False     # Is this fanzine series complete?
+        self.AlphabetizeIndividually=False      # Treat all issues as part of main series
         self.Credits=""         # Who is to be credited for this affair?
         self.ServerDirectory=""  # Server directory to be created under /fanzines
         self.TargetDirectory=""
@@ -1477,7 +1486,7 @@ class FanzineTablePage(GridDataSource):
         s=self._colDefs.Signature()
         s+=hash(f"{self._name.strip()};{' '.join(self.TopComments).strip()};{' '.join(self.Locale).strip()}")
         s+=hash(f"{' '.join(self.TopComments).strip()};{' '.join(self.Locale).strip()}")
-        s+=hash(f"{self.FanzineName};{self.Editors};{self.Dates};{self.FanzineType};{self.Credits};{self.Complete}")
+        s+=hash(f"{self.FanzineName};{self.Editors};{self.Dates};{self.FanzineType};{self.Credits};{self.Complete}{self.AlphabetizeIndividually}")
         s+=hash(f"{self.ServerDirectory.strip()};{self.TargetDirectory.strip()}")
         s+=sum([x.Signature()*(i+1) for i, x in enumerate(self._fanzineList)])
         return s+hash(self._specialTextColor)+self._colDefs.Signature()

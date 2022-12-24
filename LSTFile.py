@@ -16,9 +16,10 @@ class LSTFile:
     TopComments: list[str] = field(default_factory=list)
     Locale: list[str] = field(default_factory=list)
     ColumnHeaders: list[str] = field(default_factory=list)        # The actual text of the column headers
-    #ColumnHeaderTypes: list[str] = field(default_factory=list)    # The single character types for the corresponding ColumnHeaders
-    #SortColumn: dict[str, float]   = field(default_factory=dict)# The single character type(s) of the sort column(s).  Sort on whole num="W", sort on Vol+Num ="VN", etc.
     Rows: list[list[str]] = field(default_factory=list)
+
+    Complete: bool=False
+    AlphabetizeIndividually: bool=False
 
 
     #---------------------------------
@@ -240,6 +241,15 @@ class LSTFile:
                 if row[0].lower().endswith(".pdf"):
                     self.Rows[i][iPdf]="PDF"
 
+        # Finally, rummage through the whole file looking for fanac keywords
+        # They are comments of the form: <!-- Fanac-keywords: Alphabetize individually-->
+        for row in rowLines:
+            if m:=re.match("<!-- Fanac-keywords: (.*)-->", row.strip()):
+                # Now search a list of recognized keywords
+                if m.groups()[0] == "Alphabetize individually":
+                    self.AlphabetizeIndividually=True
+                    break   # Since this is the one (and only) for now
+
 
 
     # ---------------------------------
@@ -257,6 +267,9 @@ class LSTFile:
             for line in self.Locale:
                 content.append(f"<fanac-type><h2>{line}</h2></fanac-type>")
             content.append("")
+
+        if self.AlphabetizeIndividually:
+            content.append("<!-- Fanac-keywords: Alphabetize individually -->\n")
 
         # Go through the headers and rows and trim any trailing columns which are entirely empty.
         # First find the last non-empty column

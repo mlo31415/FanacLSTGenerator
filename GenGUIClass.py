@@ -103,6 +103,11 @@ class MainFrame ( wx.Frame ):
 
 		fgSizer4.Add( self.cbComplete, 0, wx.ALL, 5 )
 
+		self.cbAlphabetizeIndividually = wx.CheckBox( self, wx.ID_ANY, u"Alphabetize Individually", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.cbAlphabetizeIndividually.SetToolTip( u"Do we want to treat the issues in this page as independent fanzines rather than issues of this page?" )
+
+		fgSizer4.Add( self.cbAlphabetizeIndividually, 0, wx.ALL, 5 )
+
 
 		bSizerMain.Add( fgSizer4, 0, wx.EXPAND, 5 )
 
@@ -290,6 +295,7 @@ class MainFrame ( wx.Frame ):
 		self.tDates.Bind( wx.EVT_TEXT, self.OnDates )
 		self.tFanzineType.Bind( wx.EVT_CHOICE, self.OnFanzineType )
 		self.cbComplete.Bind( wx.EVT_CHECKBOX, self.OnCheckComplete )
+		self.cbAlphabetizeIndividually.Bind( wx.EVT_CHECKBOX, self.OnCheckAlphabetizeIndividually )
 		self.tDirectoryLocal.Bind( wx.EVT_TEXT, self.OnDirectoryLocal )
 		self.tDirectoryServer.Bind( wx.EVT_TEXT, self.OnDirectoryServer )
 		self.tTopComments.Bind( wx.EVT_TEXT, self.OnTopComments )
@@ -360,6 +366,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnCheckComplete( self, event ):
+		event.Skip()
+
+	def OnCheckAlphabetizeIndividually( self, event ):
 		event.Skip()
 
 	def OnDirectoryLocal( self, event ):
@@ -454,3 +463,5 @@ class MainFrame ( wx.Frame ):
 
 	def MainFrameOnContextMenu( self, event ):
 		self.PopupMenu( self.m_GridPopup, event.GetPosition() )
+
+
