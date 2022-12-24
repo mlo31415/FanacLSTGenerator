@@ -182,7 +182,8 @@ class LSTFile:
             # Case 3a is <a href="http[s]//xxx.yyy/zzz/qqq.ext...>display text</a>  i.e., some sort of link elsewhere in fanac.org or elsewhere on the internet
             m=re.match("<a\s+href=\"+https+:\/\/(.*?)\/+\"+>(.*?)<\/a>$", col1, re.IGNORECASE)
             if m is not None:
-                row=[m.groups()[0], m.groups()[1]]+[h.strip() for h in colrest.split(";")]
+                url=m.groups()[0].removeprefix("fanac.org/fanzines/")
+                row=[url, m.groups()[1]]+[h.strip() for h in colrest.split(";")]
                 self.Rows.append(row)
                 print(f"Case 3a: {row}")
                 continue
