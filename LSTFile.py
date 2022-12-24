@@ -246,7 +246,7 @@ class LSTFile:
         for row in rowLines:
             if m:=re.match("<!-- Fanac-keywords: (.*)-->", row.strip()):
                 # Now search a list of recognized keywords
-                if m.groups()[0] == "Alphabetize individually":
+                if m.groups()[0].lower() == "alphabetize individually":
                     self.AlphabetizeIndividually=True
                     break   # Since this is the one (and only) for now
 
