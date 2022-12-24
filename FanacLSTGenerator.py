@@ -1323,9 +1323,28 @@ class MainWindow(MainFrame):
                 pat="[eE](ditor|dited by):?\s*([A-Z][a-zA-Z]+\s+[A-Z]?[.]?\s*[A-Z][a-zA-Z]+)\s*"
                 m=re.search(pat, row[notescol])
                 if m is not None:
-                    # We found a mailing.  Add it to the temporary list of mailings and remove it from the mailings column
-                    editors[i]=m.groups()[1]
+                    # We found an editor.
+                    eds=m.groups()[1]
+                    locs=m.regs[0]
+                    r=row[notescol]
+                    r=r.replace(r[locs[0]:locs[1]], "")
+                    if len(r) > 0:
+                        pat="\s*(and|&|,)\s*([A-Z][a-zA-Z]+\s+[A-Z]?[.]?\s*[A-Z][a-zA-Z]+)\s*"
+                        m=re.search(pat, r)
+                        if m is not None:
+                            eds+=" & "+m.groups()[1]
+                            locs=m.regs[0]
+                            r=r.replace(r[locs[0]:locs[1]], "")
+
+                    editors[i]=eds
+                    row[notescol]=r
+
+
                     row[notescol]=re.sub(pat, "", row[notescol]).strip()
+
+
+
+                # Add it to the temporary list of mailings and remove it from the mailings column
 
             # If any mailings were found, we need to put them into their new column (and maybe create the new column as well.)
             if any([m for m in editors]):
