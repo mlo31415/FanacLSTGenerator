@@ -181,7 +181,7 @@ class LSTFile:
                 continue
 
             # Case 3a is <a href="http[s]//xxx.yyy/zzz/qqq.ext...>display text</a>  i.e., some sort of link elsewhere in fanac.org or elsewhere on the internet
-            m=re.match("<a\s+href=\"+https+:\/\/(.*?)\/+\"+>(.*?)<\/a>$", col1, re.IGNORECASE)
+            m=re.match("<a\s+href=\"?https?:\/\/(.*?)\/?\"?>(.*?)(<\/a>)?$", col1, re.IGNORECASE)
             if m is not None:
                 url=m.groups()[0].removeprefix("fanac.org/fanzines/")
                 row=[url, m.groups()[1]]+[h.strip() for h in colrest.split(";")]
@@ -189,7 +189,7 @@ class LSTFile:
                 print(f"Case 3a: {row}")
                 continue
 
-            # Case 3b is also left unchanged.
+            # Case 3b (an anchor) is also left unchanged.
             m=re.match("(<a\s+name=.*?>)(.*?)<\/a>$", col1, re.IGNORECASE)
             if m is not None:
                 row=[m.groups()[0], m.groups()[1]]+[h.strip() for h in colrest.split(";")]
