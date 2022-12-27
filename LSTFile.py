@@ -181,18 +181,51 @@ class LSTFile:
                 continue
 
             # Case 3a is <a href="http[s]//xxx.yyy/zzz/qqq.ext...>display text</a>  i.e., some sort of link elsewhere in fanac.org or elsewhere on the internet
-            m=re.match("<a\s+href=\"?https?:\/\/(.*?)\/?\"?>(.*?)(<\/a>)?$", col1, re.IGNORECASE)
+            # There are several subcases:
+            #       input LST file --> in display --> in output LST file
+            #   3a1: Link away from fanac.org
+            #       https://xyz.com/stuff/stuff --> xyz.com/stuff/stuff --> <a https://xyz.com/stuff/stuff
+            #   3a2: Link to the index page of some other fanzines directory on fanac.org
+            #       https//fanac.org/fanzines/abc/ --> ../abc/ --> <a https//fanac.org/fanzines/abc/
+            #   3a3: Link a file in some other fanzines directory on fanac.org
+            #       https//fanac.org/fanzines/abc/def.ext --> ../abc/def.ext --> <a https//fanac.org/fanzines/abc/def.ext
+            #   3a4: Link using full url to the current directory or a file in it
+            #       https://fanac.org/fanzines/curdir/stuff.ext --> stuff.ext --> stuff.ext
+            m=re.match("<a\s+href=\"?https?:\/\/(.*?\/?)\"?>(.*?)(<\/a>)?$", col1, re.IGNORECASE)
             if m is not None:
-                url=m.groups()[0]#.removeprefix("fanac.org/fanzines/")
+                url=m.groups()[0]
                 disptext= m.groups()[1]
+                # Now which of the subcases is it?
+                m=re.match("(www\.)?fanac\.org\/fanzines\/", url, re.IGNORECASE)   # Does it refer to fanac.org?
+                if m is None:
+                    # No, so it's an outside link
+                    row=[url, disptext]+[h.strip() for h in colrest.split(";")]
+                    self.Rows.append(row)
+                    print(f"Case 3a1: {row}")
+                    continue
+                # OK, it's a full URL to fanac.org.  Look for subcases.
+                # Begin by removing the fanac.org/fanzines part as that's not a given
                 url=re.sub("(www\.)?fanac\.org\/fanzines\/", "", url, re.IGNORECASE)
-                row=[url, disptext]+[h.strip() for h in colrest.split(";")]
-                self.Rows.append(row)
-                print(f"Case 3a: {row}")
+                m=re.match("(.*)\/$", url)  # Note that this is the whole URL that ends on a /
+                if m is not None:
+                    # We are linking to some directory under fanzines -- Case 3a2
+                    row=[f"../{url}", disptext]+[h.strip() for h in colrest.split(";")]
+                    self.Rows.append(row)
+                    print(f"Case 3a2: {row}")
+                    continue
+                m=re.match("(.*)\/(.+)$", url)   # Here the URL contains a / but does not end in it
+                if m is not None:
+                    # We are linking to some directory under fanzines -- Case 3a2
+                    row=[f"../{m.groups()[0]}/{m.groups()[1]}", disptext]+[h.strip() for h in colrest.split(";")]
+                    self.Rows.append(row)
+                    print(f"Case 3a2: {row}")
+                    continue
+
+                print(f"Case 3a seems to be failing!: {row}")
                 continue
 
-            # Case 3b (an anchor) is also left unchanged.
-            m=re.match("(<a\s+name=.*?>)(.*?)<\/a>$", col1, re.IGNORECASE)
+            # Case 3b (an anchor) is left unchanged.
+            m=re.match("(<a\s+name=.*?>)<\/a>(.*?)$", col1, re.IGNORECASE)
             if m is not None:
                 row=[m.groups()[0], m.groups()[1]]+[h.strip() for h in colrest.split(";")]
                 self.Rows.append(row)
@@ -338,23 +371,38 @@ class LSTFile:
                 col1=row[0]
                 print(f"Case 4: {col1}")
 
-            # Case (3) A less common format which has some sort of HTML or hyperlink in column 1.  It comes in two flavors:
-            #  Case (3a) "<a HREF="http://abc">xyz</a>" where abc is a URL and xyz is the display name.
-            #   So col 1 will be abc and Col 2 will be xyz and this will turn into Case 1 on writing out
-            elif ".com" in row[0] or ".org" in row[0]:
-                col1=f'<a href="https://{row[0]}">{row[1]}</a>'
-                print(f"Case 3a: {col1}")
+            # Case 3a is <a href="http[s]//xxx.yyy/zzz/qqq.ext...>display text</a>  i.e., some sort of link elsewhere in fanac.org or elsewhere on the internet
+            # There are several subcases:
+            #       input LST file --> in display --> in output LST file
+            #   3a1: Link away from fanac.org
+            #       https://xyz.com/stuff/stuff --> xyz.com/stuff/stuff --> <a https://xyz.com/stuff/stuff
+            #   3a2: Link to the index page of some other fanzines directory on fanac.org
+            #       https//fanac.org/fanzines/abc/ --> ../abc/ --> <a https//fanac.org/fanzines/abc/
+            #   3a3: Link a file in some other fanzines directory on fanac.org
+            #       https//fanac.org/fanzines/abc/def.ext --> ../abc/def.ext --> <a https//fanac.org/fanzines/abc/def.ext
+            #   3a4: Link using full url to the current directory or a file in it
+            #       https://fanac.org/fanzines/curdir/stuff.ext --> stuff.ext --> stuff.ext
+            elif row[0].startswith("../"):
+                # Case 3a2 or 3a3
+                col1=f"<a href=\"https://fanac.org/fanzines/{row[0].removeprefix('../')}\">{row[1]}"
+                print(f":Case 3a2/3: {col1}")
+
+            elif re.match(".*/..*\/", row[0]) is not None:  # Look for a period followed by a slash
+                # Case 3a1
+                col1=f"<a href=\"https://{row[0]}\">{row[1]}"
+                print(f":Case 3a1: {col1}")
 
             #  Case (3b) "<a name="something">xyz</a>
             #   This is a reference to an anchor within the page.  It is also displayed without modification
             #   Col 1 will be <a name="something"> and Col 2 will be xyz
             elif row[0].startswith("<a name="):
-                col1=f"{row[0]}{row[1]}</a>"
+                col1=f"{row[0]}>{row[1]}"
                 print(f"Case 3b: {col1}")
 
             # Case (1): The most common format has (filename>displayname) in the first column. We treat the ">" as a ";" for the purposes of the spreadsheet. (We'll undo this on save.)
             #   This format is to a specific issue of a fanzine.
             #   Col 1 has filename and Col 2 has displayname
+            # This is also case 3a4!
             else:
                 col1=row[0]+">"+row[1]
                 print(f"Case 1: {col1}")
