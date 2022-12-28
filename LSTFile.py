@@ -77,6 +77,15 @@ class LSTFile:
         # ALL table lines consist of one instance of either of the characters ">" or ";" and two more of ";", all separated by spans of other stuff.
         # No lines of that sort appear in the toplines section
 
+        # Rummage through the whole file looking for fanac keywords
+        # They are comments of the form: <!-- Fanac-keywords: Alphabetize individually-->
+        for line in contents:
+            if m:=re.match("<!-- Fanac-keywords: (.*)-->", line.strip()):
+                # Now search a list of recognized keywords
+                if m.groups()[0].lower() == "alphabetize individually":
+                    self.AlphabetizeIndividually=True
+                    break   # Since this is the one (and only) for now
+
         # The first non-empty line is the first line. (Since we've already collapsed runs of multiple empty lines to one, we only have to check the 1st line.)
         if not contents[0]:
             contents.pop(0)
@@ -276,16 +285,6 @@ class LSTFile:
             for i, row in enumerate(self.Rows):
                 if row[0].lower().endswith(".pdf"):
                     self.Rows[i][iPdf]="PDF"
-
-        # Finally, rummage through the whole file looking for fanac keywords
-        # They are comments of the form: <!-- Fanac-keywords: Alphabetize individually-->
-        for row in rowLines:
-            if m:=re.match("<!-- Fanac-keywords: (.*)-->", row.strip()):
-                # Now search a list of recognized keywords
-                if m.groups()[0].lower() == "alphabetize individually":
-                    self.AlphabetizeIndividually=True
-                    break   # Since this is the one (and only) for now
-
 
 
     # ---------------------------------
