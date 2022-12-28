@@ -6,7 +6,6 @@ import shutil
 import wx
 import wx.grid
 import sys
-from enum import Enum
 
 import HelpersPackage
 from GenGUIClass import MainFrame
