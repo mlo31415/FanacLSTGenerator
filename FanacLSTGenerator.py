@@ -135,6 +135,7 @@ class MainWindow(MainFrame):
             self.tTopComments.SetEditable(False)
             self.tLocaleText.SetEditable(False)
             self.cbComplete.Enabled=False
+            self.cbAlphabetizeIndividually.Enabled=False
             self.wxGrid.Enabled=False
             self.tDirectoryLocal.SetEditable(False)
             self.tDirectoryServer.SetEditable(False)
@@ -154,6 +155,7 @@ class MainWindow(MainFrame):
         self.tTopComments.SetEditable(True)
         self.tLocaleText.SetEditable(True)
         self.cbComplete.Enabled=True
+        self.cbAlphabetizeIndividually.Enabled=True
         self.wxGrid.Enabled=True
 
 
@@ -261,6 +263,10 @@ class MainWindow(MainFrame):
             self.tFanzineType.SetSelection(0)
         self.OnFanzineType(None)        # I don't know why, but SetSelection does not trigger this event
 
+        self.cbAlphabetizeIndividually.SetValue(lstfile.AlphabetizeIndividually)
+        self.cbComplete.SetValue(lstfile.Complete)
+        Log(f"LoadLSTFile(): {lstfile.Complete=} and {lstfile.AlphabetizeIndividually=}")
+
     # Create a new LSTFile from the datasource
     def CreateLSTFileFromDatasourceEtc(self) -> LSTFile:       # MainWindow(MainFrame)
 
@@ -277,6 +283,7 @@ class MainWindow(MainFrame):
 
         lstfile.Complete=self.Datasource.Complete
         lstfile.AlphabetizeIndividually=self.Datasource.AlphabetizeIndividually
+        Log(f"CreateLSTFileFromDatasourceEtc(): {lstfile.Complete=} and {lstfile.AlphabetizeIndividually=}")
 
         # Copy over the column headers
         lstfile.ColumnHeaders=self.Datasource.ColHeaders
@@ -882,11 +889,13 @@ class MainWindow(MainFrame):
     # ------------------
     def OnCheckComplete(self, event):       # MainWindow(MainFrame)
         self.Datasource.Complete=self.cbComplete.GetValue()
+        Log(f"OnCheckComplete(): {self.Datasource.Complete=} and {self.Datasource.AlphabetizeIndividually=}")
         self.RefreshWindow()
 
     # ------------------
     def OnCheckAlphabetizeIndividually(self, event):       # MainWindow(MainFrame)
         self.Datasource.AlphabetizeIndividually=self.cbAlphabetizeIndividually.GetValue()
+        Log(f"OnCheckAlphabetizeIndividually(): {self.Datasource.Complete=} and {self.Datasource.AlphabetizeIndividually=}")
         # Don't need to refresh because nothing changed
 
     # ------------------
@@ -1476,6 +1485,7 @@ class FanzineTablePage(GridDataSource):
         self.FanzineType: str=""
         self.Complete=False     # Is this fanzine series complete?
         self.AlphabetizeIndividually=False      # Treat all issues as part of main series
+        Log(f"FanzineTablePage._init_(): {self.Complete=} and {self.AlphabetizeIndividually=}")
         self.Credits=""         # Who is to be credited for this affair?
         self.ServerDirectory=""  # Server directory to be created under /fanzines
         self.TargetDirectory=""
