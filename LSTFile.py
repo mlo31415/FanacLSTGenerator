@@ -173,7 +173,8 @@ class LSTFile:
             lead, brackets, bracketed, trail=FindAnyBracketedText(col1)
             print(f"{lead=}  {brackets=}  {bracketed=}  {trail=}")
             # But remember that case (3) allows for links to be put in col 1, so we ignore the case where we have an <a ...>...</a> and treat it normally.
-            if len(brackets) > 0 and brackets.lower() != "a":
+            # Note that sometimes the LST files have case 3 (an anchor) band *also* HTML-decorated text, so we skip lines starting "<a< name="
+            if len(brackets) > 0 and brackets.lower() != "a" and not lead.lower().startswith("<a name="):
                 # Since this is of this special form, we save it as it is and don't process it further.
                 # Split the row on ";" and append it
                 self.Rows.append([h.strip() for h in row.split(";")])
@@ -225,9 +226,9 @@ class LSTFile:
                 continue
 
             # Case 3b (an anchor) is left unchanged.
-            m=re.match("(<a\s+name=.*?>)<\/a>(.*?)$", col1, re.IGNORECASE)
+            m=re.match("(<a\s+name=.*?>)(<\/a>|>?)(.*?)$", col1, re.IGNORECASE)
             if m is not None:
-                row=[m.groups()[0], m.groups()[1]]+[h.strip() for h in colrest.split(";")]
+                row=[m.groups()[0], m.groups()[2]]+[h.strip() for h in colrest.split(";")]
                 self.Rows.append(row)
                 print(f"Case 3b: {row}")
                 continue
