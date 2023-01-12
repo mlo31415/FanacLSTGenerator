@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from enum import Enum
+from Log import Log
 import re
 
 from HelpersPackage import CanonicizeColumnHeaders, Bailout, StripSpecificTag, FindAnyBracketedText
