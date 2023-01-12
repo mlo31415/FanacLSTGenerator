@@ -643,7 +643,7 @@ class MainWindow(MainFrame):
                 return
             if not self.CopyTemplateFile("setup.bld template", "setup.bld", newDirectory, templateDirectory):
                 return
-            # Edit them based on what the user filled in in the main dialog
+            # Edit them based on what the user entered in the main dialog
             if not self.UpdateSetupFtp(newDirectory):
                 return
             if not self.UpdateSetupBld(newDirectory):
