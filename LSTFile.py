@@ -362,7 +362,7 @@ class LSTFile:
 
             # Case (2):  Col 1 is blank and Col 2 has the fanzine name
             elif len(row[0].strip()) == 0 and len(row[1].strip()) > 0:
-                col1=f">{row[1]}"
+                col1=f"{row[1]}"
                 #print(f"Case 2: {col1}")
 
             # Case (4) is the case where there is no link at all in col 1, but there is text that is used for things like separation of different kinds of fanzines.
@@ -398,7 +398,7 @@ class LSTFile:
             #   This is a reference to an anchor within the page.  It is also displayed without modification
             #   Col 1 will be <a name="something"> and Col 2 will be xyz
             elif row[0].startswith("<a name="):
-                col1=f"{row[0]}>{row[1]}"
+                col1=f"{row[0]}{row[1]}"
                 #print(f"Case 3b: {col1}")
 
             # Case (1): The most common format has (filename>displayname) in the first column. We treat the ">" as a ";" for the purposes of the spreadsheet. (We'll undo this on save.)
