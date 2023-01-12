@@ -591,8 +591,7 @@ class MainWindow(MainFrame):
             # Update the existing setup.bld file based on what the user filled in in the main dialog
             if not self.UpdateSetupBld(self.TargetDirectoryPathname):
                 if not self.CopyTemplateFile("setup.bld template", "setup.bld", self.TargetDirectoryPathname, templateDirectory):
-                    Log(f"Could not create setup.bld")
-            Log(f"SaveExistingLSTFile: Done messing with template files")
+                    Log(f"Could not create setup.bld using {templateDirectory=}")
 
             # Rename the old file
             oldname=os.path.join(self.TargetDirectoryPathname, self.lstFilename)
