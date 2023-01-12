@@ -98,7 +98,6 @@ class MainWindow(MainFrame):
         self.lLocalDirectory.SetWindowStyle(self.lLocalDirectory.GetWindowStyle() | wx.ST_ELLIPSIZE_MIDDLE)
         self.lLocalDirectory.SetLabel(label)
         self.lLocalDirectory.GetContainingSizer().Layout()
-        Log(f"{label=}")
 
         # The edit mode we are presently in.
         self.Editmode: EditMode=EditMode.NoneSelected
@@ -187,8 +186,6 @@ class MainWindow(MainFrame):
         if self.Editmode == EditMode.EditingOld:
             if self.tFanzineName.GetValue() and len(self.Datasource.Rows) > 0:
                 self.bSave.Enable()
-
-
 
 
     #------------------
@@ -500,6 +497,7 @@ class MainWindow(MainFrame):
                 self.tDirectoryServer.SetValue(directory)
                 self.Datasource.ServerDirectory=directory
 
+
             self.MarkAsSaved()
             self.RefreshWindow()
 
@@ -581,16 +579,13 @@ class MainWindow(MainFrame):
     def SaveExistingLSTFile(self):       # MainWindow(MainFrame)
 
         with ProgressMsg(self, f"Creating {self.tFanzineName.GetValue()}"):
-            Log(f"SaveExistingLSTFile: Creating {self.tFanzineName.GetValue()}")
 
             # Create an instance of the LSTfile class from the datasource
             lstfile=self.CreateLSTFileFromDatasourceEtc()
 
             templateDirectory=Settings().Get("Template directory", default=".")
-            Log(f"{templateDirectory=}")
             # Update the existing setup.bld file based on what the user filled in in the main dialog
             if not self.UpdateSetupBld(self.TargetDirectoryPathname):
-                Log(f"Creating setup.bld")
                 if not self.CopyTemplateFile("setup.bld template", "setup.bld", self.TargetDirectoryPathname, templateDirectory):
                     Log(f"Could not create setup.bld")
             Log(f"SaveExistingLSTFile: Done messing with template files")
@@ -598,15 +593,12 @@ class MainWindow(MainFrame):
             # Rename the old file
             oldname=os.path.join(self.TargetDirectoryPathname, self.lstFilename)
             newname=os.path.join(self.TargetDirectoryPathname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
-            Log(f"SaveExistingLSTFile #1: Rename '{oldname}' to '{newname}'")
 
             try:
                 i=0
                 while os.path.exists(newname):
                     i+=1
                     newname=os.path.join(self.TargetDirectoryPathname, f"{os.path.splitext(self.lstFilename)[0]}-old-{i}.LST")
-
-                Log(f"SaveExistingLSTFile #2: Rename '{oldname}' to '{newname}'")
                 os.rename(oldname, newname)
             except Exception as e:
                 Log(f"OnSave fails when trying to rename {oldname} to {newname}", isError=True)
@@ -635,14 +627,12 @@ class MainWindow(MainFrame):
             dlg.Destroy()
 
         newDirectory=self.TargetDirectoryPathname
-        Log(f"CreateLSTDirectory: {newDirectory=}")
 
         Log(f"ProgressMsg('Creating {self.tFanzineName.GetValue()}')")
         with ProgressMsg(self, f"Creating {self.tFanzineName.GetValue()}"):
 
             # Copy the files setup.ftp and setup.bld from the templates source to the new directory.
             templateDirectory=Settings().Get("Template directory", default=".")
-            Log(f"CreateLSTDirectory: {templateDirectory=}")
 
             # Look in Settings to find the names of the template files.
             # Copy them from the template directory to the LST file's directory
@@ -874,7 +864,6 @@ class MainWindow(MainFrame):
 
     def OnFanzineType(self, event):       # MainWindow(MainFrame)
         self.Datasource.FanzineType=self.tFanzineType.GetString(self.tFanzineType.GetSelection()).strip()
-        Log(f"OnFanzineType: {self.Datasource.FanzineType=}")
         self.RefreshWindow()
 
     #------------------
@@ -1485,7 +1474,6 @@ class FanzineTablePage(GridDataSource):
         self.FanzineType: str=""
         self.Complete=False     # Is this fanzine series complete?
         self.AlphabetizeIndividually=False      # Treat all issues as part of main series
-        Log(f"FanzineTablePage._init_(): {self.Complete=} and {self.AlphabetizeIndividually=}")
         self.Credits=""         # Who is to be credited for this affair?
         self.ServerDirectory=""  # Server directory to be created under /fanzines
         self.TargetDirectory=""
