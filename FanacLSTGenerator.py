@@ -1,4 +1,5 @@
 from __future__ import annotations
+from enum import Enum
 from typing import Union, Optional
 
 import os
@@ -232,6 +233,7 @@ class MainWindow(MainFrame):
                 self.Datasource.ColDefs.append(ColDefinition(name))
 
         self.Datasource._fanzineList=FTRList
+        self.Datasource.AlphabetizeIndividually=lstfile.AlphabetizeIndividually
 
         self.ExtractApaMailings()
 
@@ -245,6 +247,7 @@ class MainWindow(MainFrame):
         self.tFanzineName.SetValue(lstfile.FanzineName.strip())
         self.tEditors.SetValue(lstfile.Editors.strip())
         self.tDates.SetValue(lstfile.Dates.strip())
+
         num=self.tFanzineType.FindString(lstfile.FanzineType)
         if num == -1:
             num=0
@@ -261,6 +264,7 @@ class MainWindow(MainFrame):
         self.OnFanzineType(None)        # I don't know why, but SetSelection does not trigger this event
 
         self.cbAlphabetizeIndividually.SetValue(lstfile.AlphabetizeIndividually)
+        self.OnCheckAlphabetizeIndividually(None)  # Need to manually trigger datasource action
         self.cbComplete.SetValue(lstfile.Complete)
         Log(f"LoadLSTFile(): {lstfile.Complete=} and {lstfile.AlphabetizeIndividually=}")
 
@@ -483,7 +487,7 @@ class MainWindow(MainFrame):
                 self.cbComplete.SetValue(complete)
             else:
                 self.cbComplete.SetValue(False)
-            self.OnCheckComplete(None)      # Need to manually trigger action
+            self.OnCheckComplete(None)      # Need to manually trigger datasource action
             if credits is not None:
                 self.tCredits.SetValue(credits.strip())
                 self.Datasource.Credits=credits
@@ -885,6 +889,7 @@ class MainWindow(MainFrame):
     def OnCheckAlphabetizeIndividually(self, event):       # MainWindow(MainFrame)
         self.Datasource.AlphabetizeIndividually=self.cbAlphabetizeIndividually.GetValue()
         Log(f"OnCheckAlphabetizeIndividually(): {self.Datasource.Complete=} and {self.Datasource.AlphabetizeIndividually=}")
+        self.RefreshWindow()
         # Don't need to refresh because nothing changed
 
     # ------------------
