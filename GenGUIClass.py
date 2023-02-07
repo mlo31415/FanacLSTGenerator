@@ -116,12 +116,12 @@ class MainFrame ( wx.Frame ):
 		fgSizer2.SetFlexibleDirection( wx.HORIZONTAL )
 		fgSizer2.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
-		self.lLocalDirectory = wx.StaticText( self, wx.ID_ANY, u"Local Directory:", wx.DefaultPosition, wx.Size( -1,-1 ), wx.ALIGN_RIGHT )
-		self.lLocalDirectory.Wrap( -1 )
+		self.lRootDirectory = wx.StaticText( self, wx.ID_ANY, u"Local Directory:", wx.DefaultPosition, wx.Size( -1,-1 ), wx.ALIGN_RIGHT )
+		self.lRootDirectory.Wrap( -1 )
 
-		self.lLocalDirectory.SetMinSize( wx.Size( 500,-1 ) )
+		self.lRootDirectory.SetMinSize( wx.Size( 600,-1 ) )
 
-		fgSizer2.Add( self.lLocalDirectory, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		fgSizer2.Add( self.lRootDirectory, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
 		self.tDirectoryLocal = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
 		self.tDirectoryLocal.SetToolTip( u"The name of the local directory (relative to the root displayed to the left) for this fanzine series." )
@@ -132,7 +132,7 @@ class MainFrame ( wx.Frame ):
 		self.lServerDirectory = wx.StaticText( self, wx.ID_ANY, u"Server Directory:", wx.DefaultPosition, wx.Size( -1,-1 ), wx.ALIGN_RIGHT )
 		self.lServerDirectory.Wrap( -1 )
 
-		self.lServerDirectory.SetMinSize( wx.Size( 500,-1 ) )
+		self.lServerDirectory.SetMinSize( wx.Size( 600,-1 ) )
 
 		fgSizer2.Add( self.lServerDirectory, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 

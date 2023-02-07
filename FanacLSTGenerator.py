@@ -95,10 +95,10 @@ class MainWindow(MainFrame):
         if tlws:
             self.SetSize(tlws)
 
-        label=f"Local Directory: {self.RootDirectoryPath}/"
-        self.lLocalDirectory.SetWindowStyle(self.lLocalDirectory.GetWindowStyle() | wx.ST_ELLIPSIZE_MIDDLE)
-        self.lLocalDirectory.SetLabel(label)
-        self.lLocalDirectory.GetContainingSizer().Layout()
+        # Set the local directory.  Since this is not editable, it can be done here.
+        self.lRootDirectory.SetWindowStyle(self.lRootDirectory.GetWindowStyle() | wx.ST_ELLIPSIZE_MIDDLE)
+        self.lRootDirectory.SetLabel(f"Local Directory:   {self.RootDirectoryPath}/")
+        self.lRootDirectory.GetContainingSizer().Layout()
 
         # The edit mode we are presently in.
         self.Editmode: EditMode=EditMode.NoneSelected
@@ -479,7 +479,7 @@ class MainWindow(MainFrame):
             self.LoadLSTFile(os.path.join(self.TargetDirectoryPathname, self.lstFilename))
 
             self.tDirectoryLocal.SetValue(self.Datasource.TargetDirectory)
-            self.lLocalDirectory.SetLabel(self.RootDirectoryPath)
+            self.lRootDirectory.SetLabel(f"Local Directory:   {self.RootDirectoryPath}/")
 
             # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
             complete, credits=self.ReadSetupBld(self.TargetDirectoryPathname)
