@@ -321,7 +321,7 @@ class MainWindow(MainFrame):
 
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
 
-        newlyAddedFiles: list[tuple[str, str]]=[]
+        newlyAddedFiles: list[tuple[str, str]]=[]   # The first element is the original filename.  The second is the name with scary characters removed.
 
         # Call the File Open dialog to select PDF files
         with wx.FileDialog(self,
