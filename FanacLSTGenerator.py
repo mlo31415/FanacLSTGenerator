@@ -321,7 +321,7 @@ class MainWindow(MainFrame):
 
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
 
-        newlyAddedFiles=[]
+        newlyAddedFiles: list[tuple[str, str]]=[]
 
         # Call the File Open dialog to select PDF files
         with wx.FileDialog(self,
