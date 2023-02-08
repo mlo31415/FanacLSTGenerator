@@ -555,6 +555,8 @@ class MainWindow(MainFrame):
         self.tLocaleText.SetValue("")
         self.tCredits.SetValue("")
         self.tDirectoryServer.SetValue("")
+        self.cbComplete.SetValue(False)
+        self.cbAlphabetizeIndividually.SetValue(False)
 
         self.Datasource.Credits=Settings().Get("Scanning credits default", default="")
         self.tCredits.SetValue(self.Datasource.Credits.strip())
