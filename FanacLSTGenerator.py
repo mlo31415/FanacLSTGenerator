@@ -266,7 +266,7 @@ class MainWindow(MainFrame):
         self.cbAlphabetizeIndividually.SetValue(lstfile.AlphabetizeIndividually)
         self.OnCheckAlphabetizeIndividually(None)  # Need to manually trigger datasource action
         self.cbComplete.SetValue(lstfile.Complete)
-        Log(f"LoadLSTFile(): {lstfile.Complete=} and {lstfile.AlphabetizeIndividually=}")
+
 
     # Create a new LSTFile from the datasource
     def CreateLSTFileFromDatasourceEtc(self) -> LSTFile:       # MainWindow(MainFrame)
@@ -628,7 +628,6 @@ class MainWindow(MainFrame):
                 return False
 
             self.Datasource.TargetDirectory=dlg.GetPath()
-            Log(f"Set self.Datasource.TargetDirectory #2 {self.Datasource.TargetDirectory=}")
             dlg.Destroy()
 
         newDirectory=self.TargetDirectoryPathname
@@ -897,7 +896,6 @@ class MainWindow(MainFrame):
     def OnDirectoryLocal(self, event):       # MainWindow(MainFrame)
         dirname=self.tDirectoryLocal.GetValue()
         self.Datasource.TargetDirectory=os.path.join(os.path.split(self.Datasource.TargetDirectory)[0], dirname)
-        Log(f"Set self.Datasource.TargetDirectory #3 {self.Datasource.TargetDirectory=}")
         self.RefreshWindow()
 
     # ------------------
