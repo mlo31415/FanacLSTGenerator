@@ -43,10 +43,7 @@ class MainWindow(MainFrame):
         MainFrame.__init__(self, parent)
 
         self._dataGrid: DataGrid=DataGrid(self.wxGrid)
-        self.Datasource=FanzineTablePage()
-
-        self._signature=0
-        self.lstFilename=""
+        self.Datasource=FanzineTablePage()      # Note that this is an empty instance
 
         self.IsNewDirectory=False   # Are we creating a new directory? (Alternative is that we're editing an old one.)
         # self.RootDirectoryPath is the location in which to create new LSTfile directories and the place to look for one to open.
@@ -56,36 +53,7 @@ class MainWindow(MainFrame):
         # Get the default PDF directory
         self.PDFSourcePath=Settings().Get("PDF Source Path", os.getcwd())
 
-        self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
-                                                              ColDefinition("Filename", Type="str"),
-                                                              ColDefinition("Issue", Type="required str"),
-                                                              ColDefinition("Title", Type="str", preferred="Issue"),
-                                                              ColDefinition("Whole", Type="int", Width=75),
-                                                              ColDefinition("WholeNum", Type="int", Width=75, preferred="Whole"),
-                                                              ColDefinition("Vol", Type="int", Width=50),
-                                                              ColDefinition("Volume", Type="int", Width=50, preferred="Vol"),
-                                                              ColDefinition("Num", Type="int", Width=50),
-                                                              ColDefinition("Number", Type="int", Width=50, preferred="Num"),
-                                                              ColDefinition("Month", Type="str", Width=75),
-                                                              ColDefinition("Day", Type="int", Width=50),
-                                                              ColDefinition("Year", Type="int", Width=50),
-                                                              ColDefinition("Pages", Type="int", Width=50),
-                                                              ColDefinition("PDF", Type="str", Width=50),
-                                                              ColDefinition("Notes", Type="str", Width=120),
-                                                              ColDefinition("Scanned", Type="str", Width=100),
-                                                              ColDefinition("Scanned BY", Type="str", Width=100),
-                                                              ColDefinition("Country", Type="str", Width=50),
-                                                              ColDefinition("Editor", Type="str", Width=75),
-                                                              ColDefinition("Author", Type="str", Width=75),
-                                                              ColDefinition("Mailing", Type="str", Width=75),
-                                                              ColDefinition("Repro", Type="str", Width=75)
-                                                              ])
-
-
         self.ButtonBackgroundColor=self.bLoadExistingLSTFile.GetBackgroundColour()
-
-        # Read the LST file
-        self.MarkAsSaved()      # We don't need to save whatever it is that is present now.
 
         # Position the window on the screen it was on before
         tlwp=Settings().Get("Top Level Window Position")
@@ -103,7 +71,9 @@ class MainWindow(MainFrame):
         # The edit mode we are presently in.
         self.Editmode: EditMode=EditMode.NoneSelected
 
-        self.MarkAsSaved()
+        self._signature=0   # We need this member. ClearMainWindow() will initialize it
+
+        self.ClearMainWindow()
         self.RefreshWindow()
 
         self.Show(True)
@@ -192,12 +162,19 @@ class MainWindow(MainFrame):
     #------------------
     # Open a dialog to allow the user to select an LSTFile on disk.
     # Load it (and some other stuff) into self's 'LSFFile() object
-    def LoadLSTFile(self, pathname: str):       # MainWindow(MainFrame)
+    def LoadLSTFile(self, path: str, lstfilename: str):       # MainWindow(MainFrame)
 
         # Clear out any old information from form.
-        lstfile=LSTFile()
+        self.ClearMainWindow()
+        self.Editmode=EditMode.EditingOld
+        self.RefreshWindow()
+
+        self.lstFilename=lstfilename
+        Log(f"ClearMainWindow() initializes {self.lstFilename=}")
+        lstfile=LSTFile()   # Start with an empty LSTfile
 
         # Read the lst file
+        pathname=os.path.join(path, lstfilename)
         try:
             lstfile.Load(pathname)
         except Exception as e:
@@ -240,10 +217,6 @@ class MainWindow(MainFrame):
         self._dataGrid.RefreshWxGridFromDatasource(IgnoreCurrentGrid=True)
 
         # Fill in the upper stuff
-        self.tTopComments.SetValue("")
-        self.tLocaleText.SetValue("")
-        self.tCredits.SetValue("")
-        self.wxGrid.ClearGrid()
         self.tFanzineName.SetValue(lstfile.FanzineName.strip())
         self.tEditors.SetValue(lstfile.Editors.strip())
         self.tDates.SetValue(lstfile.Dates.strip())
@@ -468,19 +441,21 @@ class MainWindow(MainFrame):
             if dlg.ShowModal() != wx.ID_OK:
                 return False
 
-            self.lstFilename=dlg.GetFilename()
-            path=os.path.split(dlg.GetPath())[0]
-            # Get the newly selected target directory's path relative to rootpath
-            self.Datasource.TargetDirectory=os.path.relpath(path, start=self.RootDirectoryPath)
-            Log(f"Set self.Datasource.TargetDirectory #4 {self.Datasource.TargetDirectory=}")
+            targetFilename=dlg.GetFilename()
+            targetDirectoryPathname=os.path.split(dlg.GetPath())[0]
+            targetDirectory=os.path.relpath(targetDirectoryPathname, start=self.RootDirectoryPath)
 
         with ProgressMsg(self, f"Loading {self.lstFilename}"):
 
             # Try to load the LSTFile
-            self.LoadLSTFile(os.path.join(self.TargetDirectoryPathname, self.lstFilename))
+            #targetFilename=os.path.relpath(targetDirectoryPathname, start=self.RootDirectoryPath)
+            self.LoadLSTFile(targetDirectoryPathname, targetFilename)
 
-            self.tDirectoryLocal.SetValue(self.Datasource.TargetDirectory)
-            self.lRootDirectory.SetLabel(f"Local Directory:   {self.RootDirectoryPath}/")
+            self.lstFilename=targetFilename
+            # Get the newly selected target directory's path relative to rootpath
+            self.Datasource.TargetDirectory=targetDirectory
+            self.tDirectoryLocal.SetValue(targetDirectory)
+            self.lRootDirectory.SetLabel(f"Local directory path:   {self.RootDirectoryPath}/")
 
             # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
             complete, credits=self.ReadSetupBld(self.TargetDirectoryPathname)
@@ -497,7 +472,7 @@ class MainWindow(MainFrame):
                 self.Datasource.Credits=""
 
             # And see if we can pick up the server directory from setup.ftp
-            directory=self.ReadSetupFtp(path)
+            directory=self.ReadSetupFtp(targetDirectoryPathname)
             if directory != "":
                 self.tDirectoryServer.SetValue(directory)
                 self.Datasource.ServerDirectory=directory
@@ -505,40 +480,45 @@ class MainWindow(MainFrame):
             self.MarkAsSaved()
             self.RefreshWindow()
 
-
     # ------------------
-    # Create a new, empty LST file
-    def OnCreateNewFanzineDir(self, event):       # MainWindow(MainFrame)
+    # Initialize the main window to empty
+    # This also initiazes the datasource
+    def ClearMainWindow(self):       # MainWindow(MainFrame)
 
-        # We begin with two buttons highlighted.  When one of them is selected, the highlighting on both is permanently removed.
+        # We begin with two buttons highlighted to focus the user on picking one.  When one of them is selected, the highlighting on both is permanently removed.
         self.bLoadExistingLSTFile.SetBackgroundColour(self.ButtonBackgroundColor)
         self.bCreateNewFanzineDir.SetBackgroundColour(self.ButtonBackgroundColor)
-
-        if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
-            return
-        self.MarkAsSaved()  # OK, the existing contents have been declared doomed.
-
-        self.Editmode=EditMode.CreatingNew
 
         # Re-initialize the form
         self.lstFilename=""
         self.Datasource.TargetDirectory=""
-        Log(f"Set self.Datasource.TargetDirectory #5 {self.Datasource.TargetDirectory=}")
         self.Datasource.ServerDirectory=""
 
         # Create default column headers
-        self._Datasource.ColDefs=ColDefinitionsList([
-            self.stdColHeaders["Filename"],
-            self.stdColHeaders["Issue"],
-            self.stdColHeaders["Whole"],
-            self.stdColHeaders["Vol"],
-            self.stdColHeaders["Number"],
-            self.stdColHeaders["Month"],
-            self.stdColHeaders["Day"],
-            self.stdColHeaders["Year"],
-            self.stdColHeaders["Pages"],
-            self.stdColHeaders["Notes"]
-        ])
+        self.stdColHeaders: ColDefinitionsList=ColDefinitionsList([
+                                                              ColDefinition("Filename", Type="str"),
+                                                              ColDefinition("Issue", Type="required str"),
+                                                              ColDefinition("Title", Type="str", preferred="Issue"),
+                                                              ColDefinition("Whole", Type="int", Width=75),
+                                                              ColDefinition("WholeNum", Type="int", Width=75, preferred="Whole"),
+                                                              ColDefinition("Vol", Type="int", Width=50),
+                                                              ColDefinition("Volume", Type="int", Width=50, preferred="Vol"),
+                                                              ColDefinition("Num", Type="int", Width=50),
+                                                              ColDefinition("Number", Type="int", Width=50, preferred="Num"),
+                                                              ColDefinition("Month", Type="str", Width=75),
+                                                              ColDefinition("Day", Type="int", Width=50),
+                                                              ColDefinition("Year", Type="int", Width=50),
+                                                              ColDefinition("Pages", Type="int", Width=50),
+                                                              ColDefinition("PDF", Type="str", Width=50),
+                                                              ColDefinition("Notes", Type="str", Width=120),
+                                                              ColDefinition("Scanned", Type="str", Width=100),
+                                                              ColDefinition("Scanned BY", Type="str", Width=100),
+                                                              ColDefinition("Country", Type="str", Width=50),
+                                                              ColDefinition("Editor", Type="str", Width=75),
+                                                              ColDefinition("Author", Type="str", Width=75),
+                                                              ColDefinition("Mailing", Type="str", Width=75),
+                                                              ColDefinition("Repro", Type="str", Width=75)
+                                                              ])
 
         # Create an empty datasource
         self.Datasource._fanzineList=[]
@@ -564,7 +544,34 @@ class MainWindow(MainFrame):
         # Both directories are editable, for now at least.
         self.tDirectoryLocal.SetValue("")
 
-        self.MarkAsSaved()  # Existing contents have been declared doomed
+        # Set the signature to the current (empty) state so any change will trigger a request to save on exit
+        self.MarkAsSaved()
+
+
+    # ------------------
+    # Create a new, empty LST file
+    def OnCreateNewFanzineDir(self, event):       # MainWindow(MainFrame)
+
+        if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
+            return
+
+        self.ClearMainWindow()
+        self.Editmode=EditMode.CreatingNew
+
+        # Create default column headers
+        self._Datasource.ColDefs=ColDefinitionsList([
+            self.stdColHeaders["Filename"],
+            self.stdColHeaders["Issue"],
+            self.stdColHeaders["Whole"],
+            self.stdColHeaders["Vol"],
+            self.stdColHeaders["Number"],
+            self.stdColHeaders["Month"],
+            self.stdColHeaders["Day"],
+            self.stdColHeaders["Year"],
+            self.stdColHeaders["Pages"],
+            self.stdColHeaders["Notes"]
+        ])
+
         self.RefreshWindow()
 
 
@@ -574,10 +581,10 @@ class MainWindow(MainFrame):
 
         if self.Editmode == EditMode.CreatingNew:
             self.CreateNewLSTDirectory()
-            return
+            self.lstFilename=self.Datasource.TargetDirectory+".lst"
+            Log(f"OnSave() initializes {self.lstFilename=}")
 
-        if self.Editmode == EditMode.EditingOld:
-            self.SaveExistingLSTFile()
+        self.SaveExistingLSTFile()
 
 
     #------------------
@@ -597,17 +604,19 @@ class MainWindow(MainFrame):
 
             # If there is an old file, rename it
             oldname=os.path.join(self.TargetDirectoryPathname, self.lstFilename)
-            newname=os.path.join(self.TargetDirectoryPathname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
+            if os.path.exists(oldname):
+                newname=os.path.join(self.TargetDirectoryPathname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
 
-            try:
-                i=0
-                while os.path.exists(newname):
-                    i+=1
-                    newname=os.path.join(self.TargetDirectoryPathname, f"{os.path.splitext(self.lstFilename)[0]}-old-{i}.LST")
-                os.rename(oldname, newname)
-            except Exception as e:
-                Log(f"OnSave fails when trying to rename {oldname} to {newname}", isError=True)
-                Bailout(PermissionError, f"OnSave fails when trying to rename {oldname} to {newname}", "LSTError")
+                try:
+                    i=0
+                    # Look for an available new name
+                    while os.path.exists(newname):
+                        i+=1
+                        newname=os.path.join(self.TargetDirectoryPathname, f"{os.path.splitext(self.lstFilename)[0]}-old-{i}.LST")
+                    os.rename(oldname, newname)
+                except Exception as e:
+                    Log(f"OnSave fails when trying to rename {oldname} to {newname}", isError=True)
+                    Bailout(PermissionError, f"OnSave fails when trying to rename {oldname} to {newname}", "LSTError")
 
             self.SaveFile(lstfile, oldname)
             self.MarkAsSaved()
@@ -649,14 +658,6 @@ class MainWindow(MainFrame):
                 return
             if not self.UpdateSetupBld(newDirectory):
                 return
-
-            # Save the LSTFile in the new directory
-            self.lstFilename=self.Datasource.TargetDirectory+".lst"
-
-            lstfile=self.CreateLSTFileFromDatasourceEtc()
-            self.SaveFile(lstfile, os.path.join(self.TargetDirectoryPathname, self.lstFilename))
-            self.MarkAsSaved()
-            self.RefreshWindow()
 
 
     def UpdateSetupBld(self, path) -> bool:
