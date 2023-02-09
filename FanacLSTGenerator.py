@@ -299,6 +299,7 @@ class MainWindow(MainFrame):
 
         return lstfile
 
+
     def OnExitClicked(self, event):       # MainWindow(MainFrame)
         self.OnClose(event)
 
@@ -501,7 +502,6 @@ class MainWindow(MainFrame):
                 self.tDirectoryServer.SetValue(directory)
                 self.Datasource.ServerDirectory=directory
 
-
             self.MarkAsSaved()
             self.RefreshWindow()
 
@@ -595,7 +595,7 @@ class MainWindow(MainFrame):
                 if not self.CopyTemplateFile("setup.bld template", "setup.bld", self.TargetDirectoryPathname, templateDirectory):
                     Log(f"Could not create setup.bld using {templateDirectory=}")
 
-            # Rename the old file
+            # If there is an old file, rename it
             oldname=os.path.join(self.TargetDirectoryPathname, self.lstFilename)
             newname=os.path.join(self.TargetDirectoryPathname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
 
@@ -635,7 +635,7 @@ class MainWindow(MainFrame):
         Log(f"ProgressMsg('Creating {self.tFanzineName.GetValue()}')")
         with ProgressMsg(self, f"Creating {self.tFanzineName.GetValue()}"):
 
-            # Copy the files setup.ftp and setup.bld from the templates source to the new directory.
+            # Copy setup.ftp and setup.bld from the templates source to the new directory.
             templateDirectory=Settings().Get("Template directory", default=".")
 
             # Look in Settings to find the names of the template files.
