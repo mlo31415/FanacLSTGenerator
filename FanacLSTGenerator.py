@@ -573,6 +573,7 @@ class MainWindow(MainFrame):
         ])
 
         self.RefreshWindow()
+        self.MarkAsSaved()
 
 
     #------------------
