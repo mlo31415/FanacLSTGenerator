@@ -102,7 +102,6 @@ class MainWindow(MainFrame):
         # If neither button has been pressed, we are in EditMode NoneSelected and everything else is suppressed.
         if self.Editmode == EditMode.NoneSelected:
             self.bAddNewIssues.Enable(False)
-            self.tFanzineName.SetEditable(False)
             self.tEditors.SetEditable(False)
             self.tDates.SetEditable(False)
             self.tFanzineType.Enabled=False
@@ -112,6 +111,7 @@ class MainWindow(MainFrame):
             self.cbAlphabetizeIndividually.Enabled=False
             self.wxGrid.Enabled=False
             self.tDirectoryServer.SetEditable(False)
+            self.tFanzineName.SetEditable(False)
 
             # We begin with just these two buttons highlighted as pink.  When one of them is selected, the highlighting on both is permanently removed.
             self.bLoadExistingLSTFile.SetBackgroundColour(Color.Pink)
@@ -139,16 +139,13 @@ class MainWindow(MainFrame):
         # The basic split is whether we are editing an existing LST or creating a new directory
         if self.Editmode == EditMode.EditingOld:
             self.tDirectoryServer.SetEditable(False)
+            self.tFanzineName.setEditable(False)
             # On an old directory, we always have a target defined, so we can always add new issues
             self.bAddNewIssues.Enable(True)
 
-        # if self.Editmode == EditMode.CreatingNew:
-        #     self.tDirectoryServer.SetEditable(True)
-        #     # Can't add new issues until we have a target directory defined
-        #     if len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0:
-        #         self.bAddNewIssues.Enable(True)
-        #     else:
-        #         self.bAddNewIssues.Enable(False)
+        if self.Editmode == EditMode.CreatingNew:
+            self.tDirectoryServer.SetEditable(True)
+            self.tFanzineName.SetEditable(True)
 
         # Whether or not the save button is enabled depends on what more we are in and what has been filled in.
         self.bSave.Enable(False)
@@ -584,8 +581,12 @@ class MainWindow(MainFrame):
 
             self.ClearMainWindow()
             self.Editmode=EditMode.CreatingNew
+
             self.Datasource.TargetDirectory=dlg.Directory
             self.SetLocalDirectoryLabel()
+
+            self.tFanzineName.SetValue(dlg.FanzineName)
+            self.GenerateServerNameFromFanzineName()
 
             # Create default column headers
             self._Datasource.ColDefs=ColDefinitionsList([
@@ -875,17 +876,18 @@ class MainWindow(MainFrame):
 
     # This method updates the local directory name by computing it from the fanzine name.  It only applies when creating a new LST file
     def OnFanzineNameChar(self, event):
-        return
-        # MainWindow(MainFrame)
-        # MainFrame.OnFanzineNameChar(self, event)
-        # if self.Editmode == EditMode.CreatingNew:
-        #     # The only time we update the local directory
-        #     fname=self.AddChar(self.tFanzineName.GetValue(), event.GetKeyCode())
-        #     #Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
-        #     converted=self.FanzineNameToDirName(fname).upper()
-        #     dname=self.tDirectoryLocal.GetValue()
-        #     if converted.startswith(dname) or dname.startswith(converted) or converted == dname:
-        #         self.tDirectoryLocal.SetValue(converted)
+        #MainFrame.OnFanzineNameChar(self, event)
+        if self.Editmode == EditMode.CreatingNew:
+            # The only time we update the local directory
+            fname=self.AddChar(self.tFanzineName.GetValue(), event.GetKeyCode())
+            self.tFanzineName.SetValue(fname)
+            self.GenerateServerNameFromFanzineName()
+            self.tFanzineName.SetInsertionPoint(999)    # Make sure the cursor stays at the end of the string
+
+    def GenerateServerNameFromFanzineName(self):
+        # Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
+        converted=self.FanzineNameToDirName(self.tFanzineName.GetValue()).upper()
+        self.tDirectoryServer.SetValue(converted)
 
     def OnFanzineName(self, event):       # MainWindow(MainFrame)
         self.Datasource.FanzineName=self.tFanzineName.GetValue()
@@ -1560,6 +1562,7 @@ class NewFanzineWindow(NewFanzineDialog):
 
     def __init__(self, parent, rootDirectory: str):
         self._directory: str=""
+        self._fanzineName=""
         self._output: str=""
         self._rootDirectory: str=rootDirectory
         NewFanzineDialog.__init__(self, parent)
@@ -1571,20 +1574,29 @@ class NewFanzineWindow(NewFanzineDialog):
     def Directory(self, s: str):
         self._directory=s
 
+    @property
+    def FanzineName(self) -> str:
+        return self._fanzineName
+    @FanzineName.setter
+    def FanzineName(self, s: str):
+        self._fanzineName=s
+
     def OnCreate(self, event):
         self._directory=self.tDirName.GetValue()
-        dir=os.path.join(self._rootDirectory, self._directory)
+        self._fanzineName=self.tFanzineName.GetValue()
+
         self._output=""
         self._output+=f"Checking directory {self._directory}...\n"
         self._output+=f"     in root {self._rootDirectory}\n"
         self.tOutputBox.SetValue(self._output)
-        if os.path.exists(dir):
+        if os.path.exists(os.path.join(self._rootDirectory, self._directory)):
             self._output+="Name unavailable\n"
             self._output+=f"Directory named {self._directory} already exists in root directory\n"
             self.tOutputBox.SetValue(self._output)
             return
         self._output+=f"Directory named {self._directory} is OK\n"
         self.tOutputBox.SetValue(self._output)
+
         self.Destroy()
 
     def OnCancel(self, event):

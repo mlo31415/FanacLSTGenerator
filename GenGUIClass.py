@@ -499,9 +499,17 @@ class NewFanzineDialog ( wx.Dialog ):
 		fgSizer5.SetFlexibleDirection( wx.BOTH )
 		fgSizer5.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
-		gSizer4 = wx.GridSizer( 2, 2, 0, 0 )
+		gSizer4 = wx.GridSizer( 3, 2, 0, 0 )
 
-		self.m_staticText11 = wx.StaticText( self, wx.ID_ANY, u"Enter the local directory name:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText111 = wx.StaticText( self, wx.ID_ANY, u"Fanzine name:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText111.Wrap( -1 )
+
+		gSizer4.Add( self.m_staticText111, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+		self.tFanzineName = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer4.Add( self.tFanzineName, 0, wx.ALL, 5 )
+
+		self.m_staticText11 = wx.StaticText( self, wx.ID_ANY, u"Local directory name:", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText11.Wrap( -1 )
 
 		gSizer4.Add( self.m_staticText11, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
