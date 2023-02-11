@@ -572,12 +572,13 @@ class MainWindow(MainFrame):
     # Create a new, empty LST file
     def OnCreateNewFanzineDir(self, event):       # MainWindow(MainFrame)
 
+        if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
+            return
+
         dlg=NewFanzineWindow(None, self.RootDirectoryPath)
         dlg.ShowModal()
         dlg.Destroy()
         if dlg.Directory != "":
-            if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
-                return
 
             self.ClearMainWindow()
             self.Editmode=EditMode.CreatingNew
@@ -602,8 +603,8 @@ class MainWindow(MainFrame):
                 self.stdColHeaders["Notes"]
             ])
 
+            self.MaybeSetNeedsSavingFlag()
             self.RefreshWindow()
-            self.MarkAsSaved()
 
 
     #------------------
