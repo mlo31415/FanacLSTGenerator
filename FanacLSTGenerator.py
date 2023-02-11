@@ -240,6 +240,9 @@ class MainWindow(MainFrame):
         self.OnCheckAlphabetizeIndividually(None)  # Need to manually trigger datasource action
         self.cbComplete.SetValue(lstfile.Complete)
 
+        self.FillInPDFColumn()
+        self.FillInPagesColumn()
+
 
     # Create a new LSTFile from the datasource
     def CreateLSTFileFromDatasourceEtc(self) -> LSTFile:       # MainWindow(MainFrame)
@@ -362,64 +365,89 @@ class MainWindow(MainFrame):
         for i, file in enumerate(newlyAddedFiles):
             self.Datasource.Rows[nrows+i][0]=file[1]
 
-        # If any of them are pdfs, add a PDF column (if needed) and return its index
-        ipdf=self.AddPDFColumnIfNeeded()
-        if ipdf != -1:
-            didsomething=False
-            # Now we go through them one by one and fill in and missing page counts
-            for i, row in enumerate(self.Datasource.Rows):
-                if row[ipdf] == "":
-                    self.FillInPDFColumn()
-                    didsomething=True
-
-            if didsomething:
-                self._dataGrid.RefreshWxGridFromDatasource()
+        # If any of them are pdfs, add a PDF column (if needed) and fill in the page counts
+        self.FillInPDFColumn()
+        self.FillInPagesColumn()
 
         self._dataGrid.RefreshWxGridFromDatasource()
         self.RefreshWindow()
 
 
     #--------------------------
-    # Check a specific subset of rows (as defined by the slice) to see if one of the file is a pdf
+    # Check the rows to see if any of the files is a pdf
     # If a pdf is found possibly add a PDF column and fill the PDF column in for those rows.
     def FillInPDFColumn(self) -> None:
+        iPdf=self.AddOrDeletePDFColumnIfNeeded()
+        if iPdf != -1:
+            for i, row in enumerate(self.Datasource.Rows):
+                filename=row[0]
+                if filename.lower().endswith(".pdf"):
+                    row[iPdf]="PDF"
 
-        iPdf=self.AddPDFColumnIfNeeded()
+
+    #--------------------------
+    # Check the rows to see if one of any of the files are a pdf
+    # If a pdf is found possibly add a PDF column and fill the PDF column in for those rows.
+    def FillInPagesColumn(self) -> None:
         iPages=self.Datasource.ColHeaderIndex("pages")
-
-        # The argument rows is a slice of indexes to self.Datasource.Rows representing the newly-added rows.
-        # Since we normally only add pdf files, we need to look at each of these new rows and add the page counts of the new files
-        #self.Datasource.AppendEmptyRows(rows.stop-rows.start)   # Append the requisite number of empty rows. (Note that we know the slice's step is always 1)
-        # Step through the new rows
+        # Look through the rows and for each PDF which does not have a page count, add the page count
         for i, row in enumerate(self.Datasource.Rows):
             if row[iPages].strip() == "":   # Don't bother with rows that already have page counts
                 # Col 0 always contains the filename. If it's a PDF, get its pagecount and fill in that cell
                 filename=row[0]
                 if filename.lower().endswith(".pdf"):
-                    row[iPdf]="PDF"
                     pages=GetPdfPageCount(os.path.join(self.TargetDirectoryPathname, filename))
                     if pages is not None:
                         self.Datasource.Rows[i][iPages]=str(pages)
 
-    # Return the index of the column containing the PDF flag
-    # If there is no such column and we do have pdfs among the files, add a PDF column
-    # Return -1 if there is no column and no need for oen
-    def AddPDFColumnIfNeeded(self) -> int:
-        # Are any of files PDFs?
-        if not any([row[0].lower().endswith(".pdf") for row in self.Datasource.Rows]):
-            # Nope.  So just return the PDF colun index if it exists
-            return self.Datasource.ColHeaderIndex("pdf")
 
+    #--------------------------------------------------
+    # Decide if we need to have a PDF column and, if so, where it is
+    #   If there are no PDF issues, return -1
+    #   If all the issue are PDFs, delete the PDF column and return -1
+    #   If we still have some non-PDF issues,
+    #       Check to see if there is a PDF column.
+    #           If not, add one as the far right column
+    #           If there is, if necessary, move the column to the far right
+    #       Return the index of the column containing the PDF flags or -1 if there is none.
+    def AddOrDeletePDFColumnIfNeeded(self) -> int:
+        # Are any of the files PDFs?
+        anyPDFs=any([row[0].lower().endswith(".pdf") for row in self.Datasource.Rows])
+        allPDFs=all([row[0].lower().endswith(".pdf") for row in self.Datasource.Rows])
+        ipdfcol=self.Datasource.ColHeaderIndex("pdf")
+
+        # We need do nothing in two cases: There are no PDFs or everything is a PDF and there is no PDF column
+        # Then return -1
+        if (allPDFs and ipdfcol == -1):
+            return -1
+        if not anyPDFs:
+            return -1
+
+        # If they are all PDFs and there is a PDF column, it is redundant and should be removed
+        if allPDFs and ipdfcol != -1:
+            self._dataGrid.DeleteColumn(ipdfcol)
+            return -1
+
+        # OK, there are *some* PDFs.
+
+        # If there is a PDF column, we must move it to the right
+        if ipdfcol == self.Datasource.NumCols-1:
+            # We have a PDF column and it is on the right.  All's well. Just return its index.
+            return ipdfcol
+
+        # Is there no PDF column?
+        if ipdfcol == -1:
+            # Add one on the right and return its index
+            self.Datasource.InsertColumnHeader(self.Datasource.NumCols, ColDefinition("PDF"))
+            for i, row in enumerate(self.Datasource.Rows):
+                self.Datasource.Rows[i].Cells.append("")
+            return self.Datasource.NumCols-1
+
+        # So we have one, but it is in the wrong place
         # We have PDF files; Do we need to add a PDF column?
         iPdf=self.Datasource.ColHeaderIndex("pdf")
-        if iPdf == -1:  # Yes
-            # We don't have an existing PDF column, but we now have at least one pdf file
-            # Add the PDF column to the existing rows as the third column
-            self.Datasource.InsertColumnHeader(2, ColDefinition("PDF"))
-            for i, row in enumerate(self.Datasource.Rows):
-                self.Datasource.Rows[i].Cells=row.Cells[:2]+[""]+row.Cells[2:]
-            iPdf=2
-        return iPdf
+        self._dataGrid.MoveCols(iPdf, 1, self.Datasource.NumCols-1)
+        return self.Datasource.NumCols-1
 
     #------------------
     # Load an LST file from disk into an LSTFile class
@@ -930,6 +958,7 @@ class MainWindow(MainFrame):
 
         if event.GetCol() == 0:    # If the Filename changes, we may need to fill in the PDF column
             self.FillInPDFColumn()
+            self.FillInPagesColumn()
         self.RefreshWindow()
 
     #------------------
