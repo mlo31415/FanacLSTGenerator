@@ -465,3 +465,90 @@ class MainFrame ( wx.Frame ):
 		self.PopupMenu( self.m_GridPopup, event.GetPosition() )
 
 
+###########################################################################
+## Class LogDialog
+###########################################################################
+
+class LogDialog ( wx.Dialog ):
+
+	def __init__( self, parent ):
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Log", pos = wx.DefaultPosition, size = wx.Size( 742,606 ), style = wx.DEFAULT_DIALOG_STYLE )
+
+		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
+
+		gSizer1 = wx.GridSizer( 1, 1, 0, 0 )
+
+		self.textLogWindow = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_READONLY|wx.VSCROLL )
+		gSizer1.Add( self.textLogWindow, 0, wx.ALL|wx.EXPAND, 5 )
+
+
+		self.SetSizer( gSizer1 )
+		self.Layout()
+
+		self.Centre( wx.BOTH )
+
+	def __del__( self ):
+		pass
+
+
+###########################################################################
+## Class NewFanzineDialog
+###########################################################################
+
+class NewFanzineDialog ( wx.Dialog ):
+
+	def __init__( self, parent ):
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Create a New Fanzine Directory", pos = wx.DefaultPosition, size = wx.Size( 616,217 ), style = wx.DEFAULT_DIALOG_STYLE )
+
+		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
+
+		fgSizer5 = wx.FlexGridSizer( 2, 1, 0, 0 )
+		fgSizer5.SetFlexibleDirection( wx.BOTH )
+		fgSizer5.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+
+		gSizer4 = wx.GridSizer( 2, 2, 0, 0 )
+
+		self.m_staticText11 = wx.StaticText( self, wx.ID_ANY, u"Enter the local directory name:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText11.Wrap( -1 )
+
+		gSizer4.Add( self.m_staticText11, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+		self.tDirName = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer4.Add( self.tDirName, 0, wx.ALL, 5 )
+
+		self.bCreate = wx.Button( self, wx.ID_ANY, u"Create", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer4.Add( self.bCreate, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
+
+		self.bCancel = wx.Button( self, wx.ID_ANY, u"Cancel", wx.DefaultPosition, wx.DefaultSize, 0 )
+		gSizer4.Add( self.bCancel, 0, wx.ALIGN_LEFT|wx.ALL, 5 )
+
+
+		fgSizer5.Add( gSizer4, 1, wx.EXPAND, 5 )
+
+		self.tOutputBox = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_WORDWRAP|wx.VSCROLL )
+		self.tOutputBox.SetMinSize( wx.Size( 600,100 ) )
+
+		fgSizer5.Add( self.tOutputBox, 0, wx.ALL|wx.EXPAND, 5 )
+
+
+		self.SetSizer( fgSizer5 )
+		self.Layout()
+
+		self.Centre( wx.BOTH )
+
+		# Connect Events
+		self.bCreate.Bind( wx.EVT_BUTTON, self.OnCreate )
+		self.bCancel.Bind( wx.EVT_BUTTON, self.OnCancel )
+
+	def __del__( self ):
+		pass
+
+
+	# Virtual event handlers, overide them in your derived class
+	def OnCreate( self, event ):
+		event.Skip()
+
+	def OnCancel( self, event ):
+		event.Skip()
+
+

@@ -9,7 +9,7 @@ import wx.grid
 import sys
 
 import HelpersPackage
-from GenGUIClass import MainFrame
+from GenGUIClass import MainFrame, NewFanzineDialog
 from GenLogDialogClass import LogDialog
 
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
@@ -580,28 +580,33 @@ class MainWindow(MainFrame):
     # Create a new, empty LST file
     def OnCreateNewFanzineDir(self, event):       # MainWindow(MainFrame)
 
-        if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
-            return
+        dlg=NewFanzineWindow(None, self.RootDirectoryPath)
+        dlg.ShowModal()
+        dlg.Destroy()
+        if dlg.Directory != "":
+            if OnCloseHandling(None, self.NeedsSaving(), "The LST file has been updated and not yet saved. Erase anyway?"):
+                return
 
-        self.ClearMainWindow()
-        self.Editmode=EditMode.CreatingNew
+            self.ClearMainWindow()
+            self.Editmode=EditMode.CreatingNew
+            self.tDirectoryLocal.SetValue(dlg.Directory)
 
-        # Create default column headers
-        self._Datasource.ColDefs=ColDefinitionsList([
-            self.stdColHeaders["Filename"],
-            self.stdColHeaders["Issue"],
-            self.stdColHeaders["Whole"],
-            self.stdColHeaders["Vol"],
-            self.stdColHeaders["Number"],
-            self.stdColHeaders["Month"],
-            self.stdColHeaders["Day"],
-            self.stdColHeaders["Year"],
-            self.stdColHeaders["Pages"],
-            self.stdColHeaders["Notes"]
-        ])
+            # Create default column headers
+            self._Datasource.ColDefs=ColDefinitionsList([
+                self.stdColHeaders["Filename"],
+                self.stdColHeaders["Issue"],
+                self.stdColHeaders["Whole"],
+                self.stdColHeaders["Vol"],
+                self.stdColHeaders["Number"],
+                self.stdColHeaders["Month"],
+                self.stdColHeaders["Day"],
+                self.stdColHeaders["Year"],
+                self.stdColHeaders["Pages"],
+                self.stdColHeaders["Notes"]
+            ])
 
-        self.RefreshWindow()
-        self.MarkAsSaved()
+            self.RefreshWindow()
+            self.MarkAsSaved()
 
 
     #------------------
@@ -1556,6 +1561,43 @@ class FanzineTablePage(GridDataSource):
         for i in range(num):
             ftr=FanzineTableRow([""]*self.NumCols)
             self._fanzineList.insert(insertat+i, ftr)
+
+
+
+class NewFanzineWindow(NewFanzineDialog):
+
+    def __init__(self, parent, rootDirectory: str):
+        self._directory: str=""
+        self._output: str=""
+        self._rootDirectory: str=rootDirectory
+        NewFanzineDialog.__init__(self, parent)
+
+    @property
+    def Directory(self) -> str:
+        return self._directory
+    @Directory.setter
+    def Directory(self, s: str):
+        self._directory=s
+
+    def OnCreate(self, event):
+        self._directory=self.tDirName.GetValue()
+        dir=os.path.join(self._rootDirectory, self._directory)
+        self._output=""
+        self._output+=f"Checking directory {self._directory}...\n"
+        self._output+=f"     in root {self._rootDirectory}\n"
+        self.tOutputBox.SetValue(self._output)
+        if os.path.exists(dir):
+            self._output+="Name unavailable\n"
+            self._output+=f"Directory named {self._directory} already exists in root directory\n"
+            self.tOutputBox.SetValue(self._output)
+            return
+        self._output+=f"Directory named {self._directory} is OK\n"
+        self.tOutputBox.SetValue(self._output)
+        self.Destroy()
+
+    def OnCancel(self, event):
+        self.Destroy()
+
 
 
 def main():
