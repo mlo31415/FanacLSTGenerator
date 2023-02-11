@@ -139,13 +139,14 @@ class MainWindow(MainFrame):
         # The basic split is whether we are editing an existing LST or creating a new directory
         if self.Editmode == EditMode.EditingOld:
             self.tDirectoryServer.SetEditable(False)
-            self.tFanzineName.setEditable(False)
+            self.tFanzineName.SetEditable(False)
             # On an old directory, we always have a target defined, so we can always add new issues
             self.bAddNewIssues.Enable(True)
 
         if self.Editmode == EditMode.CreatingNew:
             self.tDirectoryServer.SetEditable(True)
             self.tFanzineName.SetEditable(True)
+            self.bAddNewIssues.Enable(True)
 
         # Whether or not the save button is enabled depends on what more we are in and what has been filled in.
         self.bSave.Enable(False)
@@ -471,37 +472,36 @@ class MainWindow(MainFrame):
 
         with ProgressMsg(self, f"Loading {self.lstFilename}"):
 
-            # Try to load the LSTFile
-            #targetFilename=os.path.relpath(targetDirectoryPathname, start=self.RootDirectoryPath)
-            self.LoadLSTFile(targetDirectoryPathname, targetFilename)
+            self.LoadLSTFile2(targetDirectoryPathname, targetFilename)
 
-            self.lstFilename=targetFilename
-            # Get the newly selected target directory's path relative to rootpath
-            self.Datasource.TargetDirectory=os.path.relpath(targetDirectoryPathname, start=self.RootDirectoryPath)
-            self.SetLocalDirectoryLabel()
-
-            # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
-            complete, credits=self.ReadSetupBld(self.TargetDirectoryPathname)
-            if complete is not None:
-                self.cbComplete.SetValue(complete)
-            else:
-                self.cbComplete.SetValue(False)
-            self.OnCheckComplete(None)      # Need to manually trigger datasource action
-            if credits is not None:
-                self.tCredits.SetValue(credits.strip())
-                self.Datasource.Credits=credits
-            else:
-                self.tCredits.SetValue("")
-                self.Datasource.Credits=""
-
-            # And see if we can pick up the server directory from setup.ftp
-            directory=self.ReadSetupFtp(targetDirectoryPathname)
-            if directory != "":
-                self.tDirectoryServer.SetValue(directory)
-                self.Datasource.ServerDirectory=directory
-
-            self.MarkAsSaved()
-            self.RefreshWindow()
+    def LoadLSTFile2(self, targetDirectoryPathname, targetFilename):
+        # Try to load the LSTFile
+        # targetFilename=os.path.relpath(targetDirectoryPathname, start=self.RootDirectoryPath)
+        self.LoadLSTFile(targetDirectoryPathname, targetFilename)
+        self.lstFilename=targetFilename
+        # Get the newly selected target directory's path relative to rootpath
+        self.Datasource.TargetDirectory=os.path.relpath(targetDirectoryPathname, start=self.RootDirectoryPath)
+        self.SetLocalDirectoryLabel()
+        # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
+        complete, credits=self.ReadSetupBld(self.TargetDirectoryPathname)
+        if complete is not None:
+            self.cbComplete.SetValue(complete)
+        else:
+            self.cbComplete.SetValue(False)
+        self.OnCheckComplete(None)  # Need to manually trigger datasource action
+        if credits is not None:
+            self.tCredits.SetValue(credits.strip())
+            self.Datasource.Credits=credits
+        else:
+            self.tCredits.SetValue("")
+            self.Datasource.Credits=""
+        # And see if we can pick up the server directory from setup.ftp
+        directory=self.ReadSetupFtp(targetDirectoryPathname)
+        if directory != "":
+            self.tDirectoryServer.SetValue(directory)
+            self.Datasource.ServerDirectory=directory
+        self.MarkAsSaved()
+        self.RefreshWindow()
 
     # ------------------
     # Initialize the main window to empty
@@ -617,6 +617,7 @@ class MainWindow(MainFrame):
             Log(f"OnSave() initializes {self.lstFilename=}")
 
         self.SaveExistingLSTFile()
+        self.LoadLSTFile2(self.TargetDirectoryPathname, self.lstFilename)
 
 
     #------------------
