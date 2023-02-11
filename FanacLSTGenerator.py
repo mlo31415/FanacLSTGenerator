@@ -16,7 +16,7 @@ from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefini
 from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
-from HelpersPackage import  ComparePathsCanonical, FindLinkInString, FindIndexOfStringInList
+from HelpersPackage import  ComparePathsCanonical, FindLinkInString, FindIndexOfStringInList, RemoveArticles
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, LogClose
 from Log import Log as RealLog
@@ -474,6 +474,7 @@ class MainWindow(MainFrame):
 
             self.LoadLSTFile2(targetDirectoryPathname, targetFilename)
 
+
     def LoadLSTFile2(self, targetDirectoryPathname, targetFilename):
         # Try to load the LSTFile
         # targetFilename=os.path.relpath(targetDirectoryPathname, start=self.RootDirectoryPath)
@@ -859,14 +860,17 @@ class MainWindow(MainFrame):
     def Signature(self) -> int:       # MainWindow(MainFrame)
         return self.Datasource.Signature()
 
+
     def MarkAsSaved(self):       # MainWindow(MainFrame)
         self._signature=self.Signature()
+
 
     def NeedsSaving(self):       # MainWindow(MainFrame)
         return self._signature != self.Signature()
 
+
     def FanzineNameToDirName(self, s: str) -> str:       # MainWindow(MainFrame)
-        return re.sub("[^a-zA-Z0-9\-]+", "_", s)
+        return re.sub("[^a-zA-Z0-9\-]+", "_", RemoveArticles(s))
 
 
     def AddChar(self, text: str, code) -> str:       # MainWindow(MainFrame)
@@ -875,6 +879,7 @@ class MainWindow(MainFrame):
         if code < 32 or code > 126:
             return text
         return text+chr(code)
+
 
     # This method updates the local directory name by computing it from the fanzine name.  It only applies when creating a new LST file
     def OnFanzineNameChar(self, event):
@@ -886,22 +891,27 @@ class MainWindow(MainFrame):
             self.GenerateServerNameFromFanzineName()
             self.tFanzineName.SetInsertionPoint(999)    # Make sure the cursor stays at the end of the string
 
+
     def GenerateServerNameFromFanzineName(self):
         # Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
         converted=self.FanzineNameToDirName(self.tFanzineName.GetValue()).upper()
         self.tDirectoryServer.SetValue(converted)
 
+
     def OnFanzineName(self, event):       # MainWindow(MainFrame)
         self.Datasource.FanzineName=self.tFanzineName.GetValue()
         self.RefreshWindow()
+
 
     def OnEditors(self, event):       # MainWindow(MainFrame)
         self.Datasource.Editors=self.tEditors.GetValue()
         self.RefreshWindow()
 
+
     def OnDates(self, event):       # MainWindow(MainFrame)
         self.Datasource.Dates=self.tDates.GetValue()
         self.RefreshWindow()
+
 
     def OnFanzineType(self, event):       # MainWindow(MainFrame)
         self.Datasource.FanzineType=self.tFanzineType.GetString(self.tFanzineType.GetSelection()).strip()
