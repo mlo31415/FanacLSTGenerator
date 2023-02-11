@@ -63,10 +63,8 @@ class MainWindow(MainFrame):
         if tlws:
             self.SetSize(tlws)
 
-        # Set the local directory.  Since this is not editable, it can be done here.
-        self.lRootDirectory.SetWindowStyle(self.lRootDirectory.GetWindowStyle() | wx.ST_ELLIPSIZE_MIDDLE)
-        self.lRootDirectory.SetLabel(f"Local Directory:   {self.RootDirectoryPath}/")
-        self.lRootDirectory.GetContainingSizer().Layout()
+        self.Datasource.targetDirectory=""
+        self.SetLocalDirectoryLabel()
 
         # The edit mode we are presently in.
         self.Editmode: EditMode=EditMode.NoneSelected
@@ -77,6 +75,12 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
         self.Show(True)
+
+    def SetLocalDirectoryLabel(self):
+        # Set the local directory.  Since this is not editable, it can be done here.
+        self.lRootDirectory.SetWindowStyle(self.lRootDirectory.GetWindowStyle()|wx.ST_ELLIPSIZE_MIDDLE)
+        self.lRootDirectory.SetLabel(f"Local Directory:   {self.RootDirectoryPath}/{self.Datasource.TargetDirectory}")
+        self.lRootDirectory.GetContainingSizer().Layout()
 
 
     @property
@@ -107,7 +111,6 @@ class MainWindow(MainFrame):
             self.cbComplete.Enabled=False
             self.cbAlphabetizeIndividually.Enabled=False
             self.wxGrid.Enabled=False
-            self.tDirectoryLocal.SetEditable(False)
             self.tDirectoryServer.SetEditable(False)
 
             # We begin with just these two buttons highlighted as pink.  When one of them is selected, the highlighting on both is permanently removed.
@@ -128,30 +131,29 @@ class MainWindow(MainFrame):
         self.cbAlphabetizeIndividually.Enabled=True
         self.wxGrid.Enabled=True
 
+        self.SetLocalDirectoryLabel()
 
         self.bLoadExistingLSTFile.SetBackgroundColour(self.ButtonBackgroundColor)
         self.bCreateNewFanzineDir.SetBackgroundColour(self.ButtonBackgroundColor)
 
         # The basic split is whether we are editing an existing LST or creating a new directory
         if self.Editmode == EditMode.EditingOld:
-            self.tDirectoryLocal.SetEditable(False)
             self.tDirectoryServer.SetEditable(False)
             # On an old directory, we always have a target defined, so we can always add new issues
             self.bAddNewIssues.Enable(True)
 
-        if self.Editmode == EditMode.CreatingNew:
-            self.tDirectoryLocal.SetEditable(True)
-            self.tDirectoryServer.SetEditable(True)
-            # Can't add new issues until we have a target directory defined
-            if len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0:
-                self.bAddNewIssues.Enable(True)
-            else:
-                self.bAddNewIssues.Enable(False)
+        # if self.Editmode == EditMode.CreatingNew:
+        #     self.tDirectoryServer.SetEditable(True)
+        #     # Can't add new issues until we have a target directory defined
+        #     if len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0:
+        #         self.bAddNewIssues.Enable(True)
+        #     else:
+        #         self.bAddNewIssues.Enable(False)
 
         # Whether or not the save button is enabled depends on what more we are in and what has been filled in.
         self.bSave.Enable(False)
         if self.Editmode == EditMode.CreatingNew:
-            if len(self.tDirectoryLocal.GetValue()) > 0 and len(self.tDirectoryServer.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0 and len(self.Datasource.Rows) > 0:
+            if len(self.tDirectoryServer.GetValue()) > 0 and len(self.tFanzineName.GetValue()) > 0 and len(self.Datasource.Rows) > 0:
                 self.bSave.Enable()
 
         if self.Editmode == EditMode.EditingOld:
@@ -458,8 +460,6 @@ class MainWindow(MainFrame):
         self.MarkAsSaved()  # OK, the existing contents have been declared doomed.
 
         self.Editmode=EditMode.EditingOld
-
-        self.tDirectoryLocal.SetValue("")
         self.tDirectoryServer.SetValue("")
 
         # Call the File Open dialog to get an LST file
@@ -471,7 +471,6 @@ class MainWindow(MainFrame):
 
             targetFilename=dlg.GetFilename()
             targetDirectoryPathname=os.path.split(dlg.GetPath())[0]
-            targetDirectory=os.path.relpath(targetDirectoryPathname, start=self.RootDirectoryPath)
 
         with ProgressMsg(self, f"Loading {self.lstFilename}"):
 
@@ -481,9 +480,8 @@ class MainWindow(MainFrame):
 
             self.lstFilename=targetFilename
             # Get the newly selected target directory's path relative to rootpath
-            self.Datasource.TargetDirectory=targetDirectory
-            self.tDirectoryLocal.SetValue(targetDirectory)
-            self.lRootDirectory.SetLabel(f"Local directory path:   {self.RootDirectoryPath}/")
+            self.Datasource.TargetDirectory=os.path.relpath(targetDirectoryPathname, start=self.RootDirectoryPath)
+            self.SetLocalDirectoryLabel()
 
             # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
             complete, credits=self.ReadSetupBld(self.TargetDirectoryPathname)
@@ -569,9 +567,6 @@ class MainWindow(MainFrame):
         self.Datasource.Credits=Settings().Get("Scanning credits default", default="")
         self.tCredits.SetValue(self.Datasource.Credits.strip())
 
-        # Both directories are editable, for now at least.
-        self.tDirectoryLocal.SetValue("")
-
         # Set the signature to the current (empty) state so any change will trigger a request to save on exit
         self.MarkAsSaved()
 
@@ -589,7 +584,8 @@ class MainWindow(MainFrame):
 
             self.ClearMainWindow()
             self.Editmode=EditMode.CreatingNew
-            self.tDirectoryLocal.SetValue(dlg.Directory)
+            self.Datasource.TargetDirectory=dlg.Directory
+            self.SetLocalDirectoryLabel()
 
             # Create default column headers
             self._Datasource.ColDefs=ColDefinitionsList([
@@ -878,16 +874,18 @@ class MainWindow(MainFrame):
         return text+chr(code)
 
     # This method updates the local directory name by computing it from the fanzine name.  It only applies when creating a new LST file
-    def OnFanzineNameChar(self, event):       # MainWindow(MainFrame)
-        MainFrame.OnFanzineNameChar(self, event)
-        if self.Editmode == EditMode.CreatingNew:
-            # The only time we update the local directory
-            fname=self.AddChar(self.tFanzineName.GetValue(), event.GetKeyCode())
-            #Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
-            converted=self.FanzineNameToDirName(fname).upper()
-            dname=self.tDirectoryLocal.GetValue()
-            if converted.startswith(dname) or dname.startswith(converted) or converted == dname:
-                self.tDirectoryLocal.SetValue(converted)
+    def OnFanzineNameChar(self, event):
+        return
+        # MainWindow(MainFrame)
+        # MainFrame.OnFanzineNameChar(self, event)
+        # if self.Editmode == EditMode.CreatingNew:
+        #     # The only time we update the local directory
+        #     fname=self.AddChar(self.tFanzineName.GetValue(), event.GetKeyCode())
+        #     #Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
+        #     converted=self.FanzineNameToDirName(fname).upper()
+        #     dname=self.tDirectoryLocal.GetValue()
+        #     if converted.startswith(dname) or dname.startswith(converted) or converted == dname:
+        #         self.tDirectoryLocal.SetValue(converted)
 
     def OnFanzineName(self, event):       # MainWindow(MainFrame)
         self.Datasource.FanzineName=self.tFanzineName.GetValue()
@@ -926,12 +924,6 @@ class MainWindow(MainFrame):
         Log(f"OnCheckAlphabetizeIndividually(): {self.Datasource.Complete=} and {self.Datasource.AlphabetizeIndividually=}")
         self.RefreshWindow()
         # Don't need to refresh because nothing changed
-
-    # ------------------
-    def OnDirectoryLocal(self, event):       # MainWindow(MainFrame)
-        dirname=self.tDirectoryLocal.GetValue()
-        self.Datasource.TargetDirectory=os.path.join(os.path.split(self.Datasource.TargetDirectory)[0], dirname)
-        self.RefreshWindow()
 
     # ------------------
     def OnDirectoryServer(self, event):       # MainWindow(MainFrame)
@@ -1516,7 +1508,7 @@ class FanzineTablePage(GridDataSource):
         self.AlphabetizeIndividually=False      # Treat all issues as part of main series
         self.Credits=""         # Who is to be credited for this affair?
         self.ServerDirectory=""  # Server directory to be created under /fanzines
-        self.TargetDirectory=""
+        self.TargetDirectory=""     # Local directory containing LST files
 
 
     def Signature(self) -> int:        # FanzineTablePage(GridDataSource)

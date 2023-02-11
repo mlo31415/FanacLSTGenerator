@@ -119,31 +119,28 @@ class MainFrame ( wx.Frame ):
 		self.lRootDirectory = wx.StaticText( self, wx.ID_ANY, u"Local Directory:", wx.DefaultPosition, wx.Size( -1,-1 ), wx.ALIGN_RIGHT )
 		self.lRootDirectory.Wrap( -1 )
 
-		self.lRootDirectory.SetMinSize( wx.Size( 600,-1 ) )
+		fgSizer2.Add( self.lRootDirectory, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT|wx.ALL, 5 )
 
-		fgSizer2.Add( self.lRootDirectory, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 
-		self.tDirectoryLocal = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
-		self.tDirectoryLocal.SetToolTip( u"The name of the local directory (relative to the root displayed to the left) for this fanzine series." )
-		self.tDirectoryLocal.SetMinSize( wx.Size( 200,-1 ) )
+		bSizerMain.Add( fgSizer2, 0, wx.EXPAND, 5 )
 
-		fgSizer2.Add( self.tDirectoryLocal, 0, wx.ALIGN_LEFT|wx.ALL, 5 )
+		fgSizer5 = wx.FlexGridSizer( 0, 2, 0, 0 )
+		fgSizer5.SetFlexibleDirection( wx.HORIZONTAL )
+		fgSizer5.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
 		self.lServerDirectory = wx.StaticText( self, wx.ID_ANY, u"Server Directory:", wx.DefaultPosition, wx.Size( -1,-1 ), wx.ALIGN_RIGHT )
 		self.lServerDirectory.Wrap( -1 )
 
-		self.lServerDirectory.SetMinSize( wx.Size( 600,-1 ) )
-
-		fgSizer2.Add( self.lServerDirectory, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		fgSizer5.Add( self.lServerDirectory, 0, wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT|wx.ALL, 5 )
 
 		self.tDirectoryServer = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
 		self.tDirectoryServer.SetToolTip( u"The name of the directory for this fanzine on the fanac.org server." )
 		self.tDirectoryServer.SetMinSize( wx.Size( 200,-1 ) )
 
-		fgSizer2.Add( self.tDirectoryServer, 0, wx.ALIGN_LEFT|wx.ALL, 5 )
+		fgSizer5.Add( self.tDirectoryServer, 0, wx.ALIGN_LEFT|wx.ALL, 5 )
 
 
-		bSizerMain.Add( fgSizer2, 0, 0, 5 )
+		bSizerMain.Add( fgSizer5, 0, wx.EXPAND, 5 )
 
 		fgSizerComments = wx.FlexGridSizer( 4, 2, 0, 0 )
 		fgSizerComments.AddGrowableCol( 1 )
@@ -296,7 +293,6 @@ class MainFrame ( wx.Frame ):
 		self.tFanzineType.Bind( wx.EVT_CHOICE, self.OnFanzineType )
 		self.cbComplete.Bind( wx.EVT_CHECKBOX, self.OnCheckComplete )
 		self.cbAlphabetizeIndividually.Bind( wx.EVT_CHECKBOX, self.OnCheckAlphabetizeIndividually )
-		self.tDirectoryLocal.Bind( wx.EVT_TEXT, self.OnDirectoryLocal )
 		self.tDirectoryServer.Bind( wx.EVT_TEXT, self.OnDirectoryServer )
 		self.tTopComments.Bind( wx.EVT_TEXT, self.OnTopComments )
 		self.tLocaleText.Bind( wx.EVT_TEXT, self.OnTextLocale )
@@ -369,9 +365,6 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnCheckAlphabetizeIndividually( self, event ):
-		event.Skip()
-
-	def OnDirectoryLocal( self, event ):
 		event.Skip()
 
 	def OnDirectoryServer( self, event ):
