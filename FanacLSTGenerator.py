@@ -1598,6 +1598,13 @@ class NewFanzineWindow(NewFanzineDialog):
         self._directory=self.tDirName.GetValue()
         self._fanzineName=self.tFanzineName.GetValue()
 
+        if self._directory == "":
+            self.tOutputBox.SetValue("You must supply a directory name")
+            return
+        if self._fanzineName == "":
+            self.tOutputBox.SetValue("You must supply a fanzine name")
+            return
+
         self._output=""
         self._output+=f"Checking directory {self._directory}...\n"
         self._output+=f"     in root {self._rootDirectory}\n"
