@@ -563,7 +563,6 @@ class MainWindow(MainFrame):
         self.cbAlphabetizeIndividually.SetValue(False)
 
         self.Datasource.Credits=Settings().Get("Scanning credits default", default="")
-        self.tCredits.SetValue(self.Datasource.Credits.strip())
 
         # Set the signature to the current (empty) state so any change will trigger a request to save on exit
         self.MarkAsSaved()
@@ -589,6 +588,8 @@ class MainWindow(MainFrame):
 
             self.tFanzineName.SetValue(dlg.FanzineName)
             self.GenerateServerNameFromFanzineName()
+
+            self.tCredits.SetValue(self.Datasource.Credits.strip())
 
             # Create default column headers
             self._Datasource.ColDefs=ColDefinitionsList([
