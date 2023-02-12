@@ -538,14 +538,21 @@ class NewFanzineDialog ( wx.Dialog ):
 		self.Centre( wx.BOTH )
 
 		# Connect Events
+		self.tFanzineName.Bind( wx.EVT_CHAR, self.OnCharFanzine )
+		self.tFanzineName.Bind( wx.EVT_TEXT, self.OnTextFanzine )
 		self.bCreate.Bind( wx.EVT_BUTTON, self.OnCreate )
 		self.bCancel.Bind( wx.EVT_BUTTON, self.OnCancel )
 
 	def __del__( self ):
 		pass
 
-
 	# Virtual event handlers, overide them in your derived class
+	def OnCharFanzine( self, event ):
+		event.Skip()
+
+	def OnTextFanzine( self, event ):
+		event.Skip()
+
 	def OnCreate( self, event ):
 		event.Skip()
 

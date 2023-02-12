@@ -9,14 +9,16 @@ import wx.grid
 import sys
 
 import HelpersPackage
-from GenGUIClass import MainFrame, NewFanzineDialog
+from GenGUIClass import MainFrame
 from GenLogDialogClass import LogDialog
 
+from NewFanzineDialog import NewFanzineWindow
+
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
-from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage
+from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage, AddChar
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
-from HelpersPackage import  ComparePathsCanonical, FindLinkInString, FindIndexOfStringInList, RemoveArticles
+from HelpersPackage import  ComparePathsCanonical, FindLinkInString, FindIndexOfStringInList, FanzineNameToDirName
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, LogClose
 from Log import Log as RealLog
@@ -870,24 +872,11 @@ class MainWindow(MainFrame):
         return self._signature != self.Signature()
 
 
-    def FanzineNameToDirName(self, s: str) -> str:       # MainWindow(MainFrame)
-        return re.sub("[^a-zA-Z0-9\-]+", "_", RemoveArticles(s))
-
-
-    def AddChar(self, text: str, code) -> str:       # MainWindow(MainFrame)
-        if code == wx.WXK_BACK and len(text) > 0:
-            return text[:-1]
-        if code < 32 or code > 126:
-            return text
-        return text+chr(code)
-
-
     # This method updates the local directory name by computing it from the fanzine name.  It only applies when creating a new LST file
     def OnFanzineNameChar(self, event):
-        #MainFrame.OnFanzineNameChar(self, event)
         if self.Editmode == EditMode.CreatingNew:
             # The only time we update the local directory
-            fname=self.AddChar(self.tFanzineName.GetValue(), event.GetKeyCode())
+            fname=AddChar(self.tFanzineName.GetValue(), event.GetKeyCode())
             self.tFanzineName.SetValue(fname)
             self.GenerateServerNameFromFanzineName()
             self.tFanzineName.SetInsertionPoint(999)    # Make sure the cursor stays at the end of the string
@@ -895,7 +884,7 @@ class MainWindow(MainFrame):
 
     def GenerateServerNameFromFanzineName(self):
         # Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
-        converted=self.FanzineNameToDirName(self.tFanzineName.GetValue()).upper()
+        converted=FanzineNameToDirName(self.tFanzineName.GetValue()).upper()
         self.tDirectoryServer.SetValue(converted)
 
 
@@ -1568,60 +1557,6 @@ class FanzineTablePage(GridDataSource):
         for i in range(num):
             ftr=FanzineTableRow([""]*self.NumCols)
             self._fanzineList.insert(insertat+i, ftr)
-
-
-
-class NewFanzineWindow(NewFanzineDialog):
-
-    def __init__(self, parent, rootDirectory: str):
-        self._directory: str=""
-        self._fanzineName=""
-        self._output: str=""
-        self._rootDirectory: str=rootDirectory
-        NewFanzineDialog.__init__(self, parent)
-
-    @property
-    def Directory(self) -> str:
-        return self._directory
-    @Directory.setter
-    def Directory(self, s: str):
-        self._directory=s
-
-    @property
-    def FanzineName(self) -> str:
-        return self._fanzineName
-    @FanzineName.setter
-    def FanzineName(self, s: str):
-        self._fanzineName=s
-
-    def OnCreate(self, event):
-        self._directory=self.tDirName.GetValue()
-        self._fanzineName=self.tFanzineName.GetValue()
-
-        if self._directory == "":
-            self.tOutputBox.SetValue("You must supply a directory name")
-            return
-        if self._fanzineName == "":
-            self.tOutputBox.SetValue("You must supply a fanzine name")
-            return
-
-        self._output=""
-        self._output+=f"Checking directory {self._directory}...\n"
-        self._output+=f"     in root {self._rootDirectory}\n"
-        self.tOutputBox.SetValue(self._output)
-        if os.path.exists(os.path.join(self._rootDirectory, self._directory)):
-            self._output+="Name unavailable\n"
-            self._output+=f"Directory named {self._directory} already exists in root directory\n"
-            self.tOutputBox.SetValue(self._output)
-            return
-        self._output+=f"Directory named {self._directory} is OK\n"
-        self.tOutputBox.SetValue(self._output)
-
-        self.Destroy()
-
-    def OnCancel(self, event):
-        self.Destroy()
-
 
 
 def main():
