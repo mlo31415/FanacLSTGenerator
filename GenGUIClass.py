@@ -491,11 +491,11 @@ class LogDialog ( wx.Dialog ):
 class NewFanzineDialog ( wx.Dialog ):
 
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Create a New Fanzine Directory", pos = wx.DefaultPosition, size = wx.Size( 616,217 ), style = wx.DEFAULT_DIALOG_STYLE )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Create a New Fanzine Directory", pos = wx.DefaultPosition, size = wx.Size( 616,248 ), style = wx.DEFAULT_DIALOG_STYLE )
 
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 
-		fgSizer5 = wx.FlexGridSizer( 2, 1, 0, 0 )
+		fgSizer5 = wx.FlexGridSizer( 3, 1, 0, 0 )
 		fgSizer5.SetFlexibleDirection( wx.BOTH )
 		fgSizer5.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 
@@ -526,6 +526,11 @@ class NewFanzineDialog ( wx.Dialog ):
 
 		fgSizer5.Add( gSizer4, 1, wx.EXPAND, 5 )
 
+		self.m_staticText12 = wx.StaticText( self, wx.ID_ANY, u"Messages:", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText12.Wrap( -1 )
+
+		fgSizer5.Add( self.m_staticText12, 0, wx.ALL, 5 )
+
 		self.tOutputBox = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_WORDWRAP|wx.VSCROLL )
 		self.tOutputBox.SetMinSize( wx.Size( 600,100 ) )
 
@@ -545,6 +550,7 @@ class NewFanzineDialog ( wx.Dialog ):
 
 	def __del__( self ):
 		pass
+
 
 	# Virtual event handlers, overide them in your derived class
 	def OnCharFanzine( self, event ):
