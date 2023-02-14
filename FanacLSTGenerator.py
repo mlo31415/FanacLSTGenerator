@@ -414,7 +414,7 @@ class MainWindow(MainFrame):
     #       Return the index of the column containing the PDF flags or -1 if there is none.
     def AddOrDeletePDFColumnIfNeeded(self) -> int:
         # Are any of the files PDFs?
-        anyPDFs=any([row[0].lower().endswith(".pdf") for row in self.Datasource.Rows])
+        noPDFs=not any([row[0].lower().endswith(".pdf") for row in self.Datasource.Rows])
         allPDFs=all([row[0].lower().endswith(".pdf") for row in self.Datasource.Rows])
         ipdfcol=self.Datasource.ColHeaderIndex("pdf")
 
@@ -422,12 +422,12 @@ class MainWindow(MainFrame):
         # Then return -1
         if (allPDFs and ipdfcol == -1):
             return -1
-        if not anyPDFs:
+        if noPDFs:
             return -1
 
         # If they are all PDFs and there is a PDF column, it is redundant and should be removed
         if allPDFs and ipdfcol != -1:
-            self._dataGrid.DeleteColumn(ipdfcol)
+            self.Datasource.DeleteColumn(ipdfcol)
             return -1
 
         # OK, there are *some* PDFs.
@@ -440,16 +440,13 @@ class MainWindow(MainFrame):
         # Is there no PDF column?
         if ipdfcol == -1:
             # Add one on the right and return its index
-            self.Datasource.InsertColumnHeader(self.Datasource.NumCols, ColDefinition("PDF"))
-            for i, row in enumerate(self.Datasource.Rows):
-                self.Datasource.Rows[i].Cells.append("")
+            self.Datasource.InsertColumn(self.Datasource.NumCols, ColDefinition("PDF"))
             return self.Datasource.NumCols-1
 
-        # So we have one, but it is in the wrong place
-        # We have PDF files; Do we need to add a PDF column?
-        iPdf=self.Datasource.ColHeaderIndex("pdf")
-        self._dataGrid.MoveCols(iPdf, 1, self.Datasource.NumCols-1)
+        # So we have one, but it is in the wrong place: Move it to the end
+        self.Datasource.MoveColumns(self.Datasource.ColHeaderIndex("pdf"), 1, self.Datasource.NumCols-1)
         return self.Datasource.NumCols-1
+
 
     #------------------
     # Load an LST file from disk into an LSTFile class
