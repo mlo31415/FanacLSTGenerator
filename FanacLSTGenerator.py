@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import re
 from enum import Enum
 from typing import Union, Optional
 
@@ -19,6 +21,7 @@ from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage, AddChar
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
 from HelpersPackage import  ComparePathsCanonical, FindLinkInString, FindIndexOfStringInList, FanzineNameToDirName
+from HelpersPackage import RemoveHyperlink
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, LogClose
 from Log import Log as RealLog
@@ -1229,7 +1232,7 @@ class MainWindow(MainFrame):
         self.RefreshWindow()
 
 
-        # A sort function which treates the input text (if it can) as NNNaaa where NNN is sorted as an integer and aaa is sorted alphabetically.  Decimal point ends NNN.
+    # A sort function which treats the input text (if it can) as NNNaaa where NNN is sorted as an integer and aaa is sorted alphabetically.  Decimal point ends NNN.
     def PseudonumericSort(self, x: str) -> float:
         if IsInt(x):
             return float(int(x))
@@ -1245,6 +1248,17 @@ class MainWindow(MainFrame):
             pos+=1
         return int(m.groups()[0])+dec
 
+    # Sort a mailing column.  They will typically be an APA name follwoed by a mailing number, sometimes sollowed by a letter
+    def MailingSort(self, h: str) -> int:
+        if len(h.strip()) == 0:
+            return 0
+        # First, strip the surrounding HTML
+        h=RemoveHyperlink(h)
+        m=re.match("^[ a-zA-Z0-9-]* ([0-9]+)[a-zA-Z]?\s*$", h)
+        if m:
+            return Int0(m.groups()[0])
+        return 0
+
 
     def OnPopupSortOnSelectedColumn(self, event):       # MainWindow(MainFrame)
         self.wxGrid.SaveEditControlValue()
@@ -1259,13 +1273,16 @@ class MainWindow(MainFrame):
             if testIsMonth:
                 self.Datasource.Rows.sort(key=lambda x: ZeroIfNone(MonthNameToInt(x[col])))
             else:
-                testIsSortaNum=self.Datasource.ColDefs[col].Name == "WholeNum" or self.Datasource.ColDefs[col].Name == "Whole" or \
-                               self.Datasource.ColDefs[col].Name == "Vol" or self.Datasource.ColDefs[col].Name == "Volume" or \
-                               self.Datasource.ColDefs[col].Name == "Num" or self.Datasource.ColDefs[col].Name == "Number"
-                if testIsSortaNum:
-                    self.Datasource.Rows.sort(key=lambda x: self.PseudonumericSort(x[col]))
+                if self.Datasource.ColHeaders[col].lower() == "mailing":
+                    self.Datasource.Rows.sort(key=lambda x: self.MailingSort(x[col]))
                 else:
-                    self.Datasource.Rows.sort(key=lambda x:x[col])
+                    testIsSortaNum=self.Datasource.ColDefs[col].Name == "WholeNum" or self.Datasource.ColDefs[col].Name == "Whole" or \
+                                   self.Datasource.ColDefs[col].Name == "Vol" or self.Datasource.ColDefs[col].Name == "Volume" or \
+                                   self.Datasource.ColDefs[col].Name == "Num" or self.Datasource.ColDefs[col].Name == "Number"
+                    if testIsSortaNum:
+                        self.Datasource.Rows.sort(key=lambda x: self.PseudonumericSort(x[col]))
+                    else:
+                        self.Datasource.Rows.sort(key=lambda x:x[col])
         self.RefreshWindow()
 
     def OnPopupInsertColLeft(self, event):       # MainWindow(MainFrame)
