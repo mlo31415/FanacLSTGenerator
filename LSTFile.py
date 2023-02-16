@@ -2,8 +2,8 @@ from dataclasses import dataclass, field
 from Log import Log
 import re
 
-from HelpersPackage import CanonicizeColumnHeaders, Bailout, StripSpecificTag, FindAnyBracketedText
-
+from HelpersPackage import CanonicizeColumnHeaders, Bailout, StripSpecificTag, FindAnyBracketedText, RemoveHyperlink
+from HelpersPackage import FindIndexOfStringInList, FanzineNameToDirName
 
 
 @dataclass(order=False)
@@ -260,7 +260,6 @@ class LSTFile:
             # Split the row on ";" and append it
             self.Rows.append([h.strip() for h in row.split(";")])
 
-
         # Define the grid's columns
         # First add the invisible column which is actually the link destination
         # It's the first part of the funny xxxxx>yyyyy thing in the LST file's 1st column
@@ -271,23 +270,13 @@ class LSTFile:
             if len(row) < len(self.ColumnHeaders):
                 row.extend([""]*(len(self.ColumnHeaders)-len(row)))
 
-        # # If there are any rows with a pdf we want to make sure they are listed as PDF in a PDF column
-        # # Add the PDF column if necessary
-        #
-        # # We only do this if there are pdf files
-        # if any([row[0].lower().endswith(".pdf") for row in self.Rows]):
-        #     # Do we need to add a PDF column?
-        #     if not any([(header.lower() == "pdf") for header in self.ColumnHeaders]):
-        #         self.ColumnHeaders=self.ColumnHeaders[:2]+["PDF"]+self.ColumnHeaders[2:]         # Add the PDF column as the third column
-        #         for i, row in enumerate(self.Rows):
-        #             self.Rows[i]=row[:2]+[""]+row[2:]
-        #     # What is the PDF column's index?
-        #     iPdf=[header.lower() for header in self.ColumnHeaders].index("pdf")
-        #     # Go through all rows and make sure the PDF colum is set correctly
-        #     for i, row in enumerate(self.Rows):
-        #         if row[0].lower().endswith(".pdf"):
-        #             self.Rows[i][iPdf]="PDF"
-
+        # The Mailings column probably contains HTML links to the APA mailings, but we only want to display the markup test (e.g., "FAPA 23A") to the user.
+        # Strip away the html -- we'll add it back in on saving.
+        # Note that some older LST files have variant headers.
+        iMailings=FindIndexOfStringInList(self.ColumnHeaders, ["mailing", "mailings", "apa mailing", "apa mailings"], IgnoreCase=True)
+        if iMailings is not None:
+            for row in self.Rows:
+                row[iMailings]=RemoveHyperlink(row[iMailings])
 
     # ---------------------------------
     # Format the data and save it as an LST file on disk
@@ -335,6 +324,29 @@ class LSTFile:
         # Write out the column headers
         # Need to remove the "Filename" column which was added when the LST file was loaded.  It is the 1st col.
         content.append("; ".join(self.ColumnHeaders[1:]))
+
+        # Turn any mailing info into hyperlinks to the mailing on fanac.org
+        iMailings=FindIndexOfStringInList(self.ColumnHeaders, ["mailing", "mailings", "apa mailing", "apa mailings"], IgnoreCase=True)
+        if iMailings is not None:
+            self.ColumnHeaders[iMailings]="Mailing"     # Change header to standard
+            for row in self.Rows:
+                mailing=row[iMailings]
+                row[iMailings]=""
+                if len(mailing) > 0:
+                    mailings=mailing.split(",")     # It may be of the form 'FAPA 103, OMPA 32'
+                    first=True
+                    for mailing in mailings:
+                        mailing=mailing.strip()
+                        if len(mailing) > 0:
+                            if not first:
+                                row[iMailings]=row[iMailings]=row[iMailings]=""+", "    # Add a comma before subsequent mailings
+                            first=False
+                            m=re.match("([a-zA-Z1-9_\- ]*)\s+([0-9]+[a-zA-Z]*)$", mailing)      # Split the FAPA 103A into an apa name and the mailing number (which may have trailing characters '30A')
+                            if m is not None:
+                                apa=m.groups()[0]
+                                number=m.groups()[1]
+                                row[iMailings]=f'<a href="https://fanac.org/fanzines/APA_Mailings/{FanzineNameToDirName(apa)}/{number}.html">{mailing}</a>'
+
 
         # Do not save trailing empty rows
         lastrow=len(self.Rows)-1
