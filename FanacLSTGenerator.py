@@ -485,6 +485,7 @@ class MainWindow(MainFrame):
         # Get the newly selected target directory's path relative to rootpath
         self.Datasource.TargetDirectory=os.path.relpath(targetDirectoryPathname, start=self.RootDirectoryPath)
         self.SetLocalDirectoryLabel()
+
         # Rummage through the setup.bld file in the LST file's directory to get Complete and Credits
         complete, credits=self.ReadSetupBld(self.TargetDirectoryPathname)
         if complete is not None:
@@ -498,6 +499,7 @@ class MainWindow(MainFrame):
         else:
             self.tCredits.SetValue("")
             self.Datasource.Credits=""
+
         # And see if we can pick up the server directory from setup.ftp
         directory=self.ReadSetupFtp(targetDirectoryPathname)
         if directory != "":
