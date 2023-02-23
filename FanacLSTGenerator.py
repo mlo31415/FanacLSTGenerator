@@ -1326,6 +1326,7 @@ class MainWindow(MainFrame):
                     if m is not None:
                         # We found a mailing inside a hyperlink.  Add it to the temporary list of mailings and remove it from the mailings column
                         mailinginfo=m.groups()[0]+apa+" "+m.groups()[1]+m.groups()[2]
+                        mailinginfo=RemoveHyperlink(mailinginfo)
                         row[notescol]=re.sub(pat, "", row[notescol]).strip()
 
                     pat=f"(?:for|in|)[^a-zA-Z]+{apa}\s+([0-9]+)[,;]?"
@@ -1334,6 +1335,7 @@ class MainWindow(MainFrame):
                         # We found a mailing.  Add it to the temporary list of mailings and remove it from the mailings column
                         mailinginfo=apa+" "+m.groups()[0]
                         row[notescol]=re.sub(pat, "", row[notescol]).strip()
+
                     # Add this mailing to the mailings column
                     if mailinginfo:
                         if mailings[i]:
