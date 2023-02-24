@@ -924,8 +924,8 @@ class MainWindow(MainFrame):
     def GenerateServerNameFromFanzineName(self):
         # Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
         converted=self.tFanzineName.GetValue()
-        converted=RemoveScaryCharacters(converted)
         converted=RemoveArticles(converted)
+        converted=RemoveScaryCharacters(converted)
         converted=SplitOnSpan(" _.,", converted)
         converted="_".join(converted)
         self.tDirectoryServer.SetValue(converted)
