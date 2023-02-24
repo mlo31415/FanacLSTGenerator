@@ -21,7 +21,7 @@ from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage, AddChar
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
 from HelpersPackage import  ComparePathsCanonical, FindLinkInString, FindIndexOfStringInList, FindIndexOfStringInList2
-from HelpersPackage import RemoveHyperlink, FanzineNameToDirName
+from HelpersPackage import RemoveHyperlink, SplitOnSpan, RemoveArticles
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, LogClose
 from Log import Log as RealLog
@@ -923,7 +923,11 @@ class MainWindow(MainFrame):
 
     def GenerateServerNameFromFanzineName(self):
         # Log(f"OnFanzineNameChar: {fname=}  {event.GetKeyCode()}")
-        converted=FanzineNameToDirName(self.tFanzineName.GetValue()).upper()
+        converted=self.tFanzineName.GetValue()
+        converted=RemoveScaryCharacters(converted)
+        converted=RemoveArticles(converted)
+        converted=SplitOnSpan(" _.,", converted)
+        converted="_".join(converted)
         self.tDirectoryServer.SetValue(converted)
 
 
