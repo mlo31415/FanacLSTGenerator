@@ -20,8 +20,8 @@ from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefini
 from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage, AddChar
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
-from HelpersPackage import  ComparePathsCanonical, FindLinkInString, FindIndexOfStringInList, FanzineNameToDirName
-from HelpersPackage import RemoveHyperlink
+from HelpersPackage import  ComparePathsCanonical, FindLinkInString, FindIndexOfStringInList, FindIndexOfStringInList2
+from HelpersPackage import RemoveHyperlink, FanzineNameToDirName
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, LogClose
 from Log import Log as RealLog
@@ -247,6 +247,7 @@ class MainWindow(MainFrame):
 
         self.FillInPDFColumn()
         self.FillInPagesColumn()
+        self.StandardizeColumns()
 
 
     # Create a new LSTFile from the datasource
@@ -449,6 +450,42 @@ class MainWindow(MainFrame):
         # So we have one, but it is in the wrong place: Move it to the end
         self.Datasource.MoveColumns(self.Datasource.ColHeaderIndex("pdf"), 1, self.Datasource.NumCols-1)
         return self.Datasource.NumCols-1
+
+
+    #------------------
+    # The only columns *always* present are the Issue name/link, Year, Pages and Notes columns.
+    # Other columns will be deleted if they are completely empty and there is more than one row defined.
+    # The Mailing column (if any) will be automatically moved to the left of the Notes column.
+    def StandardizeColumns(self) -> None:
+
+        # Standardize the column names
+        for cd in self.Datasource.ColDefs:
+            cd.Name=CanonicizeColumnHeaders(cd.Name.strip())
+
+        # First look to see if we should be deleting empty columns
+        if self.Datasource.NumRows > 1:
+            # Look for empty columns to delete
+            # We work from the right (high index) to the left to preserve indexes in the event of deletion
+            for icol in reversed(range(self.Datasource.NumCols)):
+                # Is this a protected column?
+                if icol == 0 or icol == 1:      # We never mess with the 1st two columns
+                    continue
+                if self.Datasource.ColHeaders[icol] in ["Year", "Pages", "Notes"]:
+                    continue
+                # Nope. Check if it's am empty column
+                numFilled=len([1 for x in self.Datasource.Rows if len(x[icol].strip()) > 0])
+                if numFilled == 0:
+                    self.Datasource.DeleteColumn(icol)
+
+        # Make sure that any Mailing column is to the left of the Notes column
+        iMailing=FindIndexOfStringInList2(self.Datasource.ColHeaders, "Mailing")
+        if iMailing is not None:
+            iNotes=FindIndexOfStringInList2(self.Datasource.ColHeaders, "Notes")
+            if iNotes is not None:      # This should never fail!
+                if iMailing > iNotes:
+                    self.Datasource.MoveColumns(iMailing, 1, iNotes)
+
+
 
 
     #------------------
