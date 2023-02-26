@@ -491,7 +491,7 @@ class LogDialog ( wx.Dialog ):
 class NewFanzineDialog ( wx.Dialog ):
 
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Create a New Fanzine Directory", pos = wx.DefaultPosition, size = wx.Size( 616,248 ), style = wx.DEFAULT_DIALOG_STYLE )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Create a New Fanzine Directory", pos = wx.DefaultPosition, size = wx.Size( 435,152 ), style = wx.DEFAULT_DIALOG_STYLE )
 
 		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
 
@@ -507,6 +507,8 @@ class NewFanzineDialog ( wx.Dialog ):
 		gSizer4.Add( self.m_staticText111, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
 
 		self.tFanzineName = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.tFanzineName.SetMinSize( wx.Size( 200,-1 ) )
+
 		gSizer4.Add( self.tFanzineName, 0, wx.ALL, 5 )
 
 		self.m_staticText11 = wx.StaticText( self, wx.ID_ANY, u"Local directory name:", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -515,6 +517,8 @@ class NewFanzineDialog ( wx.Dialog ):
 		gSizer4.Add( self.m_staticText11, 0, wx.ALIGN_RIGHT|wx.ALL, 5 )
 
 		self.tDirName = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.tDirName.SetMinSize( wx.Size( 200,-1 ) )
+
 		gSizer4.Add( self.tDirName, 0, wx.ALL, 5 )
 
 		self.bCreate = wx.Button( self, wx.ID_ANY, u"Create", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -525,16 +529,6 @@ class NewFanzineDialog ( wx.Dialog ):
 
 
 		fgSizer5.Add( gSizer4, 1, wx.EXPAND, 5 )
-
-		self.m_staticText12 = wx.StaticText( self, wx.ID_ANY, u"Messages:", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_staticText12.Wrap( -1 )
-
-		fgSizer5.Add( self.m_staticText12, 0, wx.ALL, 5 )
-
-		self.tOutputBox = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_WORDWRAP|wx.VSCROLL )
-		self.tOutputBox.SetMinSize( wx.Size( 600,100 ) )
-
-		fgSizer5.Add( self.tOutputBox, 0, wx.ALL|wx.EXPAND, 5 )
 
 
 		self.SetSizer( fgSizer5 )

@@ -1,4 +1,5 @@
 import os
+import ctypes
 
 from GenGUIClass import NewFanzineDialog
 from HelpersPackage import FanzineNameToDirName
@@ -42,24 +43,19 @@ class NewFanzineWindow(NewFanzineDialog):
         self._directory=self.tDirName.GetValue()
         self._fanzineName=self.tFanzineName.GetValue()
 
-        if self._directory == "":
-            self.tOutputBox.SetValue("You must supply a directory name")
-            return
         if self._fanzineName == "":
-            self.tOutputBox.SetValue("You must supply a fanzine name")
+            ctypes.windll.user32.MessageBoxW(0, "You must supply a fanzine name", "Trouble", 0)
             return
 
-        self._output=""
-        self._output+=f"Checking directory {self._directory}...\n"
-        self._output+=f"     in root {self._rootDirectory}\n"
-        self.tOutputBox.SetValue(self._output)
-        if os.path.exists(os.path.join(self._rootDirectory, self._directory)):
-            self._output+="Name unavailable\n"
-            self._output+=f"Directory named {self._directory} already exists in root directory\n"
-            self.tOutputBox.SetValue(self._output)
+        if self._directory == "":
+            ctypes.windll.user32.MessageBoxW(0, "You must supply a directory name", "Trouble", 0)
             return
-        self._output+=f"Directory named {self._directory} is OK\n"
-        self.tOutputBox.SetValue(self._output)
+
+        if os.path.exists(os.path.join(self._rootDirectory, self._directory)):
+            msg=f"Name unavailable\nA directory named {self._directory} already exists in root directory\n"
+            ctypes.windll.user32.MessageBoxW(0, msg, "Trouble", 0)
+            return
+
 
         self.Destroy()
 
