@@ -1382,7 +1382,7 @@ class MainWindow(MainFrame):
                             mailings[i]+=" & "
                         mailings[i]+=apa+" "+m.groups()[0]
                         note=re.sub(pat, "", note).strip()  # Remove the matched text
-                if mailings[i]:     # We don';'y update the notes column unless we found a mailing
+                if mailings[i]:     # We don't update the notes column unless we found a mailing
                     row[notescol]=note
 
 
