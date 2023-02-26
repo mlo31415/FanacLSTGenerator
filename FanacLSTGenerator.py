@@ -21,7 +21,7 @@ from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage, AddChar
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
 from HelpersPackage import  ComparePathsCanonical, FindLinkInString, FindIndexOfStringInList, FindIndexOfStringInList2
-from HelpersPackage import RemoveHyperlink, SplitOnSpan, RemoveArticles
+from HelpersPackage import RemoveHyperlink, SplitOnSpan, RemoveArticles, RemoveHyperlinkContainingPattern
 from PDFHelpers import GetPdfPageCount
 from Log import LogOpen, LogClose
 from Log import Log as RealLog
@@ -217,8 +217,6 @@ class MainWindow(MainFrame):
         self.Datasource._fanzineList=FTRList
         self.Datasource.AlphabetizeIndividually=lstfile.AlphabetizeIndividually
 
-        self.ExtractApaMailings()
-
         self._dataGrid.RefreshWxGridFromDatasource(IgnoreCurrentGrid=True)
 
         # Fill in the upper stuff
@@ -245,6 +243,7 @@ class MainWindow(MainFrame):
         self.OnCheckAlphabetizeIndividually(None)  # Need to manually trigger datasource action
         self.cbComplete.SetValue(lstfile.Complete)
 
+        self.ExtractApaMailings()
         self.FillInPDFColumn()
         self.FillInPagesColumn()
         self.StandardizeColumns()
@@ -1354,34 +1353,37 @@ class MainWindow(MainFrame):
         if "Notes" in self._Datasource.ColHeaders:
             notescol=self._Datasource.ColHeaders.index("Notes")
 
+            # Collect the mailing into in this until later when we have a chance to put it in its own column
+            # Only if we determine that a mailing exists will be try to add it to the mailings column (perhaps creating it, also.)
+            mailings=[""]*len(self._Datasource.Rows)
+
             # Look through the rows and extract mailing info, if any
-            # We're looking for things like [for/in] <apa> nnn
-            mailings=[""]*len(self._Datasource.Rows)     # Collect the mailing into in this until later when we have a chance to put it in its own column
+            # We're looking for things like [for/in] <apa> nnn. Parhaps, more than one separated by commas or ampersands
             apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP", "FWD", "FIDO", "TAPS", "APA-F", "APA-L", "APA:NESFA", "WOOF", "SFPA"]
             for i, row in enumerate(self._Datasource.Rows):
-                for apa in apas:
-                    # Sometimes the apa reference is part of a hyperlink.  Look for that, first
-                    pat=f"(<a HREF=.+>)(?:for|in|[^a-zA-Z]*){apa}\s+([0-9]+[AB]?)(</a>)[,;]?"
-                    m=re.search(pat, row[notescol])
-                    mailinginfo=""
-                    if m is not None:
-                        # We found a mailing inside a hyperlink.  Add it to the temporary list of mailings and remove it from the mailings column
-                        mailinginfo=m.groups()[0]+apa+" "+m.groups()[1]+m.groups()[2]
-                        mailinginfo=RemoveHyperlink(mailinginfo)
-                        row[notescol]=re.sub(pat, "", row[notescol]).strip()
+                note=row[notescol]
+               #note=RemoveHyperlink(note)  # Some apa mailing entries are hyperlinked and those hyperlinks are a nuisance.  WQe now add them automatically, so they can go for now.
 
-                    pat=f"(?:for|in|)[^a-zA-Z]+{apa}\s+([0-9]+)[,;]?"
-                    m=re.search(pat, row[notescol])
+                # Run through the list of APAs, looking for in turn the apa name followed by a number and maybe a letter
+                # Sometimes the apa name will be preceded by "in" or "for"
+                # Sometimes the actual apa mailing name will be the text of a hyperlink
+                for apa in apas:
+
+                    # First look for a mailing name inside a hyperlink and, if found, remove the hyperlink
+                    mailingPat=f"{apa}\s+([0-9]+[a-zA-Z]?)"     # Matches APA 123X
+                    note=RemoveHyperlinkContainingPattern(note, mailingPat)
+
+                    # Now, with any interfering hyterlink remove, look for the mailing spec
+                    pat=f"(?:for|in|)?\s*{mailingPat}([,;&])?"
+                    m=re.search(pat, note, re.IGNORECASE)
                     if m is not None:
                         # We found a mailing.  Add it to the temporary list of mailings and remove it from the mailings column
-                        mailinginfo=apa+" "+m.groups()[0]
-                        row[notescol]=re.sub(pat, "", row[notescol]).strip()
-
-                    # Add this mailing to the mailings column
-                    if mailinginfo:
                         if mailings[i]:
                             mailings[i]+=" & "
-                        mailings[i]+=mailinginfo
+                        mailings[i]+=apa+" "+m.groups()[0]
+                        note=re.sub(pat, "", note).strip()  # Remove the matched text
+                if mailings[i]:     # We don';'y update the notes column unless we found a mailing
+                    row[notescol]=note
 
 
             # If any mailings were found, we need to put them into their new column (and maybe create the new column as well.)
