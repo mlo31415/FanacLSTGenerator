@@ -1107,8 +1107,7 @@ class MainWindow(MainFrame):
                     Enable("Extract Editor")
                     break
 
-        if self.Datasource.ColHeaders[self._dataGrid.clickedColumn] == "Notes":
-            Enable("Extract APA Mailings")
+        Enable("Tidy Up Columns")
 
         if self.Datasource.ColHeaders[self._dataGrid.clickedColumn] == "Editor" and self.tEditors.GetValue() is not None and len(self.tEditors.GetValue()) > 0:
             Enable("Propagate Editor")
@@ -1340,9 +1339,12 @@ class MainWindow(MainFrame):
         self.ExtractScanner(self.Datasource.ColDefs.index("Notes"))
         self.RefreshWindow()
 
-    def OnPopupExtractApaMailings(self, event):       # MainWindow(MainFrame)
+    def OnPopupTidyUpColumns(self, event):       # MainWindow(MainFrame)
         self.wxGrid.SaveEditControlValue()
         self.ExtractApaMailings()
+        self.FillInPDFColumn()
+        self.FillInPagesColumn()
+        self.StandardizeColumns()
         self.RefreshWindow()
 
 

@@ -256,8 +256,8 @@ class MainFrame ( wx.Frame ):
 		self.m_menuItemPopupExtractScanner = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract Scanner", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupExtractScanner )
 
-		self.m_menuItemPopupExtractApaMailings = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract APA Mailings", wx.EmptyString, wx.ITEM_NORMAL )
-		self.m_GridPopup.Append( self.m_menuItemPopupExtractApaMailings )
+		self.m_menuItemPopupTidyUpColumns = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Tidy Up Columns", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_GridPopup.Append( self.m_menuItemPopupTidyUpColumns )
 
 		self.m_menuItemPopupExtractEditor = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Extract Editor", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupExtractEditor )
@@ -316,7 +316,7 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_MENU, self.OnPopupInsertColRight, id = self.m_menuItemPopupInsertColRight.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupSortOnSelectedColumn, id = self.m_menuItemPopupSortOnCol.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupExtractScanner, id = self.m_menuItemPopupExtractScanner.GetId() )
-		self.Bind( wx.EVT_MENU, self.OnPopupExtractApaMailings, id = self.m_menuItemPopupExtractApaMailings.GetId() )
+		self.Bind( wx.EVT_MENU, self.OnPopupTidyUpColumns, id = self.m_menuItemPopupTidyUpColumns.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupExtractEditor, id = self.m_menuItemPopupExtractEditor.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupPropagateEditor, id = self.m_menuItemPopupPropagateEditor.GetId() )
 		self.Bind( wx.EVT_MENU, self.OnPopupMerge, id = self.m_menuItemMerge.GetId() )
@@ -436,7 +436,7 @@ class MainFrame ( wx.Frame ):
 	def OnPopupExtractScanner( self, event ):
 		event.Skip()
 
-	def OnPopupExtractApaMailings( self, event ):
+	def OnPopupTidyUpColumns( self, event ):
 		event.Skip()
 
 	def OnPopupExtractEditor( self, event ):
