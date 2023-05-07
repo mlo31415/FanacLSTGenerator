@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import re
 from enum import Enum
 from typing import Union, Optional
 
@@ -303,8 +302,6 @@ class MainWindow(MainFrame):
 
     def OnAddNewIssues(self, event):       # MainWindow(MainFrame)
 
-        newlyAddedFiles: list[tuple[str, str]]=[]   # The first element is the original filename.  The second is the name with scary characters removed.
-
         # Call the File Open dialog to select PDF files
         with wx.FileDialog(self,
                            message="Select PDF files to add",
@@ -316,43 +313,49 @@ class MainWindow(MainFrame):
                 return  # Quit unless OK was pressed.
 
             files=dlg.GetFilenames()
-            for file in files:
-                # Because we need to remove periods from the filename, we need to split the extension off so we don't remove that very important period.
-                f, e=os.path.splitext(file)
-                f=RemoveScaryCharacters(f)
-                newlyAddedFiles.append((file, f+e))
-            sourcePath=dlg.GetPaths()[0]
 
-        fanzineSourceDirectoryPathmame=os.path.split(sourcePath)[0]
 
-        # If this is a new LST file, it's also likely to be in a new directory, so we will need to create that directory before we copy the fanzine files over
+        # Do we need to create the target directory?
+        if not os.path.exists(self.TargetDirectoryPathname):
+            # Create the new directory
+            os.mkdir(self.TargetDirectoryPathname)
+            Log(f"CreateLSTDirectory: Created directory {self.TargetDirectoryPathname}", Flush=True)
 
-        # We want to handle the case -- probably some sort of test -- where the files to be added are already in the
-        if not ComparePathsCanonical(self.TargetDirectoryPathname, fanzineSourceDirectoryPathmame):
-            # Copy the files from the source directory to the fanzine's directory.
+        # Copy the files from the source directory to the fanzine's directory.
+        newlyAddedFiles: list[str]=[]
+        if len(files) > 0:
+            with ProgressMsg(self, f"Loading..."):
+                for file in files:
+                    # Because we need to remove periods from the filename, we need to split the extension off so we don't remove that very important period.
+                    origfullpath, origfilename=os.path.split(file)         # Split to path and filename (including ext)
+                    f, e=os.path.splitext(origfilename)                    # Remove the extension
+                    safefilename=RemoveScaryCharacters(f)+e
 
-            # Do we need to create the target directory?
-            if not os.path.exists(self.TargetDirectoryPathname):
-                # Create the new directory
-                os.mkdir(self.TargetDirectoryPathname)
-                Log(f"CreateLSTDirectory: Created directory {self.TargetDirectoryPathname}", Flush=True)
-
-            if len(newlyAddedFiles) > 0:
-                with ProgressMsg(self, f"Loading..."):
-                    for file in newlyAddedFiles:
-                        newfilepathname=os.path.join(self.TargetDirectoryPathname, file[1])
-                        oldfilepathname=os.path.join(fanzineSourceDirectoryPathmame, file[0])
-                        Log(f"CopySelectedFiles: Loading {oldfilepathname}  to  {newfilepathname}")
-                        ProgressMessage(self).UpdateMessage(f"Loading {file[0]}")
-                        shutil.copy(oldfilepathname, newfilepathname)
-        else:
-            # Files are already in the target LST directory. We still may need to rename some them to remove scary characters
-            for file in newlyAddedFiles:
-                if file[0] != file[1]:
-                    newpathname=os.path.join(self.TargetDirectoryPathname, file[1])
-                    oldpathname=os.path.join(fanzineSourceDirectoryPathmame, file[0])
-                    Log(f"shutil.move({oldpathname}, {newpathname}")
-                    shutil.move(oldpathname, newpathname)
+                    newfilepathname=os.path.join(self.TargetDirectoryPathname, safefilename)
+                    oldfilepathname=file
+                    Log(f"CopySelectedFiles: Loading {oldfilepathname}  to  {newfilepathname}")
+                    ProgressMessage(self).UpdateMessage(f"Loading {os.path.split(oldfilepathname)[1]}")
+                    # There are two cases: This may be a copy between directories or a rename in the same directory
+                    if ComparePathsCanonical(self.TargetDirectoryPathname, origfullpath):
+                        # It is in the right directory already.  Do we need to rename it?
+                        if safefilename == origfilename:
+                            Log(f"file {file} is just fine as it stands")
+                            newlyAddedFiles.append(safefilename)
+                            continue
+                        newfilepathname=os.path.join(self.TargetDirectoryPathname, safefilename)
+                        Log(f"shutil.move({file}, {newfilepathname}")
+                        try:
+                            shutil.move(file, newfilepathname)
+                            newlyAddedFiles.append(safefilename)
+                        except FileNotFoundError as e:
+                            LogError(f"FileNotFound: {file}")
+                    else:
+                        # It's a copy (the normal case)
+                        try:
+                            shutil.copy(oldfilepathname, newfilepathname)
+                            newlyAddedFiles.append(safefilename)
+                        except FileNotFoundError as e:
+                            LogError(f"FileNotFound: {oldfilepathname}")
 
         # OK, the files have been copied to the target directory.
 
@@ -364,11 +367,11 @@ class MainWindow(MainFrame):
                 self.Datasource.Rows.append(last)
                 break
         # Sort them and add them to the rows at the bottom
-        newlyAddedFiles.sort(key=lambda x: x[1])
+        newlyAddedFiles.sort()
         nrows=self.Datasource.NumRows
         self.Datasource.AppendEmptyRows(len(newlyAddedFiles))
         for i, file in enumerate(newlyAddedFiles):
-            self.Datasource.Rows[nrows+i][0]=file[1]
+            self.Datasource.Rows[nrows+i][0]=file
 
         # If any of them are pdfs, add a PDF column (if needed) and fill in the page counts
         self.FillInPDFColumn()
