@@ -314,6 +314,8 @@ class MainWindow(MainFrame):
 
             files=dlg.GetFilenames()
 
+        if len(files) == 0:
+            return
 
         # Do we need to create the target directory?
         if not os.path.exists(self.TargetDirectoryPathname):
@@ -321,44 +323,43 @@ class MainWindow(MainFrame):
             os.mkdir(self.TargetDirectoryPathname)
             Log(f"CreateLSTDirectory: Created directory {self.TargetDirectoryPathname}", Flush=True)
 
-        # Copy the files from the source directory to the fanzine's directory.
+        # Copy the files from the source directory to the fanzine's directory if necessary.
+        # Rename them with "safe" names for use on fanac.org if necessary
         newlyAddedFiles: list[str]=[]
-        if len(files) > 0:
-            with ProgressMsg(self, f"Loading..."):
-                for file in files:
-                    # Because we need to remove periods from the filename, we need to split the extension off so we don't remove that very important period.
-                    origfullpath, origfilename=os.path.split(file)         # Split to path and filename (including ext)
-                    f, e=os.path.splitext(origfilename)                    # Remove the extension
-                    safefilename=RemoveScaryCharacters(f)+e
+        with ProgressMsg(self, f"Loading..."):
+            for file in files:
+                # Because we need to remove periods from the filename, we need to temporarily split the extension off so we don't remove that very important period.
+                origfullpath, origfilename=os.path.split(file)         # Split to path and filename (including ext)
+                f, e=os.path.splitext(origfilename)                    # Remove the extension
+                safefilename=RemoveScaryCharacters(f)+e
 
+                newfilepathname=os.path.join(self.TargetDirectoryPathname, safefilename)
+                oldfilepathname=file
+                Log(f"CopySelectedFiles: Loading {oldfilepathname}  to  {newfilepathname}")
+                ProgressMessage(self).UpdateMessage(f"Loading {os.path.split(oldfilepathname)[1]}")
+                # There are two cases: This may be a copy between directories or a rename in the same directory
+                if ComparePathsCanonical(self.TargetDirectoryPathname, origfullpath):
+                    # It is in the right directory already.  Do we need to rename it?
+                    if safefilename == origfilename:
+                        Log(f"file {file} is just fine as it stands")
+                        newlyAddedFiles.append(safefilename)
+                        continue
                     newfilepathname=os.path.join(self.TargetDirectoryPathname, safefilename)
-                    oldfilepathname=file
-                    Log(f"CopySelectedFiles: Loading {oldfilepathname}  to  {newfilepathname}")
-                    ProgressMessage(self).UpdateMessage(f"Loading {os.path.split(oldfilepathname)[1]}")
-                    # There are two cases: This may be a copy between directories or a rename in the same directory
-                    if ComparePathsCanonical(self.TargetDirectoryPathname, origfullpath):
-                        # It is in the right directory already.  Do we need to rename it?
-                        if safefilename == origfilename:
-                            Log(f"file {file} is just fine as it stands")
-                            newlyAddedFiles.append(safefilename)
-                            continue
-                        newfilepathname=os.path.join(self.TargetDirectoryPathname, safefilename)
-                        Log(f"shutil.move({file}, {newfilepathname}")
-                        try:
-                            shutil.move(file, newfilepathname)
-                            newlyAddedFiles.append(safefilename)
-                        except FileNotFoundError as e:
-                            LogError(f"FileNotFound: {file}")
-                    else:
-                        # It's a copy (the normal case)
-                        try:
-                            shutil.copy(oldfilepathname, newfilepathname)
-                            newlyAddedFiles.append(safefilename)
-                        except FileNotFoundError as e:
-                            LogError(f"FileNotFound: {oldfilepathname}")
+                    Log(f"shutil.move({file}, {newfilepathname}")
+                    try:
+                        shutil.move(file, newfilepathname)
+                        newlyAddedFiles.append(safefilename)
+                    except FileNotFoundError as e:
+                        LogError(f"FileNotFound: {file}")
+                else:
+                    # It's a copy (the normal case)
+                    try:
+                        shutil.copy(oldfilepathname, newfilepathname)
+                        newlyAddedFiles.append(safefilename)
+                    except FileNotFoundError as e:
+                        LogError(f"FileNotFound: {oldfilepathname}")
 
-        # OK, the files have been copied to the target directory.
-
+        # The files are all now in the target directory and, if needed, renamed to safe names.
         # We have a list of file names that are in the LSTfile's directory
         # Start by removing any already-existing empty trailing rows
         while self.Datasource.Rows:
@@ -366,14 +367,15 @@ class MainWindow(MainFrame):
             if any([cell != "" for cell in last.Cells]):
                 self.Datasource.Rows.append(last)
                 break
-        # Sort them and add them to the rows at the bottom
+
+        # Sort the new files by name and add them to the rows at the bottom
         newlyAddedFiles.sort()
         nrows=self.Datasource.NumRows
         self.Datasource.AppendEmptyRows(len(newlyAddedFiles))
         for i, file in enumerate(newlyAddedFiles):
             self.Datasource.Rows[nrows+i][0]=file
 
-        # If any of them are pdfs, add a PDF column (if needed) and fill in the page counts
+        # Add a PDF column (if needed) and fill in the PDF column and page counts
         self.FillInPDFColumn()
         self.FillInPagesColumn()
 
