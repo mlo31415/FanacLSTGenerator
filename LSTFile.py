@@ -237,9 +237,9 @@ class LSTFile:
 
             # Case 3b:  {<a name=..>}>{text}   (an anchor)
             # This one is easy
-            m=re.match("(<a\s+name=.*?>)(</a>|>?)(.*?)$", col0, re.IGNORECASE)
+            m=re.match("(<a\s+name=.*?>)(?:</a>|>)?(.*?)$", col0, re.IGNORECASE)        # Note that the 2d group is non-capturing
             if m is not None:
-                row=col0.split(";")+colrest
+                row=[m.groups()[0], m.groups()[1]]+colrest
                 self.Rows.append(row)
                 #print(f"Case 3b: {row}")
                 continue
