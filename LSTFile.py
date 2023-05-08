@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
-from Log import Log
+from Log import Log, LogError
 import re
+from urllib.parse import urlparse
 
 from HelpersPackage import CanonicizeColumnHeaders, Bailout, StripSpecificTag, FindAnyBracketedText, RemoveHyperlink
-from HelpersPackage import FindIndexOfStringInList, FanzineNameToDirName
+from HelpersPackage import FindIndexOfStringInList, FanzineNameToDirName, ContainsBracketedText
 
 
 @dataclass(order=False)
@@ -151,28 +152,36 @@ class LSTFile:
         self.ColumnHeaders=[CanonicizeColumnHeaders(h.strip()) for h in colHeaderLine.split(";") if len(h) > 0]
 
         # And likewise the rows
-        # We need to do some special processing on the first two columns
-        # Col 1 (actually [0]) normally contains the link to the fanzine.  Col 2 normally contains the link text -- typically the fanzine's issue name
+        # We need to do some special processing on the first two columns.  In the LST file they are combined into a single columm,
+        # and here we expand this to two for processing.  In all caases, the input is the 1st ;-separated group in a line of the LST file
+        #
+        # On display and for processing, Col 0 normally contains the link to the fanzine.  Col 1 normally contains the link text -- typically the fanzine's issue name
+        #
         # There are four formats that I've found so far.
         # Case (0) is an empty line
-        # Case (1) The most common format has (filename>displayname) in the first column. We treat the ">" as a ";" for the purposes of the spreadsheet. (We'll undo this on save.)
+        # Case (1) The most common format has (filename>displayname) in the input. We treat the ">" as a ";" for the purposes of the spreadsheet. (We'll undo this on save.)
         #   This format is to a specific issue of a fanzine.
-        #   Col 1 has filename and Col 2 has displayname
-        # Case (2) An especially annoying one is where fanzine data has been entered, but there's no actual scan.
-        #   Col 1 is blank and Col 2 has the fanzine name
-        # Case (3) A less common format which has some sort of HTML or hyperlink in column 1.  It comes in two flavors:
-        #   Case (3a) "<a HREF="http://abc">xyz</a>" where abc is a URL and xyz is the display name.
-        #   So col 1 will be abc and Col 2 will be xyz and this will turn into Case 1 on writing out
-        #   Case (3b) "<a name="something">xyz</a>
-        #   This is a reference to an anchor within the page.  It is also displayed without modification
-        #   Col 1 will be <a name="something"> and Col 2 will be xyz
-        # Case (4) is the case where there is no link at all in col 1, but there is text that is used for things like separation of different kinds of fanzines.
+        #   Output: Col 0 has the filename and Col 1 has the displayname
+        # Case (2) An especially annoying one is where fanzine data has been entered, but there's no actual scan.  The input is just text.
+        #   Output: Col 0 is blank and Col 1 has the fanzine name
+        # Case (3) A less common format which has some sort of HTML or hyperlink in the input.  It comes in two flavors:
+        #   Case (3a) "<a HREF="http://abc.bdc">xyz</a>" where abc is a URL and xyz is the display name.
+        #   Output: col 0 will be abc.bdc and Col 1 will be xyz and this will turn into Case 1 on writing out
+        #   Case (3b) "<a name="something">xyz</a>   This is to insert an anchor within the page.  It is also displayed without modification
+        #   Output: Col 0 will be <a name="something"> and Col 1 will be xyz
+        # Case (4) is the case where there is no link at all in the input, but there *is* text containing HTML that is used for things like separation of different kinds of fanzines.
         #   This text may be decorated with html (e.g., <b>xx</b>) and the html must be preserved.
-        #   Col 1 will be something like <b>xx</b> and Col 2 will be blank
+        #   Output: Col 0 will be the input (e.g., <b>xx</b>) and Col 0 will be blank
+        #
+        # Summary:
+        # Case 0:   {blank}
+        # Case 1:   {filename}>{text w/o HTML}
+        # Case 2:   {text w/o HTML}
+        # Case 3a   {<a href...>}>{text}     (There are multiple flavors depending on the details of the link)
+        # Case 3b:  {<a name=..>}>{text}
+        # Casd 4:   {HTML}>{blank}  (Or, maybe, just {HTML})
         self.Rows=[]
         for row in rowLines:
-            #print(f"\n{row}")
-            col1, colrest=row.split(";", 1)
 
             # Case 0
             # If the line has no content (other than ">" and ";" and whitespace, append an empty line
@@ -180,19 +189,41 @@ class LSTFile:
                 self.Rows.append([""]*len(self.ColumnHeaders))
                 continue
 
-            # First look for case (4) (nothing in col 1):
-            lead, brackets, bracketed, trail=FindAnyBracketedText(col1)
+            rowx=row.split(";")
+            col0=rowx[0].strip()
+            colrest=rowx[1:]
+
+            # Case 1:   {filename}>{text w/o HTML}
+            # Case 2:   {optional >}{text w/o HTML}     Input
+            if not ContainsBracketedText(col0):
+                # Look for case (2), and add the ">" to make it case (1)
+                if ">" not in col0:
+                    col0=">"+col0.strip() # Because there are some cases where there is no filename, the ">" is missing and we need to supply one
+                # Apparently there may still be cases where the ">" was a ">>".  Fix this.
+                col0=col0.replace(">>", ">")
+                assert col0.count(">") == 1
+                # Now we can handle them all as case (1)
+                self.Rows.append(col0.split(">")+colrest)
+                #print(f"Cases 1&2: {[h.strip() for h in row.split(';')]}")
+                continue
+
+            # Casd 4:   {HTML} (but not an href!)
+            # Case (4) is the case where there is no link at all in the input, but there *is* text containing HTML that is used for things like separation of different kinds of fanzines.
+            #   This text may be decorated with html (e.g., <b>xx</b>) and the html must be preserved.
+            #   Output: Col 0 will be the input (e.g., <b>xx</b>) and Col 0 will be blank
+            lead, brackets, bracketed, trail=FindAnyBracketedText(col0)
             #print(f"{lead=}  {brackets=}  {bracketed=}  {trail=}")
-            # But remember that case (3) allows for links to be put in col 1, so we ignore the case where we have an <a ...>...</a> and treat it normally.
+            # But remember that case (3) handles links in col 0, so we must ignore the case where we have an <a ...>...</a> and treat it normally.
             # Note that sometimes the LST files have case 3 (an anchor) band *also* HTML-decorated text, so we skip lines starting "<a< name="
             if len(brackets) > 0 and brackets.lower() != "a" and not lead.lower().startswith("<a name="):
                 # Since this is of this special form, we save it as it is and don't process it further.
                 # Split the row on ";" and append it
-                self.Rows.append([h.strip() for h in row.split(";")])
+                self.Rows.append([col0, ""]+colrest)
                 #print(f"Case 4: {[h.strip() for h in row.split(';')]}")
                 continue
 
-            # Case 3a is <a href="http[s]//xxx.yyy/zzz/qqq.ext...>display text</a>  i.e., some sort of link elsewhere in fanac.org or elsewhere on the internet
+            # Case 3a   {<a href...>}>{text}     (There are multiple flavors depending on the details of the link)
+            # This case is  <a href="http[s]//xxx.yyy/zzz/qqq.ext...>display text</a>  i.e., some sort of full hyperlink somewhere in fanac.org or elsewhere on the internet
             # There are several subcases:
             #       input LST file --> in display --> in output LST file
             #   3a1: Link away from fanac.org
@@ -203,62 +234,40 @@ class LSTFile:
             #       https//fanac.org/fanzines/abc/def.ext --> ../abc/def.ext --> <a https//fanac.org/fanzines/abc/def.ext
             #   3a4: Link using full url to the current directory or a file in it
             #       https://fanac.org/fanzines/curdir/stuff.ext --> stuff.ext --> stuff.ext
-            m=re.match("<a\s+href=\"?https?:\/\/(.*?\/?)\"?>(.*?)(<\/a>)?$", col1, re.IGNORECASE)
-            if m is not None:
-                url=m.groups()[0]
-                disptext= m.groups()[1]
-                # Now which of the subcases is it?
-                m=re.match("(www\.)?fanac\.org\/fanzines\/", url, re.IGNORECASE)   # Does it refer to fanac.org?
-                if m is None:
-                    # No, so it's an outside link
-                    row=[url, disptext]+[h.strip() for h in colrest.split(";")]
-                    self.Rows.append(row)
-                    #print(f"Case 3a1: {row}")
-                    continue
-                # OK, it's a full URL to fanac.org.  Look for subcases.
-                # Begin by removing the fanac.org/fanzines part as that's not a given
-                url=re.sub("(www\.)?fanac\.org\/fanzines\/", "", url, re.IGNORECASE)
-                m=re.match("(.*)\/$", url)  # Note that this is the whole URL that ends on a /
-                if m is not None:
-                    # We are linking to some directory under fanzines -- Case 3a2
-                    row=[f"../{url}", disptext]+[h.strip() for h in colrest.split(";")]
-                    self.Rows.append(row)
-                    #print(f"Case 3a2: {row}")
-                    continue
-                m=re.match("(.*)\/(.+)$", url)   # Here the URL contains a / but does not end in it
-                if m is not None:
-                    # We are linking to some directory under fanzines -- Case 3a2
-                    row=[f"../{m.groups()[0]}/{m.groups()[1]}", disptext]+[h.strip() for h in colrest.split(";")]
-                    self.Rows.append(row)
-                    #print(f"Case 3a2: {row}")
-                    continue
 
-                print(f"Case 3a seems to be failing!: {row}")
-                continue
-
-            # Case 3b (an anchor) is left unchanged.
-            m=re.match("(<a\s+name=.*?>)(<\/a>|>?)(.*?)$", col1, re.IGNORECASE)
+            # Case 3b:  {<a name=..>}>{text}   (an anchor)
+            # This one is easy
+            m=re.match("(<a\s+name=.*?>)(</a>|>?)(.*?)$", col0, re.IGNORECASE)
             if m is not None:
-                row=[m.groups()[0], m.groups()[2]]+[h.strip() for h in colrest.split(";")]
+                row=col0.split(";")+colrest
                 self.Rows.append(row)
                 #print(f"Case 3b: {row}")
                 continue
 
-            # Look for case (2), and add the ">" to make it case (1)
-            case=None
-            if col1.find(">") == -1:    # If there's no ">" in col1, put it there.
-                row=">"+row.strip() # Because there are some cases where there is no filename, the ">" is missing and we need to supply one
-                col1=row.split(";", 1)[0]
+            # Does col 0 contain a full hyperlink?
+            m=re.match("<a\s+href=\"?https?://(.*?/?)\"?>(.*?)(</a>)?$", col0, re.IGNORECASE)
+            if m is not None:
+                url=m.groups()[0]
+                disptext= m.groups()[1]
 
-            # Now we can handle them all as case (1)
-            if row.find(">>") != -1 and row.find(">>") < row.find(";"):
-                row=row[:row.find(">>")]+">;"+row[row.find(">>")+2:]
-            elif row.find(">") != -1 and row.find(">") < row.find(";"):
-                row=row[:row.find(">")]+";"+row[row.find(">")+1:]
-            #print(f"Cases 1&2: {[h.strip() for h in row.split(';')]}")
+                # Now which of the subcases is it?
+                m=re.match("(www\.)?fanac\.org/(.*)", url, re.IGNORECASE)   # Does it refer to fanac.org?
+                if m is not None:
+                    # Yes
+                    if url.lower().startswith("fanzines"):
+                        row=[url]+[disptext]+colrest
+                        self.Rows.append(row)
+                        #print(f"Case 3a1: {row}")
+                        continue
+                    # So we're going somewhere else in fanac.org.  Treat it the same as an outside URL
 
-            # Split the row on ";" and append it
-            self.Rows.append([h.strip() for h in row.split(";")])
+                # We're looking at a full URL
+                row=[f"http://{url}"]+[disptext]+colrest
+                self.Rows.append(row)
+                #print(f"Case 3ax: {row}")
+                continue
+            print(f"Case 3a seems to be failing!: {row}")
+
 
         # Define the grid's columns
         # First add the invisible column which is actually the link destination
@@ -349,82 +358,119 @@ class LSTFile:
 
 
         # Do not save trailing empty rows
-        lastrow=len(self.Rows)-1
-        while lastrow > 0:
-            if any([x.strip() != "" for x in self.Rows[lastrow]]):
-                break
-            lastrow-=1
+        if len(self.Rows) > 1:
+            lastNonEmptyRow=len(self.Rows)-1
+            while lastNonEmptyRow > 0:
+                if any([x.strip() != "" for x in self.Rows[lastNonEmptyRow]]):
+                    break
+            if lastNonEmptyRow < len(self.Rows)-1:
+                self.Rows=self.Rows[:lastNonEmptyRow+1]
 
-        # And the rows
-        for i, row in enumerate(self.Rows):
-            if len(row) < 3:    # Smallest possible LST file
-                continue    #TODO: Should this be a break?
+        # Now lst file can have fewer than three columns.
+        if len(self.Rows[0]) < 3:  # Smallest possible LST file
+            LogError(f"LSTfile.Save(): {filename} has {len(self.Rows)} columns which is too few. Not saved")
+            return False
 
-            if i > lastrow:
-                break   # Stop saving when we reach the last non-empty row
+        # Now save the remaining rows.  Note that the list of rows is trimmed so that each has the same length
+        # Convert each row in the GUI interface to a row in the LST file
+        for row in self.Rows:
 
-            # Now convert each row in the GUI interface to a row in the LST file
-            # We need to figure out from what we see displayed when format to use on writing out
-            # We don't do the cases in numnerical order as it's simpler to detect some cases
+            # The later cols (#s 2-N) are just written out with semicolon separators
+            rows2toN='; '.join(row[2:])
 
-            col1=""
-            # Case (0): An empty line
-            if len("".join(row).strip()) == 0:
-                col1=""
+            # The first two columns have very special handing.
+            # Make sure they are stripped.
+            row[0]=row[0].strip()
+            row[1]=row[1].strip()
 
-            # Case (2):  Col 1 is blank and Col 2 has the fanzine name
-            elif len(row[0].strip()) == 0 and len(row[1].strip()) > 0:
-                col1=f"{row[1]}"
-                #print(f"Case 2: {col1}")
+            # The first two cases are easy, since there is nothing in col 0 and hence there is now possibility of a link of any sort.
+            if len(row[0]) == 0:
+                # Case (0): Both col0 and col1 are empty
+                # Case (2):  Just col 0 is empty
+                    out=f"{row[1]}; {rows2toN}"
+                    #print(f"Case 1 or 2: {out}")
+                    content.append(out)
+                    continue
 
-            # Case (4) is the case where there is no link at all in col 1, but there is text that is used for things like separation of different kinds of fanzines.
+            # Now we know there is something in col 0.  It will most commonly be a filename in the current fanzine directory, but it may be header information or a hyperlink.
+            # First, check to see if it's a hyperlink.  They can be in the forms:
+            #   ../xxx/yyy/filename.ext          (A link into a different fanzine directory)
+            #   a.b.com/xxx/yyy/filename.ext     (A link to another website)
+            #   http[s]://.../filename.ext       (A link to *anywhere* that has been pasted in)
+
+
+
+
+            # TODO: Isn't this really the case where col 0 has text that isn't a hyperlink and col 1 is empty?  Should this also include Case 3???
+            # Case (4) is the case where there is no link in col 0, but there is text that is used for things like separation of different kinds of fanzines.
             #   This text may be decorated with html (e.g., <b>xx</b>) and the html must be preserved.
-            #   Col 1 will be something like <b>xx</b> and Col 2 will be blank
-            elif re.search(r"<(.*)>.*</\1>", row[0].strip()) and not re.search(r"<(.*)>.*</\1>", row[0].strip()).groups()[0].lower().startswith("a"):
-            #elif re.search("<(.*)>.*<\/\1>", row[0].strip()) and len(row[1].strip()) == 0:
-                col1=row[0]
-                #print(f"Case 4: {col1}")
+            #   Col 0 will be something like <b>xx</b> and Col 1 will be blank
+            if re.search(r"<([b-zB-Z].*)>.*</\1>", row[0].lower().strip()):     # If there is a <xxx>...</xxx> in the 1st col and xxx does not start with A, we have a non-link
+                out=f"{row[0]}; {rows2toN}"   #TODO what about col 2?
+                #print(f"Case 4: {out}")
+                content.append(out)
+                continue
+            # No look for the case where there is no <> delimited text at all.  That just gets put out as-is
+            if not re.search(r"<(.*)>.*</\1>", row[0].lower().strip()):
+                out=f"{row[0]}; {rows2toN}"   #TODO what about col 2?
+                #print(f"Case 4: {out}")
+                content.append(out)
+                continue
 
-            # Case 3a is <a href="http[s]//xxx.yyy/zzz/qqq.ext...>display text</a>  i.e., some sort of link elsewhere in fanac.org or elsewhere on the internet
+
+            # Case 3a is <a href="http[s]//xxx.yyy/zzz/qqq.ext...>display text</a>  in col 0.  I.e., some sort of link to elsewhere in fanac.org or to elsewhere on the internet.
+            # Col 1 is empty
             # There are several subcases:
             #       input LST file --> in display --> in output LST file
-            #   3a1: Link away from fanac.org
+            #   3a: Link away from fanac.org
             #       https://xyz.com/stuff/stuff --> xyz.com/stuff/stuff --> <a https://xyz.com/stuff/stuff
-            #   3a2: Link to the index page of some other fanzines directory on fanac.org
+            #   3b: Link to the index page of some other fanzines directory on fanac.org
             #       https//fanac.org/fanzines/abc/ --> ../abc/ --> <a https//fanac.org/fanzines/abc/
-            #   3a3: Link a file in some other fanzines directory on fanac.org
+            #   3c: Link a file in some other fanzines directory on fanac.org
             #       https//fanac.org/fanzines/abc/def.ext --> ../abc/def.ext --> <a https//fanac.org/fanzines/abc/def.ext
-            #   3a4: Link using full url to the current directory or a file in it
+            #   3d: Link using full url to the current directory or a file in it
             #       https://fanac.org/fanzines/curdir/stuff.ext --> stuff.ext --> stuff.ext
-            elif row[0].startswith("../"):
-                # Case 3a2 or 3a3
+
+            # Case 3b or 3c
+            if row[0].startswith("../"):
                 col1=f"<a href=\"https://fanac.org/fanzines/{row[0].removeprefix('../')}\">{row[1]}"
+                out=f"{col1}; {rows2toN}"
                 #print(f":Case 3a2/3: {col1}")
+                content.append(out)
+                continue
 
-            elif re.match(".*/..*\/", row[0]) is not None:  # Look for a period followed by a slash
-                # Case 3a1
-                col1=f"<a href=\"https://{row[0]}\">{row[1]}"
-                #print(f":Case 3a1: {col1}")
+            if row[0].startswith("<a "):
+                try:
+                    m=re.match("<a href=(.*)>(.*)$", row[0].strip())
+                    if m is not None:
+                        url=urlparse(m.groups()[0])
+                        print(str(url))
+                        # Case 3a
+                        out=f"{row[0]}{row[1]}"f"<a href=\"https://{row[0]}\">{row[1]}{rows2toN}"
+                        # print(f":Case 3a1: {col1}")
+                        content.append(out)
+                        continue
 
-            #  Case (3b) "<a name="something">xyz</a>
+                except:
+                    pass
+
+            #  Case (3??) "<a name="something">xyz</a>
             #   This is a reference to an anchor within the page.  It is also displayed without modification
-            #   Col 1 will be <a name="something"> and Col 2 will be xyz
-            elif row[0].startswith("<a name="):
-                col1=f"{row[0]}{row[1]}"
+            #   Col 0 will be <a name="something"> and Col 1 will be xyz
+            if row[0].startswith("<a name="):
+                out=f"{row[0]}{row[1]}; {rows2toN}"
                 #print(f"Case 3b: {col1}")
+                content.append(out)
+                continue
 
-            # Case (1): The most common format has (filename>displayname) in the first column. We treat the ">" as a ";" for the purposes of the spreadsheet. (We'll undo this on save.)
-            #   This format is to a specific issue of a fanzine.
-            #   Col 1 has filename and Col 2 has displayname
+            # Case (1): The most common format has (filename>displayname) in the first column of the LST file.
+            #   This format is to a specific issue of a fanzine in the current directory.
+            #   Col 0 has filename and Col 1 has displayname
             # This is also case 3a4!
-            else:
-                col1=row[0]+">"+row[1]
-                #print(f"Case 1: {col1}")
-
-
-            # Now append the rest of the columns
-            out=f"{col1}; {'; '.join(row[2:])}"
+            out=f"{row[0]}>{row[1]}; {rows2toN}"
+            #print(f"Case 1: {out}")
             content.append(out)
+            continue
 
         # And write it out
         with open(filename, "w+") as f:
