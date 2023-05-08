@@ -374,6 +374,7 @@ class LSTFile:
         # Now save the remaining rows.  Note that the list of rows is trimmed so that each has the same length
         # Convert each row in the GUI interface to a row in the LST file
         for row in self.Rows:
+            row=[x.strip() for x in row]    # Remove any leading or traling blanks
 
             # The later cols (#s 2-N) are just written out with semicolon separators
             rows2toN='; '.join(row[2:])
