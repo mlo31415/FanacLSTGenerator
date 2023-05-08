@@ -218,7 +218,7 @@ class LSTFile:
             if len(brackets) > 0 and brackets.lower() != "a" and not lead.lower().startswith("<a name="):
                 # Since this is of this special form, we save it as it is and don't process it further.
                 # Split the row on ";" and append it
-                self.Rows.append([col0, ""]+colrest)
+                self.Rows.append(["", col0]+colrest)
                 #print(f"Case 4: {[h.strip() for h in row.split(';')]}")
                 continue
 
