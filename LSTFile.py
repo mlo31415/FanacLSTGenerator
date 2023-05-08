@@ -255,7 +255,7 @@ class LSTFile:
                 if m is not None:
                     # Yes
                     if url.lower().startswith("fanzines"):
-                        row=[url]+[disptext]+colrest
+                        row=[url, disptext]+colrest
                         self.Rows.append(row)
                         #print(f"Case 3a1: {row}")
                         continue
