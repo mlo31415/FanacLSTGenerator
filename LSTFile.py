@@ -183,7 +183,7 @@ class LSTFile:
         self.Rows=[]
         for row in rowLines:
             cols=[x.strip() for x in row.split(";")]
-            lstrow=self.LSTToRow(cols[0])+cols[2:]
+            lstrow=self.LSTToRow(cols[0])+cols[1:]
             self.Rows.append(lstrow)
 
 
@@ -369,16 +369,16 @@ class LSTFile:
             LogError(f"LSTfile.Save(): {filename} has {len(self.Rows)} columns which is too few. Not saved")
             return False
 
-        # Now save the remaining rows.  Note that the list of rows is trimmed so that each has the same length
+        # Now save the spreadsheet rows.  Note that the list of rows is trimmed so that each has the same length
         # Convert each row in the GUI interface to a row in the LST file
         for row in self.Rows:
             row=[x.strip() for x in row]    # Remove any leading or traling blanks
 
             # The first two columns require special handing.
-            cols01=self.RowToLST(row[0:1])
+            cols01=self.RowToLST(row[0:2])
             if cols01 != "":
                 # The later cols (#s 2-N) are just written out with semicolon separators
-                content.append(cols01+'; '.join(row[2:]))
+                content.append(f"{cols01}; {'; '.join(row[2:])}")
 
         # And write it out
         with open(filename, "w+") as f:
@@ -427,10 +427,11 @@ class LSTFile:
             out=f"{row[0]};"  # TODO what about col 2?
             # print(f"Case 4: {out}")
             return out
-        # No look for the case where there is no <> delimited text at all.  That just gets put out as-is
-        if not re.search(r"<(.*)>.*</\1>", row[0].lower().strip()):
-            out=f"{row[0]};"  # TODO what about col 2?
-            # print(f"Case 4: {out}")
+
+        # If it starts 'http:' we take it as a bare URL
+        if row[0].lower().startswith("http:"):
+            out=f"{row[0]}>{row[1]}"
+            # print(f"Case ?: {out}")
             return out
 
         # Case 3a is <a href="http[s]//xxx.yyy/zzz/qqq.ext...>display text</a>  in col 0.  I.e., some sort of link to elsewhere in fanac.org or to elsewhere on the internet.
@@ -466,6 +467,12 @@ class LSTFile:
 
             except:
                 pass
+
+        # Now look for the case where there is no <> delimited text at all.  That just gets put out as-is
+        if not re.search(r"<(.*)>.*</\1>", row[0].lower().strip()):
+            out=f"{row[0]};"  # TODO what about col 1?
+            # print(f"Case 4: {out}")
+            return out
 
         #  Case (3??) "<a name="something">xyz</a>
         #   This is a reference to an anchor within the page.  It is also displayed without modification
