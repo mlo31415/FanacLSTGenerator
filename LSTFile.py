@@ -169,6 +169,7 @@ class LSTFile:
         #   Output: col 0 will be abc.bdc and Col 1 will be xyz and this will turn into Case 1 on writing out
         #   Case (3b) "<a name="something">xyz</a>   This is to insert an anchor within the page.  The anchor is in col 0 and everything else in col 1
         #   Output: Col 0 will be <a name="something"> and Col 1 will be xyz
+        #   Case 3c: href=http:abc/def>xyz   where abc.def is a URL and xyz is the display name.
         # Case (4) is the case where there is no link at all in the input, but there *is* text containing HTML that is used for things like separation of different kinds of fanzines.
         #   This text may be decorated with html (e.g., <b>xx</b>) and the html must be preserved.
         #   Output: Col 0 will be the input (e.g., <b>xx</b>) and Col 0 will be blank
@@ -179,6 +180,7 @@ class LSTFile:
         # Case 2:   {text w/o HTML}
         # Case 3a   {<a href...>}>{text}     (There are multiple flavors depending on the details of the link)
         # Case 3b:  {<a name=..>}>{text}
+        # Case 3c:  {http:...}>{text}
         # Case 4:   {HTML}>{blank}  (Or, maybe, just {HTML})
         self.Rows=[]
         for row in rowLines:
@@ -214,6 +216,12 @@ class LSTFile:
             return out
 
         col0=col0.strip()
+
+        # Case 3c:  {http:...}>{text}
+        if col0.lower().startswith("http:"):
+            if ">" in col0:
+                out=col0.split(">")
+                return out
 
         # Case 1:   {filename}>{text w/o HTML}
         # Case 2:   {optional >}{text w/o HTML}     Input
