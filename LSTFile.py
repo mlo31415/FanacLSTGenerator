@@ -430,7 +430,7 @@ class LSTFile:
         # There are no slashes or tags in filename; text does not contain HTML
         if "/" not in row[0] and '\\' not in row[0]:
             if not ContainsBracketedText(row[1]):
-                out=f'{row[0]}>{row[1]};'
+                out=f'{row[0]}>{row[1]}'
                 # print(f"Case 0 or 2: {out}")
                 return out
 
@@ -458,7 +458,7 @@ class LSTFile:
 
         # If it starts 'http:' we take it as a bare URL
         if row[0].lower().startswith("http:"):
-            out=f"{row[0]}>{row[1]}"
+            out=f'<a href="{row[0]}">{row[1]}'
             # print(f"Case ?: {out}")
             return out
 
