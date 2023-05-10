@@ -208,6 +208,25 @@ class LSTFile:
                 row[iMailings]=RemoveHyperlink(row[iMailings])
 
 
+    # Remove a leading http[s]//[www.]fanac.org/fanzines, f present.
+    def RemoveUneededStartToURL(self, s: str) ->str:
+        pattern="(https?://)"
+        prefix=""
+        m=re.match(pattern, s)
+        if m is not None:
+            prefix=m.groups()[0]
+            s=re.sub(pattern, "", s, 1, re.IGNORECASE)
+
+        pattern="(www.)?fanac.org/fanzines/"
+        m=re.match(pattern, s)
+        if m is not None:
+            s=re.sub(pattern, "", s, 1, re.IGNORECASE)
+            return s
+
+        return prefix+s
+
+
+
     def LSTToRow(self, col0: str) -> list[str, str]:
         # Case 0
         # If the line has no content (other than ">" and ";" and whitespace, append an empty line
@@ -221,6 +240,7 @@ class LSTFile:
         if col0.lower().startswith("http:"):
             if ">" in col0:
                 out=col0.split(">")
+                out[0]=self.RemoveUneededStartToURL(out[0])
                 return out
 
         # Case 1:   {filename}>{text w/o HTML}
