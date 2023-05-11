@@ -1545,11 +1545,11 @@ class FanzineTableRow(GridDataRowClass):
         del self._cells[icol]
 
 
-    def __getitem__(self, index: Union[int, slice]) -> str:      # FanzineTableRow(GridDataRowClass)
+    def __getitem__(self, index: Union[int, slice]) -> str | list[str]:      # FanzineTableRow(GridDataRowClass)
         if type(index) is int:
             return self._cells[index]
         if type(index) is slice:
-            assert False
+            return self._cells[index]
             #return self._cells(self.List[index])
         raise KeyError
 
