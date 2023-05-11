@@ -425,7 +425,7 @@ class LSTFile:
         if row[0] == "":
             # Case (0): Both col0 and col1 are empty
             # Case (2):  Just col 0 is empty
-            out=f"{row[1]};"
+            out=f"{row[1]}"
             # print(f"Case 0 or 2: {out}")
             return out
 
@@ -446,7 +446,7 @@ class LSTFile:
         # Case 3b:  {<a name=..>}>{text}   (an anchor)
         m=re.match("(<a\s+name=[^<>]+>)", row[0])
         if m is not None:
-            out=m.groups()[0]+">"+row[1]+";"
+            out=m.groups()[0]+">"+row[1]
             # print(f"Case 3b: {out}")
             return out
 
@@ -492,7 +492,7 @@ class LSTFile:
                     url=urlparse(m.groups()[0])
                     print(str(url))
                     # Case 3a
-                    out=f"{row[0]}{row[1]}"f"<a href=\"https://{row[0]}\">{row[1]};"
+                    out=f"{row[0]}{row[1]}"f"<a href=\"https://{row[0]}\">{row[1]}"
                     # print(f":Case 3a1: {col1}")
                     return out
 
@@ -509,7 +509,7 @@ class LSTFile:
         #   This is a reference to an anchor within the page.  It is also displayed without modification
         #   Col 0 will be <a name="something"> and Col 1 will be xyz
         if row[0].startswith("<a name="):
-            out=f"{row[0]}{row[1]};"
+            out=f"{row[0]}{row[1]}"
             # print(f"Case 3b: {col1}")
             return out
 
@@ -517,6 +517,6 @@ class LSTFile:
         #   This format is to a specific issue of a fanzine in the current directory.
         #   Col 0 has filename and Col 1 has displayname
         # This is also case 3a4!
-        out=f"{row[0]}>{row[1]};"
+        out=f"{row[0]}>{row[1]}"
         # print(f"Case 1: {out}")
         return out
