@@ -185,6 +185,10 @@ class MainWindow(MainFrame):
             Log(f"MainWindow: Failure reading LST file '{pathname}'", isError=True)
             Bailout(e, f"MainWindow: Failure reading LST file '{pathname}'", "LSTError")
 
+        if len(lstfile.Rows) == 0:
+            Bailout(None, f"LST file {pathname} appears to have no rows.  It cannot be read.", "LST file load error")
+
+
         self._dataGrid.NumCols=0
         self._dataGrid.DeleteRows(0, self._dataGrid.NumRows)
         self._dataGrid.Grid.ScrollLines(-999)   # Scroll down a long ways to show start of file
