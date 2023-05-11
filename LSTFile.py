@@ -210,7 +210,8 @@ class LSTFile:
 
 
     # Remove a leading http[s]//[www.]fanac.org/fanzines, f present.
-    def RemoveUneededStartToURL(self, s: str) ->str:
+    @staticmethod
+    def RemoveUneededStartToURL(s: str) ->str:
         pattern="(https?://)"
         prefix=""
         m=re.match(pattern, s)
@@ -227,8 +228,8 @@ class LSTFile:
         return prefix+s
 
 
-
-    def LSTToRow(self, col0: str) -> list[str, str]:
+    @staticmethod
+    def LSTToRow(col0: str) -> list[str, str]:
         # Case 0
         # If the line has no content (other than ">" and ";" and whitespace, append an empty line
         if re.match("^[>;\s]*$", col0):
@@ -241,7 +242,7 @@ class LSTFile:
         if col0.lower().startswith("http:"):
             if ">" in col0:
                 out=col0.split(">")
-                out[0]=self.RemoveUneededStartToURL(out[0])
+                out[0]=LSTFile.RemoveUneededStartToURL(out[0])
                 return out
 
         # Case 1:   {filename}>{text w/o HTML}
@@ -417,7 +418,8 @@ class LSTFile:
 
 
     # Take the first two columns of the spreadsheet and generate the LST file string for them
-    def RowToLST(self, row: list[str, str]) -> str:
+    @staticmethod
+    def RowToLST(row: list[str, str]) -> str:
 
         # The first two cases are easy, since there is nothing in col 0 and hence there is no possibility of a link of any sort.
         if row[0] == "":
