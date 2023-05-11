@@ -121,7 +121,8 @@ class LSTFile:
             line=contents.pop(0).strip()    # Pop the first line from the list of likes
             if len(line) == 0:
                 continue    # Skip blank lines
-            if m:=re.search("<!-- Fanac-keywords: (.*)-->", line.strip()):
+            m=re.search("<!-- Fanac-keywords: (.*)-->", line.strip())
+            if m is not None:
                 continue    # We ignore all Fanac-keywords lines as they are meant to be invisible and are handled elsewhere
             if IsTableLine(line):   # If we come to a table line, we have found the column headers (which must start the table). Save it and then drop down to table row processing.
                 colHeaderLine=line
