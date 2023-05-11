@@ -49,6 +49,8 @@ class MainWindow(MainFrame):
         self._dataGrid: DataGrid=DataGrid(self.wxGrid)
         self.Datasource=FanzineTablePage()      # Note that this is an empty instance
 
+        self._dataGrid._ColorCellByValue=self.ColorCells01ByValue
+
         self.IsNewDirectory=False   # Are we creating a new directory? (Alternative is that we're editing an old one.)
         # self.RootDirectoryPath is the location in which to create new LSTfile directories and the place to look for one to open.
         # The default is the CWD. We turn all the separators to '/' for prettiness
@@ -161,6 +163,29 @@ class MainWindow(MainFrame):
         if self.Editmode == EditMode.EditingOld:
             if self.tFanzineName.GetValue() and len(self.Datasource.Rows) > 0:
                 self.bSave.Enable()
+
+
+    #------------------
+    # An override of DataGrids's method ColorCellsByValue() for columns 0 and 1 only
+    def ColorCells01ByValue(self, icol: int, irow: int):
+        if icol != 0 and icol != 1:
+            return
+        if icol < 0 or icol >= self.Datasource.NumCols:
+            return
+        if irow < 0 or irow >= self.Datasource.NumRows:
+            return
+
+        # The coloring depends on the contents of the cell *pair* self.Datasource.Rows[irow][0:1]
+        # We will turn the contents of those cells into LST format and back again.  If they pass unchanged, then we color them white
+        # If they change (other than trivial whitespace) we color them pink
+        cells=self.Datasource.Rows[irow][0:2]
+        cellsafter=LSTFile.LSTToRow(LSTFile.RowToLST(cells))
+        if cells[0].casefold() == cellsafter[0].casefold() and cells[1].casefold() == cellsafter[1].casefold():
+            return
+
+        self._dataGrid.SetCellBackgroundColor(irow, icol, Color.Pink)
+        Log(f"Setting row[{irow}] col {icol} to Pink because {cells} != {cellsafter}")
+
 
 
     #------------------
