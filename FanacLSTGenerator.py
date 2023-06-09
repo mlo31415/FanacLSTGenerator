@@ -207,7 +207,7 @@ class MainWindow(MainFrame):
         try:
             lstfile.Load(pathname)
         except Exception as e:
-            Log(f"MainWindow: Failure reading LST file '{pathname}'", isError=True)
+            LogError(f"MainWindow: Failure reading LST file '{pathname}'")
             Bailout(e, f"MainWindow: Failure reading LST file '{pathname}'", "LSTError")
 
         if len(lstfile.Rows) == 0:
@@ -724,7 +724,7 @@ class MainWindow(MainFrame):
                         newname=os.path.join(self.TargetDirectoryPathname, f"{os.path.splitext(self.lstFilename)[0]}-old-{i}.LST")
                     os.rename(oldname, newname)
                 except Exception as e:
-                    Log(f"OnSave fails when trying to rename {oldname} to {newname}", isError=True)
+                    LogError(f"OnSave fails when trying to rename {oldname} to {newname}")
                     Bailout(PermissionError, f"OnSave fails when trying to rename {oldname} to {newname}", "LSTError")
 
             self.SaveFile(lstfile, oldname)
@@ -776,7 +776,7 @@ class MainWindow(MainFrame):
         filename=os.path.join(path, "setup.bld")
         Log(f"Opening {filename}")
         if not os.path.exists(filename):
-            Log(f"{filename} does not exist", isError=True)
+            LogError(f"{filename} does not exist")
             return False
         with open(filename, "r") as fd:
             lines=fd.readlines()
@@ -908,12 +908,12 @@ class MainWindow(MainFrame):
         Log(f"LstFile.SaveFile: save {name}")
         try:
             if not lstfile.Save(name):
-                Log(f"OnSave failed (1) while trying to save {name}", isError=True)
+                LogError(f"OnSave failed (1) while trying to save {name}")
                 MessageBox(f"Failure saving {name}")
                 return
             self.MarkAsSaved()
         except:
-            Log(f"OnSave failed while trying to save {name}", isError=True)
+            LogError(f"OnSave failed while trying to save {name}")
             Bailout(PermissionError, "OnSave failed (2) when trying to write file "+name, "LSTError")
 
 
