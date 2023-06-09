@@ -409,6 +409,9 @@ class LSTFile:
             if cols01 != "":
                 # The later cols (#s 2-N) are just written out with semicolon separators
                 content.append(f"{cols01}; {'; '.join(row[2:])}")
+            else:
+                LogError(f"Could not interpret {row[0:2]} when saving.")
+                return False
 
         # And write it out
         with open(filename, "w+") as f:
