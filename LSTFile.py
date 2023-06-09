@@ -402,7 +402,7 @@ class LSTFile:
         # Now save the spreadsheet rows.  Note that the list of rows is trimmed so that each has the same length
         # Convert each row in the GUI interface to a row in the LST file
         for row in self.Rows:
-            row=[x.strip() for x in row]    # Remove any leading or traling blanks
+            row=[x.strip() for x in row]    # Remove any leading or trailing blanks
 
             # The first two columns require special handing.
             cols01=self.RowToLST(row[0:2])
