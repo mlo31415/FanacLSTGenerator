@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from Log import Log, LogError
+from Log import LogError
 import re
 from urllib.parse import urlparse
 
