@@ -131,7 +131,7 @@ class LSTFile:
             # We remove leading and trailing <fanac-type> and <h2>
             if inFanacType or line.lower().startswith("<fanac-type>"):
                 while line.lower().startswith("<fanac-type>"):  # Must deal with duplicated HTML tags in some broken pages
-                    line=StripSpecificTag(StripSpecificTag(line, "fanac-type"), "h2")   # Steip off the tags until there are none left
+                    line=StripSpecificTag(StripSpecificTag(line, "fanac-type"), "h2")   # Strip off the tags until there are none left
                 self.Locale.append(line)
                 if not line.lower().endswith("</fanac-type>"):
                     inFanacType=True
@@ -153,8 +153,8 @@ class LSTFile:
         self.ColumnHeaders=[CanonicizeColumnHeaders(h.strip()) for h in colHeaderLine.split(";") if len(h) > 0]
 
         # And likewise the rows
-        # We need to do some special processing on the first two columns.  In the LST file they are combined into a single columm,
-        # and here we expand this to two for processing.  In all caases, the input is the 1st ;-separated group in a line of the LST file
+        # We need to do some special processing on the first two columns.  In the LST file they are combined into a single column,
+        # and here we expand this to two for processing.  In all cases, the input is the 1st ;-separated group in a line of the LST file
         #
         # On display and for processing, Col 0 normally contains the link to the fanzine.  Col 1 normally contains the link text -- typically the fanzine's issue name
         #
@@ -211,7 +211,7 @@ class LSTFile:
 
     # Remove a leading http[s]//[www.]fanac.org/fanzines, f present.
     @staticmethod
-    def RemoveUneededStartToURL(s: str) ->str:
+    def RemoveUnneededStartToURL(s: str) ->str:
         pattern="(https?://)"
         prefix=""
         m=re.match(pattern, s)
@@ -242,7 +242,7 @@ class LSTFile:
         if col0.lower().startswith("http:"):
             if ">" in col0:
                 out=col0.split(">")
-                out[0]=LSTFile.RemoveUneededStartToURL(out[0])
+                out[0]=LSTFile.RemoveUnneededStartToURL(out[0])
                 return out
 
         # Case 1:   {filename}>{text w/o HTML}
