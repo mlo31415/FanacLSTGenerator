@@ -376,13 +376,13 @@ class LSTFile:
                         mailing=mailing.strip()
                         if len(mailing) > 0:
                             if not first:
-                                row[iMailings]=row[iMailings]=row[iMailings]=""+", "    # Add a comma before subsequent mailings
+                                row[iMailings]+=", "    # Add a comma before subsequent mailings
                             first=False
                             m=re.match("([a-zA-Z1-9_\- ]*)\s+([0-9]+[a-zA-Z]*)$", mailing)      # Split the FAPA 103A into an apa name and the mailing number (which may have trailing characters '30A')
                             if m is not None:
                                 apa=m.groups()[0]
                                 number=m.groups()[1]
-                                row[iMailings]=f'<a href="https://fanac.org/fanzines/APA_Mailings/{FanzineNameToDirName(apa)}/{number}.html">{mailing}</a>'
+                                row[iMailings]+=f'<a href="https://fanac.org/fanzines/APA_Mailings/{FanzineNameToDirName(apa)}/{number}.html">{mailing}</a>'
 
 
         # Do not save trailing empty rows
