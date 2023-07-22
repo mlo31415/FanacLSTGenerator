@@ -1409,7 +1409,7 @@ class MainWindow(MainFrame):
                     mailingPat=f"{apa}\s+([0-9]+[a-zA-Z]?)"     # Matches APA 123X
                     note=RemoveHyperlinkContainingPattern(note, mailingPat)
 
-                    # Now, with any interfering hyterlink remove, look for the mailing spec
+                    # Now, with any interfering hyperlink remove, look for the mailing spec
                     pat=f"(?:for|in|)?\s*{mailingPat}([,;&])?"
                     m=re.search(pat, note, re.IGNORECASE)
                     if m is not None:
