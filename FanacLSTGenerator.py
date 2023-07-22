@@ -99,7 +99,7 @@ class MainWindow(MainFrame):
 
     @property
     def TargetDirectoryPathname(self) -> str:
-        return os.path.join(self.RootDirectoryPath, self.Datasource.TargetDirectory)
+        return os.path.normpath(os.path.join(self.RootDirectoryPath, self.Datasource.TargetDirectory))
 
 
     # Look at information available and color buttons and fields accordingly.
