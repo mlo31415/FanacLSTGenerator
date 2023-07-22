@@ -542,7 +542,7 @@ class MainWindow(MainFrame):
             targetFilename=dlg.GetFilename()
             targetDirectoryPathname=os.path.split(dlg.GetPath())[0]
 
-        with ProgressMsg(self, f"Loading {self.lstFilename}"):
+        with ProgressMsg(self, f"Loading {targetFilename}"):
 
             self.LoadLSTFile2(targetDirectoryPathname, targetFilename)
 
