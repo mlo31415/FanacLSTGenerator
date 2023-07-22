@@ -1,7 +1,7 @@
+import os.path
 from dataclasses import dataclass, field
-from Log import LogError
+from Log import LogError, Log
 import re
-from urllib.parse import urlparse
 
 from HelpersPackage import CanonicizeColumnHeaders, Bailout, StripSpecificTag, FindAnyBracketedText, RemoveHyperlink
 from HelpersPackage import FindIndexOfStringInList, FanzineNameToDirName, ContainsBracketedText
