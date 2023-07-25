@@ -174,7 +174,7 @@ class MainWindow(MainFrame):
             return
         if irow < 0 or irow >= self.Datasource.NumRows:
             return
-
+        return      #TODO: Fix ColorCells01ByValue!!
         # The coloring depends on the contents of the cell *pair* self.Datasource.Rows[irow][0:1]
         # We will turn the contents of those cells into LST format and back again.  If they pass unchanged, then we color them white
         # If they change (other than trivial whitespace) we color them pink
@@ -184,7 +184,7 @@ class MainWindow(MainFrame):
             return
 
         self._dataGrid.SetCellBackgroundColor(irow, icol, Color.Pink)
-        Log(f"Setting row[{irow}] col {icol} to Pink because {cells} != {cellsafter}")
+        #Log(f"Setting row[{irow}] col {icol} to Pink because {cells} != {cellsafter}")
 
 
 
@@ -542,7 +542,7 @@ class MainWindow(MainFrame):
             targetFilename=dlg.GetFilename()
             targetDirectoryPathname=os.path.split(dlg.GetPath())[0]
 
-        with ProgressMsg(self, f"Loading {targetFilename}"):
+        with ProgressMsg(self, f"Loading '{targetFilename}'"):
 
             self.LoadLSTFile2(targetDirectoryPathname, targetFilename)
 
@@ -700,7 +700,20 @@ class MainWindow(MainFrame):
     # Save an existing LST file by simply overwriting what exists.
     def SaveExistingLSTFile(self):       # MainWindow(MainFrame)
 
-        with ProgressMsg(self, f"Creating {self.tFanzineName.GetValue()}"):
+        # In normal mode we save each edited LST file by renaming it and the edited version is given the original name
+        # In debug more, the original version stays put and the edited version is saved as -new
+
+        if g_debug:
+            newname=os.path.splitext(self.lstFilename)
+            newfname=newname[0]+"-new"+newname[1]
+            newpname=os.path.join(self.TargetDirectoryPathname, newfname)
+        else:
+            newfname=self.lstFilename
+            oldname=os.path.join(self.TargetDirectoryPathname, newfname)
+            if os.path.exists(oldname):
+                newpname=os.path.join(self.TargetDirectoryPathname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
+
+        with ProgressMsg(self, f"Creating {newfname}"):
 
             # Create an instance of the LSTfile class from the datasource
             lstfile=self.CreateLSTFileFromDatasourceEtc()
@@ -711,23 +724,29 @@ class MainWindow(MainFrame):
                 if not self.CopyTemplateFile("setup.bld template", "setup.bld", self.TargetDirectoryPathname, templateDirectory):
                     Log(f"Could not create setup.bld using {templateDirectory=}")
 
-            # If there is an old file, rename it
-            oldname=os.path.join(self.TargetDirectoryPathname, self.lstFilename)
-            if os.path.exists(oldname):
-                newname=os.path.join(self.TargetDirectoryPathname, os.path.splitext(self.lstFilename)[0]+"-old.LST")
 
-                try:
-                    i=0
-                    # Look for an available new name
-                    while os.path.exists(newname):
-                        i+=1
-                        newname=os.path.join(self.TargetDirectoryPathname, f"{os.path.splitext(self.lstFilename)[0]}-old-{i}.LST")
-                    os.rename(oldname, newname)
-                except Exception as e:
-                    LogError(f"OnSave fails when trying to rename {oldname} to {newname}")
-                    Bailout(PermissionError, f"OnSave fails when trying to rename {oldname} to {newname}", "LSTError")
+            if not g_debug:
+                # If there is an old file, rename it
+                if os.path.exists(oldname):
 
-            self.SaveFile(lstfile, oldname)
+                    try:
+                        i=0
+                        # Look for an available new name
+                        while os.path.exists(newpname):
+                            i+=1
+                            newpname=os.path.join(self.TargetDirectoryPathname, f"{os.path.splitext(self.lstFilename)[0]}-old-{i}.LST")
+                        os.rename(oldname, newpname)
+                    except Exception as e:
+                        LogError(f"OnSave fails when trying to rename {oldname} to {newpname}")
+                        Bailout(PermissionError, f"OnSave fails when trying to rename {oldname} to {newpname}", "LSTError")
+
+                self.SaveFile(lstfile, oldname)
+
+            if os.path.exists(newpname):
+                os.remove(newpname)
+            self.SaveFile(lstfile, newpname)
+            #End For debugging purposes!!!!!
+
             self.MarkAsSaved()
             self.RefreshWindow()
 
@@ -909,7 +928,7 @@ class MainWindow(MainFrame):
         try:
             if not lstfile.Save(name):
                 LogError(f"OnSave failed (1) while trying to save {name}")
-                MessageBox(f"Failure saving {name}")
+                MessageBox(f"Failure saving '{name}'")
                 return
             self.MarkAsSaved()
         except:
@@ -1252,7 +1271,7 @@ class MainWindow(MainFrame):
         self.wxGrid.SaveEditControlValue()
         top, _, bottom, _=self._dataGrid.SelectionBoundingBox()
         # Merge is only active when we have two rows selected and exactly one of this is a pdf.
-        # We merge the filename fromt he PDF row into the data of the non-PDF row.  If there is a PDF column, we merge that, too.
+        # We merge the filename from the PDF row into the data of the non-PDF row.  If there is a PDF column, we merge that, too.
         # Then we delete the (former) PDF column
         pdfline=top
         oldline=bottom
@@ -1682,6 +1701,11 @@ def main():
     Log(f"Settings().Load({os.path.join(homedir, 'FanacLSTGenerator settings.json')})")
     Settings().Load(os.path.join(homedir, "FanacLSTGenerator settings.json"), MustExist=True)
     Log(Settings().Dump())
+
+    # Set the debug/production mode
+    global g_debug
+    g_debug=Settings().Get("Debug Mode", False)
+    g_debug=True       #This allows programmatic override of the value in the parameter file
 
     showLogWindow=Settings().Get("Show log window", False)
     if not showLogWindow:
