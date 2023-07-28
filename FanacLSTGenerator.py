@@ -1459,66 +1459,64 @@ class MainWindow(MainFrame):
                     row[mailcol]+=mailings[i]
 
 
-    # Run through the rows and columns and look at the Notes column  If an APA mailing note is present,
-    # move it to a "Mailing" column (which may need to be created).  Remove the text from the Notes column.
-    # Find the Notes column. If there is none, we're done.
+    # Run through the rows and columns and look at the Notes column  If an editor note is present,
+    # move it to a "Editors" column (which may need to be created).  Remove the text from the Notes column.
     def OnPopupExtractEditor(self, event):  # MainWindow(MainFrame)
         self.wxGrid.SaveEditControlValue()
 
-        if "Notes" in self._Datasource.ColHeaders:
-            notescol=self._Datasource.ColHeaders.index("Notes")
+        # Find the Notes column. If there is none, we're done.
+        if "Notes" not in self._Datasource.ColHeaders:
+            return
+        notescol=self._Datasource.ColHeaders.index("Notes")
 
-            # Look through the rows and extract mailing info, if any
-            # We're looking for things like [for/in] <apa> nnn
-            editors=[""]*len(self._Datasource.Rows)  # Collect the mailing into in this until later when we have a chance to put it in its own column
+        # Look through the rows and extract mailing info, if any
+        # We're looking for things like Edited by/Editor nnn
+        editors=[""]*len(self._Datasource.Rows)  # Collect the editor into in this until later when we have a chance to put it in its own column
+        for i, row in enumerate(self._Datasource.Rows):
+            # Look for 'edited by xxx' or 'edited: xxx'
+            # xxx can be one of three patterns:
+            #       Aaaa Bbbb
+            #       Aaaa B Cccc
+            #       Aaaa B. Cccc
+            pat="[eE](ditor|dited by):?\s*([A-Z][a-zA-Z]+\s+[A-Z]?[.]?\s*[A-Z][a-zA-Z]+)\s*"
+            m=re.search(pat, row[notescol])
+            if m is not None:
+                # We found an editor.
+                eds=m.groups()[1]
+                locs=m.regs[0]
+                r=row[notescol]
+                r=r.replace(r[locs[0]:locs[1]], "")
+                if len(r) > 0:
+                    pat="\s*(and|&|,)\s*([A-Z][a-zA-Z]+\s+[A-Z]?[.]?\s*[A-Z][a-zA-Z]+)\s*"
+                    m=re.search(pat, r)
+                    if m is not None:
+                        eds+=" & "+m.groups()[1]
+                        locs=m.regs[0]
+                        r=r.replace(r[locs[0]:locs[1]], "")
+
+                editors[i]=eds
+                row[notescol]=r
+
+
+                row[notescol]=re.sub(pat, "", row[notescol]).strip()
+
+
+        # If any editors were found, we need to put them into their new column (and maybe create the new column as well.)
+        if any([m for m in editors]):
+            # Append an editor column if needed
+            if "Editor" not in self._Datasource.ColHeaders:
+                self._Datasource.InsertColumnHeader(-1, self.stdColHeaders["Editor"])
+            # And in each row append an empty cell
             for i, row in enumerate(self._Datasource.Rows):
-                # Look for 'edited by xxx' or 'edited: xxx'
-                # xxx can be one of three patterns:
-                #       Aaaa Bbbb
-                #       Aaaa B Cccc
-                #       Aaaa B. Cccc
-                pat="[eE](ditor|dited by):?\s*([A-Z][a-zA-Z]+\s+[A-Z]?[.]?\s*[A-Z][a-zA-Z]+)\s*"
-                m=re.search(pat, row[notescol])
-                if m is not None:
-                    # We found an editor.
-                    eds=m.groups()[1]
-                    locs=m.regs[0]
-                    r=row[notescol]
-                    r=r.replace(r[locs[0]:locs[1]], "")
-                    if len(r) > 0:
-                        pat="\s*(and|&|,)\s*([A-Z][a-zA-Z]+\s+[A-Z]?[.]?\s*[A-Z][a-zA-Z]+)\s*"
-                        m=re.search(pat, r)
-                        if m is not None:
-                            eds+=" & "+m.groups()[1]
-                            locs=m.regs[0]
-                            r=r.replace(r[locs[0]:locs[1]], "")
+                if len(row) < len(self._Datasource.ColHeaders):
+                    self._Datasource.Rows[i].Extend([""])
 
-                    editors[i]=eds
-                    row[notescol]=r
-
-
-                    row[notescol]=re.sub(pat, "", row[notescol]).strip()
-
-
-
-                # Add it to the temporary list of mailings and remove it from the mailings column
-
-            # If any mailings were found, we need to put them into their new column (and maybe create the new column as well.)
-            if any([m for m in editors]):
-                # Append an editor column if needed
-                if "Editor" not in self._Datasource.ColHeaders:
-                    self._Datasource.InsertColumnHeader(-1, self.stdColHeaders["Editor"])
-                # And in each row append an empty cell
-                for i, row in enumerate(self._Datasource.Rows):
-                    if len(row) < len(self._Datasource.ColHeaders):
-                        self._Datasource.Rows[i].Extend([""])
-
-                # And move the mailing info
-                mailcol=self._Datasource.ColHeaders.index("Editor")
-                for i, row in enumerate(self._Datasource.Rows):
-                    if row[mailcol]:
-                        row[mailcol]+=" & "
-                    row[mailcol]+=editors[i]
+            # And move the editor info
+            edcol=self._Datasource.ColHeaders.index("Editor")
+            for i, row in enumerate(self._Datasource.Rows):
+                if row[edcol]:
+                    row[edcol]+=" & "
+                row[edcol]+=editors[i]
 
         self.RefreshWindow()
 
