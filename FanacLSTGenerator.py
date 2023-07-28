@@ -1417,7 +1417,7 @@ class MainWindow(MainFrame):
             apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP", "FWD", "FIDO", "TAPS", "APA-F", "APA-L", "APA:NESFA", "WOOF", "SFPA"]
             for i, row in enumerate(self._Datasource.Rows):
                 note=row[notescol]
-               #note=RemoveHyperlink(note)  # Some apa mailing entries are hyperlinked and those hyperlinks are a nuisance.  WQe now add them automatically, so they can go for now.
+                #note=RemoveHyperlink(note)  # Some apa mailing entries are hyperlinked and those hyperlinks are a nuisance.  WQe now add them automatically, so they can go for now.
 
                 # Run through the list of APAs, looking for in turn the apa name followed by a number and maybe a letter
                 # Sometimes the apa name will be preceded by "in" or "for"
