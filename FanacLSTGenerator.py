@@ -1290,7 +1290,7 @@ class MainWindow(MainFrame):
     # Clear links in the selected row
     def OnPopupClearAllLinks(self, event):
         row=self.Datasource.Rows[self._dataGrid.clickedRow]
-        for i, col in enumerate(row):
+        for i, col in enumerate(row.Cells):
             before, link, target, aft=FindLinkInString(col)
             if link != "":
                 row[i]=before+target+aft
