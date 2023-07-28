@@ -520,7 +520,6 @@ class MainWindow(MainFrame):
 
 
 
-
     #------------------
     # Load an LST file from disk into an LSTFile class
     def OnLoadExistingLSTFile(self, event):       # MainWindow(MainFrame)
@@ -1405,58 +1404,59 @@ class MainWindow(MainFrame):
     # move it to a "Mailing" column (which may need to be created).  Remove the text from the Notes column.
     # Find the Notes column. If there is none, we're done.
     def ExtractApaMailings(self):       # MainWindow(MainFrame)
-        if "Notes" in self._Datasource.ColHeaders:
-            notescol=self._Datasource.ColHeaders.index("Notes")
+        if "Notes" not in self._Datasource.ColHeaders:
+            return
+        notescol=self._Datasource.ColHeaders.index("Notes")
 
-            # Collect the mailing into in this until later when we have a chance to put it in its own column
-            # Only if we determine that a mailing exists will be try to add it to the mailings column (perhaps creating it, also.)
-            mailings=[""]*len(self._Datasource.Rows)
+        # Collect the mailing into in this until later when we have a chance to put it in its own column
+        # Only if we determine that a mailing exists will be try to add it to the mailings column (perhaps creating it, also.)
+        mailings=[""]*len(self._Datasource.Rows)
 
-            # Look through the rows and extract mailing info, if any
-            # We're looking for things like [for/in] <apa> nnn. Parhaps, more than one separated by commas or ampersands
-            apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP", "FWD", "FIDO", "TAPS", "APA-F", "APA-L", "APA:NESFA", "WOOF", "SFPA"]
+        # Look through the rows and extract mailing info, if any
+        # We're looking for things like [for/in] <apa> nnn. Parhaps, more than one separated by commas or ampersands
+        apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP", "FWD", "FIDO", "TAPS", "APA-F", "APA-L", "APA:NESFA", "WOOF", "SFPA"]
+        for i, row in enumerate(self._Datasource.Rows):
+            note=row[notescol]
+            #note=RemoveHyperlink(note)  # Some apa mailing entries are hyperlinked and those hyperlinks are a nuisance.  WQe now add them automatically, so they can go for now.
+
+            # Run through the list of APAs, looking for in turn the apa name followed by a number and maybe a letter
+            # Sometimes the apa name will be preceded by "in" or "for"
+            # Sometimes the actual apa mailing name will be the text of a hyperlink
+            for apa in apas:
+
+                # First look for a mailing name inside a hyperlink and, if found, remove the hyperlink
+                mailingPat=f"{apa}\s+([0-9]+[a-zA-Z]?)"     # Matches APA 123X
+                note=RemoveHyperlinkContainingPattern(note, mailingPat)
+
+                # Now, with any interfering hyperlink remove, look for the mailing spec
+                pat=f"(?:for|in|)?\s*{mailingPat}([,;&])?"
+                m=re.search(pat, note, re.IGNORECASE)
+                if m is not None:
+                    # We found a mailing.  Add it to the temporary list of mailings and remove it from the mailings column
+                    if mailings[i]:
+                        mailings[i]+=" & "
+                    mailings[i]+=apa+" "+m.groups()[0]
+                    note=re.sub(pat, "", note).strip()  # Remove the matched text
+            if mailings[i]:     # We don't update the notes column unless we found a mailing
+                row[notescol]=note
+
+
+        # If any mailings were found, we need to put them into their new column (and maybe create the new column as well.)
+        if any([m for m in mailings]):
+            # Append a mailing column if needed
+            if "Mailing" not in self._Datasource.ColHeaders:
+                self._Datasource.InsertColumnHeader(-1, self.stdColHeaders["Mailing"])
+            # And in each row append an empty cell
             for i, row in enumerate(self._Datasource.Rows):
-                note=row[notescol]
-                #note=RemoveHyperlink(note)  # Some apa mailing entries are hyperlinked and those hyperlinks are a nuisance.  WQe now add them automatically, so they can go for now.
+                if len(row) < len(self._Datasource.ColHeaders):
+                    self._Datasource.Rows[i].Extend([""])
 
-                # Run through the list of APAs, looking for in turn the apa name followed by a number and maybe a letter
-                # Sometimes the apa name will be preceded by "in" or "for"
-                # Sometimes the actual apa mailing name will be the text of a hyperlink
-                for apa in apas:
-
-                    # First look for a mailing name inside a hyperlink and, if found, remove the hyperlink
-                    mailingPat=f"{apa}\s+([0-9]+[a-zA-Z]?)"     # Matches APA 123X
-                    note=RemoveHyperlinkContainingPattern(note, mailingPat)
-
-                    # Now, with any interfering hyperlink remove, look for the mailing spec
-                    pat=f"(?:for|in|)?\s*{mailingPat}([,;&])?"
-                    m=re.search(pat, note, re.IGNORECASE)
-                    if m is not None:
-                        # We found a mailing.  Add it to the temporary list of mailings and remove it from the mailings column
-                        if mailings[i]:
-                            mailings[i]+=" & "
-                        mailings[i]+=apa+" "+m.groups()[0]
-                        note=re.sub(pat, "", note).strip()  # Remove the matched text
-                if mailings[i]:     # We don't update the notes column unless we found a mailing
-                    row[notescol]=note
-
-
-            # If any mailings were found, we need to put them into their new column (and maybe create the new column as well.)
-            if any([m for m in mailings]):
-                # Append a mailing column if needed
-                if "Mailing" not in self._Datasource.ColHeaders:
-                    self._Datasource.InsertColumnHeader(-1, self.stdColHeaders["Mailing"])
-                # And in each row append an empty cell
-                for i, row in enumerate(self._Datasource.Rows):
-                    if len(row) < len(self._Datasource.ColHeaders):
-                        self._Datasource.Rows[i].Extend([""])
-
-                # And move the mailing info
-                mailcol=self._Datasource.ColHeaders.index("Mailing")
-                for i, row in enumerate(self._Datasource.Rows):
-                    if row[mailcol]:
-                        row[mailcol]+=" & "
-                    row[mailcol]+=mailings[i]
+            # And move the mailing info
+            mailcol=self._Datasource.ColHeaders.index("Mailing")
+            for i, row in enumerate(self._Datasource.Rows):
+                if row[mailcol]:
+                    row[mailcol]+=" & "
+                row[mailcol]+=mailings[i]
 
 
     # Run through the rows and columns and look at the Notes column  If an editor note is present,
@@ -1478,7 +1478,7 @@ class MainWindow(MainFrame):
             #       Aaaa Bbbb
             #       Aaaa B Cccc
             #       Aaaa B. Cccc
-            pat="[eE](ditor|dited by):?\s*([A-Z][a-zA-Z]+\s+[A-Z]?[.]?\s*[A-Z][a-zA-Z]+)\s*"
+            pat="[eE](ditor|dited by|d\.?):?\s*([A-Z][a-zA-Z]+\s+[A-Z]?[.]?\s*[A-Z][a-zA-Z]+)\s*"
             m=re.search(pat, row[notescol])
             if m is not None:
                 # We found an editor.
@@ -1496,7 +1496,6 @@ class MainWindow(MainFrame):
 
                 editors[i]=eds
                 row[notescol]=r
-
 
                 row[notescol]=re.sub(pat, "", row[notescol]).strip()
 
