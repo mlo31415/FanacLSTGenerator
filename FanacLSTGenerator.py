@@ -1426,7 +1426,7 @@ class MainWindow(MainFrame):
 
                 # First look for a mailing name inside a hyperlink and, if found, remove the hyperlink
                 mailingPat=f"{apa}\s+([0-9]+[a-zA-Z]?)"     # Matches APA 123X
-                note=RemoveHyperlinkContainingPattern(note, mailingPat)
+                note=RemoveHyperlinkContainingPattern(note, mailingPat, re.IGNORECASE)
 
                 # Now, with any interfering hyperlink remove, look for the mailing spec
                 pat=f"(?:for|in|)?\s*{mailingPat}([,;&])?"
@@ -1436,7 +1436,7 @@ class MainWindow(MainFrame):
                     if mailings[i]:
                         mailings[i]+=" & "
                     mailings[i]+=apa+" "+m.groups()[0]
-                    note=re.sub(pat, "", note).strip()  # Remove the matched text
+                    note=re.sub(pat, "", note, flags=re.IGNORECASE).strip()  # Remove the matched text
             if mailings[i]:     # We don't update the notes column unless we found a mailing
                 row[notescol]=note
 
