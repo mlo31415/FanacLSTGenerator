@@ -1704,7 +1704,6 @@ def main():
     # Set the debug/production mode
     global g_debug
     g_debug=Settings().Get("Debug Mode", False)
-    g_debug=True       #This allows programmatic override of the value in the parameter file
 
     showLogWindow=Settings().Get("Show log window", False)
     if not showLogWindow:
