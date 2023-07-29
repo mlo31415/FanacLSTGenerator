@@ -1443,13 +1443,13 @@ class MainWindow(MainFrame):
 
         # If any mailings were found, we need to put them into their new column (and maybe create the new column as well.)
         if any([m for m in mailings]):
+
             # Append a mailing column if needed
             if "Mailing" not in self._Datasource.ColHeaders:
                 self._Datasource.InsertColumnHeader(-1, self.stdColHeaders["Mailing"])
-            # And in each row append an empty cell
-            for i, row in enumerate(self._Datasource.Rows):
-                if len(row) < len(self._Datasource.ColHeaders):
-                    self._Datasource.Rows[i].Extend([""])
+                # Append an empty cell to each row
+                for row in self._Datasource.Rows:
+                    row.Extend([""])
 
             # And move the mailing info
             mailcol=self._Datasource.ColHeaders.index("Mailing")
@@ -1503,20 +1503,21 @@ class MainWindow(MainFrame):
 
         # If any editors were found, we need to put them into their new column (and maybe create the new column as well.)
         if any([m for m in editors]):
+
             # Append an editor column if needed
             if "Editor" not in self._Datasource.ColHeaders:
                 self._Datasource.InsertColumnHeader(-1, self.stdColHeaders["Editor"])
-            # And in each row append an empty cell
-            for i, row in enumerate(self._Datasource.Rows):
-                if len(row) < len(self._Datasource.ColHeaders):
-                    self._Datasource.Rows[i].Extend([""])
+                # Append an empty cell to each row
+                for row in self._Datasource.Rows:
+                    row.Extend([""])
 
             # And move the editor info
             edcol=self._Datasource.ColHeaders.index("Editor")
             for i, row in enumerate(self._Datasource.Rows):
-                if row[edcol]:
-                    row[edcol]+=" & "
-                row[edcol]+=editors[i]
+                if editors[i]:
+                    if row[edcol]:
+                        row[edcol]+=" & "
+                    row[edcol]+=editors[i]
 
         self.RefreshWindow()
 
