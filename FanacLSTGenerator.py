@@ -1424,11 +1424,11 @@ class MainWindow(MainFrame):
             # Sometimes the actual apa mailing name will be the text of a hyperlink
             for apa in apas:
 
-                # First look for a mailing name inside a hyperlink and, if found, remove the hyperlink
+                # First look for a mailing name inside a hyperlink and, if found, remove the hyperlink (we'll add them back when we save the LST file)
                 mailingPat=f"{apa}\s+([0-9]+[a-zA-Z]?)"     # Matches APA 123X
                 note=RemoveHyperlinkContainingPattern(note, mailingPat, re.IGNORECASE)
 
-                # Now, with any interfering hyperlink remove, look for the mailing spec
+                # Now, with any interfering hyperlink removed, look for the mailing spec
                 pat=f"(?:for|in|)?\s*{mailingPat}([,;&])?"
                 m=re.search(pat, note, re.IGNORECASE)
                 if m is not None:
