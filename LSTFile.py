@@ -360,7 +360,7 @@ class LSTFile:
                                     pm=" "+pm
                                 else:
                                     pm=""
-                                row[iMailings]+=f'<a href="https://fanac.org/fanzines/APA_Mailings/{FanzineNameToDirName(apa)}/{number}.html">{mailing}</a>{pm}'
+                                row[iMailings]+=f'<a href="https://fanac.org/fanzines/APA_Mailings/{FanzineNameToDirName(apa)}/{number}.html">{apa} {number}</a>{pm}'
 
 
         # Do not save trailing empty rows
