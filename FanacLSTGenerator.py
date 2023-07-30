@@ -1415,6 +1415,8 @@ class MainWindow(MainFrame):
         # Look through the rows and extract mailing info, if any
         # We're looking for things like [for/in] <apa> nnn. Parhaps, more than one separated by commas or ampersands
         apas: list[str]=["FAPA", "SAPS", "OMPA", "ANZAPA", "VAPA", "FLAP", "FWD", "FIDO", "TAPS", "APA-F", "APA-L", "APA:NESFA", "WOOF", "SFPA"]
+        # Now turn this into a pattern
+        patapas="|".join(apas)
         for i, row in enumerate(self._Datasource.Rows):
             note=row[notescol]
             #note=RemoveHyperlink(note)  # Some apa mailing entries are hyperlinked and those hyperlinks are a nuisance.  WQe now add them automatically, so they can go for now.
@@ -1422,21 +1424,26 @@ class MainWindow(MainFrame):
             # Run through the list of APAs, looking for in turn the apa name followed by a number and maybe a letter
             # Sometimes the apa name will be preceded by "in" or "for"
             # Sometimes the actual apa mailing name will be the text of a hyperlink
-            for apa in apas:
+            mailingPat=f"({patapas})\s+([0-9]+[a-zA-Z]?)"  # Matches APA 123X
 
-                # First look for a mailing name inside a hyperlink and, if found, remove the hyperlink (we'll add them back when we save the LST file)
-                mailingPat=f"{apa}\s+([0-9]+[a-zA-Z]?)"     # Matches APA 123X
-                note=RemoveHyperlinkContainingPattern(note, mailingPat, re.IGNORECASE)
+            # First look for a mailing name inside a hyperlink and, if found, remove the hyperlink (we'll add them back when we save the LST file)
+            note=RemoveHyperlinkContainingPattern(note, mailingPat, repeat=True, flags=re.IGNORECASE)
 
-                # Now, with any interfering hyperlink removed, look for the mailing spec
-                pat=f"(?:for|in|)?\s*{mailingPat}([,;&])?"
-                m=re.search(pat, note, re.IGNORECASE)
-                if m is not None:
-                    # We found a mailing.  Add it to the temporary list of mailings and remove it from the mailings column
-                    if mailings[i]:
-                        mailings[i]+=" & "
-                    mailings[i]+=apa+" "+m.groups()[0]
-                    note=re.sub(pat, "", note, flags=re.IGNORECASE).strip()  # Remove the matched text
+            while True:
+                # With any interfering hyperlink removed, look for the mailing spec
+                pat=f"(?:for|in|)?\s*{mailingPat}\s*(pm|postmailing)?(,|&)?"
+                m=re.search(pat, note, flags=re.IGNORECASE)
+                if m is None:
+                    break
+
+                # We found a mailing.  Add it to the temporary list of mailings and remove it from the mailings column
+                if mailings[i]:
+                    mailings[i]+=" & "
+                mailings[i]+=m.groups()[0]+" "+m.groups()[1]
+                if m.groups()[2]:
+                    mailings[i]+= " postmailing"
+                note=re.sub(pat, "", note, count=1, flags=re.IGNORECASE).strip()  # Remove the matched text
+
             if mailings[i]:     # We don't update the notes column unless we found a mailing
                 row[notescol]=note
 
