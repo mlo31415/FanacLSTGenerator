@@ -338,7 +338,7 @@ class LSTFile:
         # Turn any mailing info into hyperlinks to the mailing on fanac.org
         iMailings=FindIndexOfStringInList(self.ColumnHeaders, ["mailing", "mailings", "apa mailing", "apa mailings"], IgnoreCase=True)
         if iMailings is not None:
-            self.ColumnHeaders[iMailings]="Mailing"     # Change header to standard
+            self.ColumnHeaders[iMailings]="Mailing"     # Change header to standard in case it isn't
             for row in self.Rows:
                 mailing=row[iMailings]
                 row[iMailings]=""
@@ -351,7 +351,7 @@ class LSTFile:
                             if not first:
                                 row[iMailings]+=", "    # Add a comma before subsequent mailings
                             first=False
-                            m=re.match("([a-zA-Z'1-9_\- ]*)\s+([0-9]+[a-zA-Z]*)\s*(pm|postmailing)?$", mailing)      # Split the FAPA 103A into an apa name and the mailing number (which may have trailing characters '30A')
+                            m=re.match("([a-zA-Z'1-9_\- ]*)\s+([0-9]+[a-zA-Z]*)\s*(pm|postmailing)?$", mailing, flags=re.IGNORECASE)      # Split the FAPA 103A into an apa name and the mailing number (which may have trailing characters '30A')
                             if m is not None:
                                 apa=m.groups()[0]
                                 number=m.groups()[1]
