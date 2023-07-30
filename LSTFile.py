@@ -118,7 +118,7 @@ class LSTFile:
         colHeaderLine=""
         inFanacType=False
         while contents:
-            line=contents.pop(0).strip()    # Pop the first line from the list of likes
+            line=contents.pop(0).strip()    # Pop the first line from the list of lines
             if len(line) == 0:
                 continue    # Skip blank lines
             m=re.search("<!-- Fanac-keywords: (.*)-->", line.strip())
