@@ -343,7 +343,7 @@ class LSTFile:
                 mailing=row[iMailings]
                 row[iMailings]=""
                 if len(mailing) > 0:
-                    mailings=mailing.split(",")     # It may be of the form 'FAPA 103, OMPA 32'
+                    mailings=mailing.replace(",", "&").split("&")     # It may be of the form 'FAPA 103 PM, OMPA 32 & SAPS 76A'
                     first=True
                     for mailing in mailings:
                         mailing=mailing.strip()
