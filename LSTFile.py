@@ -177,7 +177,7 @@ class LSTFile:
         iMailings=FindIndexOfStringInList(self.ColumnHeaders, ["mailing", "mailings", "apa mailing", "apa mailings"], IgnoreCase=True)
         if iMailings is not None:
             for row in self.Rows:
-                row[iMailings]=RemoveHyperlink(row[iMailings])
+                row[iMailings]=RemoveHyperlink(row[iMailings], repeat=True)
 
 
     # Remove a leading http[s]//[www.]fanac.org/fanzines, f present.
