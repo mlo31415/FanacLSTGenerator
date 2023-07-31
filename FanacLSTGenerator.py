@@ -174,18 +174,26 @@ class MainWindow(MainFrame):
             return
         if irow < 0 or irow >= self.Datasource.NumRows:
             return
-        return      #TODO: Fix ColorCells01ByValue!!
+
         # The coloring depends on the contents of the cell *pair* self.Datasource.Rows[irow][0:1]
         # We will turn the contents of those cells into LST format and back again.  If they pass unchanged, then we color them white
         # If they change (other than trivial whitespace) we color them pink
         cells=self.Datasource.Rows[irow][0:2]
-        cellsafter=LSTFile.LSTToRow(LSTFile.RowToLST(cells))
-        if cells[0].casefold() == cellsafter[0].casefold() and cells[1].casefold() == cellsafter[1].casefold():
+        val=LSTFile.RowToLST(cells)
+        Log(f"1: {val=}")
+        if val == "":
+            self._dataGrid.SetCellBackgroundColor(irow, 0, Color.Pink)
+            self._dataGrid.SetCellBackgroundColor(irow, 1, Color.Pink)
             return
 
-        self._dataGrid.SetCellBackgroundColor(irow, icol, Color.Pink)
-        #Log(f"Setting row[{irow}] col {icol} to Pink because {cells} != {cellsafter}")
+        val=LSTFile.LSTToRow(val)
+        Log(f"2: {val=}")
+        if val == ("", ""):
+            self._dataGrid.SetCellBackgroundColor(irow, 0, Color.Pink)
+            self._dataGrid.SetCellBackgroundColor(irow, 1, Color.Pink)
+            return
 
+        return
 
 
     #------------------
