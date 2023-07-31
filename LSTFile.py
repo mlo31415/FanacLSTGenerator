@@ -263,12 +263,13 @@ class LSTFile:
 
 
     @staticmethod
-    def SplitOnPointyBracket(col0):
+    def SplitOnPointyBracket(col0) -> list[str, str]:
         if ">" not in col0:
             col0=">"+col0.strip()  # Because there are some cases where there is no filename, the ">" is missing and we need to supply one
         # Apparently there may still be cases where the ">" was a ">>".  Fix this.
         col0=col0.replace(">>", ">")
-        assert col0.count(">") == 1
+        if col0.count(">") != 1:
+            return ["", ""]
         # Now we can handle them all as case (1)
         out=col0.split(">")
         return out
@@ -477,3 +478,4 @@ class LSTFile:
                 pass
 
         Log(f"###############################################\n***** RowToLST has failed {cols[0]}")
+        return ""
