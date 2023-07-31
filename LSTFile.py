@@ -227,8 +227,9 @@ class LSTFile:
         if not ContainsBracketedText(col0):
             # Look for case (2), and add the ">" to make it case (1)
             out=LSTFile.SplitOnPointyBracket(col0)
-            print(f"LSTToRow Case 2: {out}")
-            return out
+            if out != ["", ""]:
+                print(f"LSTToRow Case 2: {out}")
+                return out
 
         # Case 3:  {<a name=..>}>{text}   (an anchor)
         # This one is easy
