@@ -386,6 +386,8 @@ class LSTFile:
 
             # The first two columns require special handing.
             cols01=self.RowToLST(row[0:2])
+            if cols01 == "":
+                cols01=f"{row[0]}>{row[1]}"
             content.append(f"{cols01}; {'; '.join(row[2:])}")
 
         # And write it out
