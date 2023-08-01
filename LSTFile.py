@@ -265,10 +265,11 @@ class LSTFile:
     @staticmethod
     def SplitOnPointyBracket(col0) -> list[str, str]:
         if ">" not in col0:
-            col0=">"+col0.strip()  # Because there are some cases where there is no filename, the ">" is missing and we need to supply one
+            col0=">"+col0.strip()  # Because there are some cases where there is no filename. The ">" is missing so we need to supply one.
         # Apparently there may still be cases where the ">" was a ">>".  Fix this.
         col0=col0.replace(">>", ">")
         if col0.count(">") != 1:
+            Log(f"SplitOnPointyBracket() failure: Too many '>' in {col0}")
             return ["", ""]
         # Now we can handle them all as case (1)
         out=col0.split(">")
