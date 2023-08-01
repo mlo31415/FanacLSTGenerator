@@ -257,7 +257,7 @@ class LSTFile:
                 print(f"LSTToRow Case 5: {out}")
                 return out
 
-        print(f"###############################################\n***** LST2Row is failing!: {col0}")
+        Log(f"###############################################\n***** LST2Row is failing!: {col0}")
         return ["", ""]
 
 
