@@ -1504,6 +1504,7 @@ class MainWindow(MainFrame):
                 r=r.replace(r[locs[0]:locs[1]], "")
                 if len(r) > 0:
                     pat="\s*(and|&|,)\s*([A-Z][a-zA-Z]+\s+[A-Z]?[.]?\s*[A-Z][a-zA-Z]+)\s*"
+                    r=r[locs[0]:]   # Want to search for co-editors only following the 1st editor which we just excised
                     m=re.search(pat, r)
                     if m is not None:
                         eds+=" & "+m.groups()[1]
