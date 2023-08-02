@@ -263,7 +263,7 @@ class LSTFile:
 
 
     @staticmethod
-    def SplitOnPointyBracket(col0) -> list[str, str]:
+    def SplitOnPointyBracket(col0: str) -> list[str, str]:
         if ">" not in col0:
             col0=">"+col0.strip()  # Because there are some cases where there is no filename. The ">" is missing so we need to supply one.
         # Apparently there may still be cases where the ">" was a ">>".  Fix this.
