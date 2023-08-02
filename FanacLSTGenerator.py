@@ -361,7 +361,7 @@ class MainWindow(MainFrame):
             Log(f"CreateLSTDirectory: Created directory {self.TargetDirectoryPathname}", Flush=True)
 
         # Copy the files from the source directory to the target directory if necessary.
-        # Rename them with "safe" names for use on fanac.org if necessary
+        # Rename them with "safe" names for use on fanac.org (and for Jack's SW) if necessary
         newlyAddedFiles: list[str]=[]
         with ProgressMsg(self, f"Loading..."):
             for file in files:
@@ -369,6 +369,7 @@ class MainWindow(MainFrame):
                 origfullpath, origfilename=os.path.split(file)         # Split to path and filename (including ext)
                 f, e=os.path.splitext(origfilename)                    # Remove the extension
                 safefilename=RemoveScaryCharacters(f)+e
+                safefilename=safefilename.replace("~", "_")     # Deal with a limitation of Jack's SW
 
                 newfilepathname=os.path.join(self.TargetDirectoryPathname, safefilename)
                 oldfilepathname=file
