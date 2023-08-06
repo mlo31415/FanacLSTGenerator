@@ -185,14 +185,14 @@ class MainWindow(MainFrame):
             return
 
         val=LSTFile.RowToLST(cells)
-        Log(f"1: {val=}")
+        #Log(f"1: {val=}")
         if val == "":
             self._dataGrid.SetCellBackgroundColor(irow, 0, Color.Pink)
             self._dataGrid.SetCellBackgroundColor(irow, 1, Color.Pink)
             return
 
         val=LSTFile.LSTToRow(val)
-        Log(f"2: {val=}")
+        #Log(f"2: {val=}")
         if val == ("", ""):
             self._dataGrid.SetCellBackgroundColor(irow, 0, Color.Pink)
             self._dataGrid.SetCellBackgroundColor(irow, 1, Color.Pink)
