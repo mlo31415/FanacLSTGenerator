@@ -175,6 +175,7 @@ class MainWindow(MainFrame):
         if irow < 0 or irow >= self.Datasource.NumRows:
             return
 
+
         # The coloring depends on the contents of the cell *pair* self.Datasource.Rows[irow][0:1]
         # We will turn the contents of those cells into LST format and back again.  If they pass unchanged, then we color them white
         # If they change (other than trivial whitespace) we color them pink
@@ -258,7 +259,7 @@ class MainWindow(MainFrame):
         self.Datasource._fanzineList=FTRList
         self.Datasource.AlphabetizeIndividually=lstfile.AlphabetizeIndividually
 
-        self._dataGrid.RefreshWxGridFromDatasource(IgnoreCurrentGrid=True)
+        self._dataGrid.RefreshWxGridFromDatasource(RetainSelection=False)
 
         # Fill in the upper stuff
         self.tFanzineName.SetValue(lstfile.FanzineName.strip())
@@ -635,7 +636,7 @@ class MainWindow(MainFrame):
         self.Datasource._fanzineList=[]
 
         # Update the dialog's grid from the data
-        self._dataGrid.RefreshWxGridFromDatasource(IgnoreCurrentGrid=True)
+        self._dataGrid.RefreshWxGridFromDatasource(RetainSelection=False)
 
         # Fill in the dialog's upper stuff
         self.tFanzineName.SetValue("")
