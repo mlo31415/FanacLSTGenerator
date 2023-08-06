@@ -179,6 +179,11 @@ class MainWindow(MainFrame):
         # We will turn the contents of those cells into LST format and back again.  If they pass unchanged, then we color them white
         # If they change (other than trivial whitespace) we color them pink
         cells=self.Datasource.Rows[irow][0:2]
+
+        # Both empty is just fine.
+        if cells[0] == "" and cells[1] == "":
+            return
+
         val=LSTFile.RowToLST(cells)
         Log(f"1: {val=}")
         if val == "":
