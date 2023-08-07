@@ -16,7 +16,7 @@ from GenLogDialogClass import LogDialog
 from NewFanzineDialog import NewFanzineWindow
 
 from WxDataGrid import DataGrid, Color, GridDataSource, ColDefinition, ColDefinitionsList, GridDataRowClass
-from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage, AddChar
+from WxHelpers import OnCloseHandling, ProgressMsg, ProgressMessage, AddChar, MessageBoxInput
 from LSTFile import *
 from HelpersPackage import Bailout, IsInt, Int0, ZeroIfNone, MessageBox, RemoveScaryCharacters, SetReadOnlyFlag, ParmDict
 from HelpersPackage import  ComparePathsCanonical, FindLinkInString, FindIndexOfStringInList, FindIndexOfStringInList2
@@ -695,6 +695,12 @@ class MainWindow(MainFrame):
 
             self.MaybeSetNeedsSavingFlag()
             self.RefreshWindow()
+
+    def OnRenameFanzine(self, event):
+        name=MessageBoxInput("Enter the new name for the fanzine", title="Rename Fanzine", initialValue=self.tFanzineName.Value, ignoredebugger=True)
+        Log(f"OnRenameFanzine(): {name=}")
+        if name is None or len(name.strip()) == 0:
+            return
 
 
     #------------------

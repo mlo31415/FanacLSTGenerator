@@ -27,6 +27,8 @@ class MainFrame ( wx.Frame ):
 		self.m_toolBarTop.AddControl( self.bLoadExistingLSTFile )
 		self.bCreateNewFanzineDir = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Create New Fanzine Dir.", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bCreateNewFanzineDir )
+		self.bRenameFanzine = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Rename Fanzine", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_toolBarTop.AddControl( self.bRenameFanzine )
 		self.bAddNewIssues = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Add New Issue(s)", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_toolBarTop.AddControl( self.bAddNewIssues )
 		self.bSave = wx.Button( self.m_toolBarTop, wx.ID_ANY, u"Save", wx.DefaultPosition, wx.DefaultSize, 0 )
@@ -283,6 +285,7 @@ class MainFrame ( wx.Frame ):
 		self.Bind( wx.EVT_CLOSE, self.OnClose )
 		self.bLoadExistingLSTFile.Bind( wx.EVT_BUTTON, self.OnLoadExistingLSTFile )
 		self.bCreateNewFanzineDir.Bind( wx.EVT_BUTTON, self.OnCreateNewFanzineDir )
+		self.bRenameFanzine.Bind( wx.EVT_BUTTON, self.OnRenameFanzine )
 		self.bAddNewIssues.Bind( wx.EVT_BUTTON, self.OnAddNewIssues )
 		self.bSave.Bind( wx.EVT_BUTTON, self.OnSave )
 		self.bExit.Bind( wx.EVT_BUTTON, self.OnExitClicked )
@@ -335,6 +338,9 @@ class MainFrame ( wx.Frame ):
 		event.Skip()
 
 	def OnCreateNewFanzineDir( self, event ):
+		event.Skip()
+
+	def OnRenameFanzine( self, event ):
 		event.Skip()
 
 	def OnAddNewIssues( self, event ):
@@ -458,31 +464,17 @@ class MainFrame ( wx.Frame ):
 		self.PopupMenu( self.m_GridPopup, event.GetPosition() )
 
 
+# -*- coding: utf-8 -*-
+
 ###########################################################################
-## Class LogDialog
+## Python code generated with wxFormBuilder (version Oct 26 2018)
+## http://www.wxformbuilder.org/
+##
+## PLEASE DO *NOT* EDIT THIS FILE!
 ###########################################################################
 
-class LogDialog ( wx.Dialog ):
-
-	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Log", pos = wx.DefaultPosition, size = wx.Size( 742,606 ), style = wx.DEFAULT_DIALOG_STYLE )
-
-		self.SetSizeHints( wx.DefaultSize, wx.DefaultSize )
-
-		gSizer1 = wx.GridSizer( 1, 1, 0, 0 )
-
-		self.textLogWindow = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_MULTILINE|wx.TE_READONLY|wx.VSCROLL )
-		gSizer1.Add( self.textLogWindow, 0, wx.ALL|wx.EXPAND, 5 )
-
-
-		self.SetSizer( gSizer1 )
-		self.Layout()
-
-		self.Centre( wx.BOTH )
-
-	def __del__( self ):
-		pass
-
+import wx
+import wx.xrc
 
 ###########################################################################
 ## Class NewFanzineDialog
