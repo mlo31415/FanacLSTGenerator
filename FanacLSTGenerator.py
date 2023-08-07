@@ -707,7 +707,14 @@ class MainWindow(MainFrame):
             Log(f"OnSave() initializes {self.lstFilename=}")
 
         self.SaveExistingLSTFile()
-        self.LoadLSTFile2(self.TargetDirectoryPathname, self.lstFilename)
+        # When we're in debug mode, we don;t overrighe the old file, so when we do the reload, we need to do it from the new filename
+        if g_debug:
+            newname=os.path.splitext(self.lstFilename)
+            newfname=newname[0]+"-new"+newname[1]
+            newpname=os.path.join(self.TargetDirectoryPathname, newfname)
+        else:
+            newpname=self.lstFilename
+        self.LoadLSTFile2(self.TargetDirectoryPathname, newpname)
 
 
     #------------------
