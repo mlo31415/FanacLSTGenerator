@@ -964,9 +964,10 @@ class MainWindow(MainFrame):
         self.SetTitle(s)
 
 
-    def RefreshWindow(self)-> None:       # MainWindow(MainFrame)
+    def RefreshWindow(self, DontRefreshGrid: bool=False)-> None:       # MainWindow(MainFrame)
         self.MaybeSetNeedsSavingFlag()
-        self._dataGrid.RefreshWxGridFromDatasource()
+        if not DontRefreshGrid:
+            self._dataGrid.RefreshWxGridFromDatasource()
         self.ColorFields()
 
 
@@ -1006,22 +1007,22 @@ class MainWindow(MainFrame):
 
     def OnFanzineName(self, event):       # MainWindow(MainFrame)
         self.Datasource.FanzineName=self.tFanzineName.GetValue()
-        self.RefreshWindow()
+        self.RefreshWindow(DontRefreshGrid=True)
 
 
     def OnEditors(self, event):       # MainWindow(MainFrame)
         self.Datasource.Editors=self.tEditors.GetValue()
-        self.RefreshWindow()
+        self.RefreshWindow(DontRefreshGrid=True)
 
 
     def OnDates(self, event):       # MainWindow(MainFrame)
         self.Datasource.Dates=self.tDates.GetValue()
-        self.RefreshWindow()
+        self.RefreshWindow(DontRefreshGrid=True)
 
 
     def OnFanzineType(self, event):       # MainWindow(MainFrame)
         self.Datasource.FanzineType=self.tFanzineType.GetString(self.tFanzineType.GetSelection()).strip()
-        self.RefreshWindow()
+        self.RefreshWindow(DontRefreshGrid=True)
 
     #------------------
     def OnTopComments(self, event):       # MainWindow(MainFrame)
@@ -1030,35 +1031,35 @@ class MainWindow(MainFrame):
         else:
             self.Datasource.TopComments=[self.tTopComments.GetValue().strip()]
 
-        self.RefreshWindow()
+        self.RefreshWindow(DontRefreshGrid=True)
 
     # ------------------
     def OnCheckComplete(self, event):       # MainWindow(MainFrame)
         self.Datasource.Complete=self.cbComplete.GetValue()
         Log(f"OnCheckComplete(): {self.Datasource.Complete=} and {self.Datasource.AlphabetizeIndividually=}")
-        self.RefreshWindow()
+        self.RefreshWindow(DontRefreshGrid=True)
 
     # ------------------
     def OnCheckAlphabetizeIndividually(self, event):       # MainWindow(MainFrame)
         self.Datasource.AlphabetizeIndividually=self.cbAlphabetizeIndividually.GetValue()
         Log(f"OnCheckAlphabetizeIndividually(): {self.Datasource.Complete=} and {self.Datasource.AlphabetizeIndividually=}")
-        self.RefreshWindow()
+        self.RefreshWindow(DontRefreshGrid=True)
         # Don't need to refresh because nothing changed
 
     # ------------------
     def OnDirectoryServer(self, event):       # MainWindow(MainFrame)
         self.Datasource.ServerDirectory=self.tDirectoryServer.GetValue()
-        self.RefreshWindow()
+        self.RefreshWindow(DontRefreshGrid=True)
 
     #------------------
     def OnTextLocale(self, event):       # MainWindow(MainFrame)
         self.Datasource.Locale=self.tLocaleText.GetValue().split("\n")
-        self.RefreshWindow()
+        self.RefreshWindow(DontRefreshGrid=True)
 
     #------------------
     def OnCredits(self, event):
         self.Datasource.Credits=self.tCredits.GetValue().strip()
-        self.RefreshWindow()
+        self.RefreshWindow(DontRefreshGrid=True)
 
     #-------------------
     def OnKeyDown(self, event):       # MainWindow(MainFrame)
@@ -1245,7 +1246,7 @@ class MainWindow(MainFrame):
 
     def OnPopupCopy(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnPopupCopy(event) # Pass event to WxDataGrid to handle
-        self.RefreshWindow()
+        self.RefreshWindow(DontRefreshGrid=True)
 
     def OnPopupPaste(self, event):       # MainWindow(MainFrame)
         self._dataGrid.OnPopupPaste(event) # Pass event to WxDataGrid to handle
