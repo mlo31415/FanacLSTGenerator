@@ -702,6 +702,9 @@ class MainWindow(MainFrame):
         if name is None or len(name.strip()) == 0:
             return
 
+        # The task is to rename the fanzine, but *not* the directory or the LST file
+        self.tFanzineName.SetValue(name)
+
 
     #------------------
     # Save an LSTFile object to disk and maybe create a whole new directory
