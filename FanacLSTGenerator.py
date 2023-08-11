@@ -1146,8 +1146,14 @@ class MainWindow(MainFrame):
         # We enable the Add Column to Left item if we're on a column to the left of the first -- it can be off the right and a column will be added to the right
         if self._dataGrid.clickedColumn > 1:
             Enable("Insert Column to Left")
-            if self.Datasource.Element.CanDeleteColumns:
-                Enable("Delete Column(s)")
+
+        # We only allow a column to be deleted if the cursor is in a column with more than one highlighted cell and no hiughlif=ghted cells in other columns.
+        if self.Datasource.Element.CanDeleteColumns:
+            top, left, bottom, right=self._dataGrid.SelectionBoundingBox()
+            if right == left and bottom-top > 0:
+                if self._dataGrid.clickedColumn == right:
+                    Enable("Delete Column")
+
 
         # We enable the Add Column to right item if we're on any existing column
         if self._dataGrid.clickedColumn > 0:        # Can't insert columns between the 1st two

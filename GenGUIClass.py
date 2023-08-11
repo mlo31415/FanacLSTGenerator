@@ -234,7 +234,7 @@ class MainFrame ( wx.Frame ):
 		self.m_menuItemPopupEraseSelection = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Erase Selection", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupEraseSelection )
 
-		self.m_menuItemPopupDelCol = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Delete Column(s)", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menuItemPopupDelCol = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Delete Column", wx.EmptyString, wx.ITEM_NORMAL )
 		self.m_GridPopup.Append( self.m_menuItemPopupDelCol )
 
 		self.m_menuItemPopupDelRow = wx.MenuItem( self.m_GridPopup, wx.ID_ANY, u"Delete Row(s)", wx.EmptyString, wx.ITEM_NORMAL )
@@ -462,6 +462,9 @@ class MainFrame ( wx.Frame ):
 
 	def MainFrameOnContextMenu( self, event ):
 		self.PopupMenu( self.m_GridPopup, event.GetPosition() )
+
+
+
 
 
 # -*- coding: utf-8 -*-
